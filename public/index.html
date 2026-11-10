@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ترتيب — ألعاب</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="top">
+  <a class="logo" href="/"><span>ترتيب</span><small>ألعاب</small></a>
+  <a class="btn sm" data-discord target="_blank" rel="noopener">ديسكورد</a>
+</header>
+
+<main>
+  <!-- الرئيسية -->
+  <section id="home">
+    <div class="home-top">
+      <div class="hero">
+        <h1>الأونو<br>صار عندنا<span class="dot">.</span></h1>
+        <p>سوّ غرفة، عطّ الكود لربعك، وابدأوا. من ٢ إلى ٦ لاعبين.</p>
+      </div>
+      <div class="panel">
+        <label>اسمك<input id="name" maxlength="14" placeholder="اكتب اسمك" autocomplete="off"></label>
+        <button id="create" class="btn red">سوّ غرفة جديدة</button>
+        <div class="or"><span>أو ادخل بكود</span></div>
+        <div class="joinrow">
+          <input id="code" maxlength="4" placeholder="XXXX" autocomplete="off" spellcheck="false">
+          <button id="join" class="btn dark">ادخل</button>
+        </div>
+      </div>
+    </div>
+
+    <h2 class="sect">الألعاب</h2>
+    <div class="games">
+      <article class="game uno">
+        <div class="fan"><i class="y">7</i><i class="b">+2</i><i class="g">⇄</i></div>
+        <h3>أونو</h3>
+        <span class="tag">متاحة الحين</span>
+      </article>
+      <article class="game soon"><b>؟</b><span class="tag">قريباً</span></article>
+      <article class="game soon"><b>؟</b><span class="tag">قريباً</span></article>
+      <article class="game soon"><b>؟</b><span class="tag">قريباً</span></article>
+    </div>
+  </section>
+
+  <section id="connecting" hidden>
+    <h2 class="sect">نتصل بالديسكورد…</h2>
+  </section>
+
+  <!-- اللوبي -->
+  <section id="lobby" hidden>
+    <h2 class="sect">غرفتكم جاهزة</h2>
+    <p class="hint act-only">هذي غرفة الروم الصوتي. أي واحد يشغّل اللعبة من نفس الروم ينضم هنا تلقائيًا.</p>
+    <div class="ticket">
+      <small>كود الغرفة</small>
+      <div id="roomcode" class="roomcode">----</div>
+      <button id="copy" class="btn sm">انسخ رابط الدعوة</button>
+    </div>
+    <h2 class="sect">اللاعبين <span id="pcount"></span></h2>
+    <ul id="plist" class="plist"></ul>
+    <p id="hint" class="hint"></p>
+    <div class="row">
+      <button id="start" class="btn green">ابدأ اللعبة</button>
+      <button id="leave" class="btn">اطلع</button>
+    </div>
+  </section>
+
+  <!-- اللعبة -->
+  <section id="game" hidden>
+    <div class="table">
+      <div id="opps" class="opps"></div>
+      <div class="center">
+        <button id="deck" class="pile"></button>
+        <div id="discard" class="pile"></div>
+        <div id="ring" class="ring"></div>
+      </div>
+      <div id="turn" class="turn"></div>
+      <div id="log" class="log"></div>
+      <div class="actions">
+        <button id="unoBtn" class="btn yellow" hidden>أونو!</button>
+        <button id="pass" class="btn" hidden>مرّر</button>
+        <button id="catch" class="btn red" hidden>امسكه! ما قال أونو</button>
+      </div>
+      <div id="hand" class="hand"></div>
+    </div>
+    <div id="over" class="overlay" hidden>
+      <div class="box">
+        <small>الجولة انتهت</small>
+        <h2 id="winner"></h2>
+        <div class="row">
+          <button id="again" class="btn green" hidden>جولة جديدة</button>
+          <button id="leave2" class="btn">اطلع</button>
+        </div>
+        <p id="waitHost" class="hint" hidden>ننتظر المضيف يبدأ جولة جديدة</p>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="foot">
+  <p>تبي تلعب مع الشلة؟</p>
+  <a class="btn discord" data-discord target="_blank" rel="noopener">ادخل ديسكورد ترتيب ←</a>
+</footer>
+
+<div id="colorModal" class="overlay" hidden>
+  <div class="box">
+    <h2>اختر اللون</h2>
+    <div class="colors">
+      <button data-c="red" style="--b:#e8362d">أحمر</button>
+      <button data-c="yellow" style="--b:#ffc928;color:#16130f">أصفر</button>
+      <button data-c="green" style="--b:#1fa35c">أخضر</button>
+      <button data-c="blue" style="--b:#2a5bd7">أزرق</button>
+    </div>
+  </div>
+</div>
+<div id="toast"></div>
+
+<script src="app.js"></script>
+</body>
+</html>

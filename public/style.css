@@ -1,0 +1,200 @@
+@font-face{font-family:'Lalezar';font-weight:400;font-display:swap;src:url(fonts/lalezar-arabic-400-normal.woff2) format('woff2');unicode-range:U+0600-06FF,U+0750-077F,U+0870-088E,U+0890-0891,U+0898-08E1,U+08E3-08FF,U+200C-200E,U+2010-2011,U+204F,U+2E41,U+FB50-FDFF,U+FE70-FE74,U+FE76-FEFC}
+@font-face{font-family:'Tajawal';font-weight:500;font-display:swap;src:url(fonts/tajawal-arabic-500-normal.woff2) format('woff2');unicode-range:U+0600-06FF,U+0750-077F,U+0870-088E,U+0890-0891,U+0898-08E1,U+08E3-08FF,U+200C-200E,U+2010-2011,U+204F,U+2E41,U+FB50-FDFF,U+FE70-FE74,U+FE76-FEFC}
+@font-face{font-family:'Tajawal';font-weight:700;font-display:swap;src:url(fonts/tajawal-arabic-700-normal.woff2) format('woff2');unicode-range:U+0600-06FF,U+0750-077F,U+0870-088E,U+0890-0891,U+0898-08E1,U+08E3-08FF,U+200C-200E,U+2010-2011,U+204F,U+2E41,U+FB50-FDFF,U+FE70-FE74,U+FE76-FEFC}
+@font-face{font-family:'Tajawal';font-weight:800;font-display:swap;src:url(fonts/tajawal-arabic-800-normal.woff2) format('woff2');unicode-range:U+0600-06FF,U+0750-077F,U+0870-088E,U+0890-0891,U+0898-08E1,U+08E3-08FF,U+200C-200E,U+2010-2011,U+204F,U+2E41,U+FB50-FDFF,U+FE70-FE74,U+FE76-FEFC}
+@font-face{font-family:'Lalezar';font-weight:400;font-display:swap;src:url(fonts/lalezar-latin-400-normal.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+@font-face{font-family:'Tajawal';font-weight:500;font-display:swap;src:url(fonts/tajawal-latin-500-normal.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+@font-face{font-family:'Tajawal';font-weight:700;font-display:swap;src:url(fonts/tajawal-latin-700-normal.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+@font-face{font-family:'Tajawal';font-weight:800;font-display:swap;src:url(fonts/tajawal-latin-800-normal.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+:root{
+  --ink:#16130f;--paper:#f3ead8;
+  --red:#e8362d;--yellow:#ffc928;--green:#1fa35c;--blue:#2a5bd7;
+  --sh:5px 5px 0 var(--ink);
+}
+*{box-sizing:border-box;margin:0}
+html{-webkit-text-size-adjust:100%}
+body{
+  font-family:Tajawal,system-ui,sans-serif;font-weight:700;color:var(--ink);
+  background:var(--paper);
+  background-image:radial-gradient(rgba(22,19,15,.09) 1.2px,transparent 1.2px);background-size:18px 18px;
+  min-height:100vh;display:flex;flex-direction:column;
+}
+[hidden]{display:none!important}
+
+/* ---------- الهيدر ---------- */
+.top{display:flex;justify-content:space-between;align-items:center;padding:18px clamp(16px,5vw,56px)}
+.logo{display:flex;align-items:baseline;gap:10px;color:var(--ink);text-decoration:none}
+.logo span{font:400 2.5rem/1 Lalezar,Tajawal,sans-serif}
+.logo small{background:var(--ink);color:var(--paper);padding:2px 12px;border-radius:99px;font-size:.8rem;transform:rotate(-4deg)}
+main{flex:1;width:min(1040px,100%);margin:0 auto;padding:0 clamp(16px,4vw,32px) 40px}
+
+/* ---------- الأزرار والحقول ---------- */
+.btn{
+  font:800 1.05rem Tajawal,sans-serif;border:3px solid var(--ink);background:#fff;color:var(--ink);
+  padding:12px 22px;border-radius:14px;box-shadow:var(--sh);cursor:pointer;text-decoration:none;
+  display:inline-block;text-align:center;transition:transform .08s,box-shadow .08s;
+}
+.btn:hover{transform:translate(-2px,-2px);box-shadow:7px 7px 0 var(--ink)}
+.btn:active{transform:translate(4px,4px);box-shadow:1px 1px 0 var(--ink)}
+.btn[disabled]{opacity:.45;pointer-events:none}
+.btn.red{background:var(--red);color:#fff}
+.btn.yellow{background:var(--yellow)}
+.btn.dark{background:var(--ink);color:var(--paper)}
+.btn.green{background:var(--green);color:#fff}
+.btn.sm{padding:8px 16px;font-size:.95rem;box-shadow:3px 3px 0 var(--ink)}
+input{
+  font:700 1.05rem Tajawal,sans-serif;color:var(--ink);background:var(--paper);
+  border:3px solid var(--ink);border-radius:12px;padding:11px 14px;width:100%;outline:none;
+}
+input:focus{background:#fff;box-shadow:3px 3px 0 var(--yellow)}
+label{display:grid;gap:6px;font-size:.95rem}
+
+/* ---------- الرئيسية ---------- */
+.home-top{display:grid;grid-template-columns:1.15fr 1fr;gap:36px;align-items:center;padding-top:10px}
+.hero h1{font:400 clamp(3.4rem,10vw,7rem)/.95 Lalezar,Tajawal,sans-serif;margin:10px 0 16px}
+.hero h1 .dot{color:var(--red)}
+.hero p{font-size:1.2rem;max-width:30ch;opacity:.8;line-height:1.6}
+.panel{
+  background:#fff;border:3px solid var(--ink);border-radius:22px;box-shadow:8px 8px 0 var(--ink);
+  padding:24px;display:grid;gap:14px;transform:rotate(-.7deg);
+}
+.or{display:flex;align-items:center;gap:10px;font-size:.85rem;opacity:.7}
+.or::before,.or::after{content:'';flex:1;height:3px;background:var(--ink);opacity:.2;border-radius:2px}
+.joinrow{display:flex;gap:10px}
+#code{font:400 1.7rem Lalezar,sans-serif;text-align:center;letter-spacing:.2em;text-transform:uppercase;direction:ltr;width:130px;flex:none}
+.sect{font:400 2rem Lalezar,Tajawal,sans-serif;margin:46px 0 16px}
+.sect span{font-family:Tajawal;font-size:1rem;opacity:.6}
+
+.games{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:20px}
+.game{
+  position:relative;min-height:200px;border:3px solid var(--ink);border-radius:20px;padding:18px;
+  display:flex;flex-direction:column;justify-content:flex-end;gap:8px;overflow:hidden;
+}
+.game.uno{background:var(--red);color:#fff;box-shadow:var(--sh);transform:rotate(.8deg)}
+.game h3{font:400 3rem/1 Lalezar,sans-serif}
+.tag{align-self:flex-start;background:var(--ink);color:var(--paper);padding:3px 12px;border-radius:99px;font-size:.8rem}
+.game.soon{border-style:dashed;background:transparent;align-items:flex-start;justify-content:space-between;opacity:.65}
+.game.soon b{font:400 5rem/1 Lalezar,sans-serif;opacity:.25}
+.fan i{
+  position:absolute;top:18px;left:18px;width:50px;height:74px;border-radius:9px;border:3px solid #fff;
+  display:grid;place-items:center;font:400 1.5rem Lalezar,sans-serif;font-style:normal;color:#fff;
+  box-shadow:0 3px 0 rgba(0,0,0,.35);
+}
+.fan .y{background:var(--yellow);transform:rotate(-14deg)}
+.fan .b{background:var(--blue);transform:translateX(34px) rotate(2deg)}
+.fan .g{background:var(--green);transform:translateX(68px) rotate(16deg)}
+
+/* ---------- اللوبي ---------- */
+.ticket{
+  background:#fff;border:3px dashed var(--ink);border-radius:22px;padding:22px;text-align:center;
+  display:grid;gap:10px;justify-items:center;max-width:480px;transform:rotate(-.6deg);
+}
+.roomcode{font:400 clamp(4rem,16vw,6.5rem)/1 Lalezar,sans-serif;letter-spacing:.14em;direction:ltr;padding-inline-start:.14em}
+.plist{list-style:none;padding:0;display:flex;flex-wrap:wrap;gap:12px}
+.plist li{
+  border:3px solid var(--ink);border-radius:14px;padding:10px 18px;box-shadow:3px 3px 0 var(--ink);
+  font-size:1.1rem;color:#fff;
+}
+.plist li:nth-child(4n+1){background:var(--red)}
+.plist li:nth-child(4n+2){background:var(--blue)}
+.plist li:nth-child(4n+3){background:var(--green)}
+.plist li:nth-child(4n){background:var(--yellow);color:var(--ink)}
+.plist li.off{opacity:.45}
+.plist em{font-style:normal;opacity:.85;font-size:.85rem}
+.plist .crown{font-size:.75rem;background:var(--ink);color:var(--paper);border-radius:99px;padding:1px 8px;margin-inline-start:6px}
+.hint{margin:16px 0;opacity:.7}
+.row{display:flex;gap:14px;flex-wrap:wrap;margin-top:10px}
+
+/* ---------- الكروت ---------- */
+.card{
+  --c:#e8362d;--d:#c8201a;
+  width:86px;height:128px;flex:none;position:relative;border-radius:12px;background:var(--c);
+  border:4px solid #fff;box-shadow:0 3px 0 rgba(0,0,0,.45);color:#fff;
+  font-family:Lalezar,Tajawal,sans-serif;padding:0;overflow:hidden;cursor:default;transition:transform .12s,filter .12s;
+}
+.card.red{--c:#e8362d;--d:#c8201a}
+.card.yellow{--c:#ffc928;--d:#c98900}
+.card.green{--c:#1fa35c;--d:#12803f}
+.card.blue{--c:#2a5bd7;--d:#1c46b0}
+.card.wild{--c:#16130f;--d:#fff}
+.card .mid{position:absolute;inset:0;display:grid;place-items:center}
+.card .mid::before{content:'';position:absolute;width:74%;height:86%;border-radius:50%;background:#fff;transform:rotate(25deg)}
+.card.wild .mid::before{background:conic-gradient(#e8362d 0 25%,#2a5bd7 0 50%,#1fa35c 0 75%,#ffc928 0)}
+.card .mid span{position:relative;font-size:2.5rem;line-height:1;color:var(--d)}
+.card.wild .mid span{color:#fff;text-shadow:0 2px 0 #000,0 0 6px #000}
+.card .tl,.card .br{position:absolute;font-size:1rem;line-height:1;text-shadow:0 1px 0 rgba(0,0,0,.35)}
+.card .tl{top:6px;left:8px}
+.card .br{bottom:6px;right:8px;transform:rotate(180deg)}
+.card.back{--c:#16130f}
+.card.back .mid::before{background:var(--red)}
+.card.back .mid span{color:#fff;font-size:1.5rem;transform:rotate(-25deg)}
+
+/* ---------- الطاولة ---------- */
+body.ingame{background:#14110d}
+body.ingame .foot,body.ingame .top{display:none}
+body.ingame main{width:min(1100px,100%);padding-top:14px}
+.table{min-height:calc(100vh - 28px);display:flex;flex-direction:column;justify-content:space-between;gap:12px;padding-bottom:16px;color:var(--paper)}
+.opps{display:flex;flex-wrap:wrap;gap:10px;justify-content:center}
+.opp{background:#241f19;border:3px solid #3a3228;border-radius:14px;padding:8px 14px;display:flex;gap:10px;align-items:center;min-width:110px}
+.opp.turn{border-color:var(--yellow);box-shadow:4px 4px 0 var(--yellow)}
+.opp.off{opacity:.45}
+.opp .n{background:var(--paper);color:var(--ink);border-radius:8px;padding:0 9px;font:400 1.2rem Lalezar,sans-serif}
+.center{display:flex;align-items:center;justify-content:center;gap:28px;padding:8px 0}
+.pile{background:none;border:0;padding:0;position:relative}
+#deck{cursor:pointer}
+#deck:hover .card{transform:translateY(-4px)}
+.pile small{position:absolute;bottom:-22px;left:0;right:0;text-align:center;font-size:.8rem;opacity:.6}
+.ring{width:54px;height:54px;border-radius:50%;border:5px solid var(--paper);background:#555;transition:background .2s}
+.turn{text-align:center;font:400 1.7rem Lalezar,Tajawal,sans-serif;min-height:1.2em}
+.turn.mine{color:var(--yellow);animation:pulse 1s infinite alternate}
+@keyframes pulse{to{transform:scale(1.07)}}
+.log{text-align:center;font-size:.95rem;opacity:.65;min-height:2.6em;line-height:1.3}
+.actions{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;min-height:50px}
+.actions .btn{box-shadow:4px 4px 0 #000;border-color:#000}
+.hand{display:flex;overflow-x:auto;padding:26px 14px 10px;min-height:170px;align-items:flex-end}
+.hand>:first-child{margin-inline-start:auto}
+.hand>:last-child{margin-inline-end:auto}
+.hand .card{margin-inline-start:-30px}
+.hand .card:first-child{margin-inline-start:0}
+.hand .card.ok{cursor:pointer;transform:translateY(-14px)}
+.hand .card.ok:hover{transform:translateY(-26px);z-index:3}
+.hand .card.no{filter:brightness(.5)}
+
+/* ---------- نوافذ ---------- */
+.overlay{position:fixed;inset:0;background:rgba(10,8,6,.72);display:grid;place-items:center;z-index:20;padding:20px}
+.box{background:var(--paper);color:var(--ink);border:3px solid var(--ink);border-radius:22px;box-shadow:8px 8px 0 #000;padding:28px;text-align:center;display:grid;gap:16px;justify-items:center;min-width:min(380px,100%)}
+.box h2{font:400 2.6rem/1.1 Lalezar,Tajawal,sans-serif}
+.box .row{justify-content:center}
+.colors{display:grid;grid-template-columns:1fr 1fr;gap:12px;width:100%}
+.colors button{
+  background:var(--b);color:#fff;font:400 1.5rem Lalezar,sans-serif;border:3px solid var(--ink);
+  border-radius:14px;padding:22px 10px;cursor:pointer;box-shadow:3px 3px 0 var(--ink);
+}
+.colors button:hover{transform:translate(-2px,-2px)}
+#toast{
+  position:fixed;bottom:22px;left:50%;transform:translate(-50%,30px);opacity:0;pointer-events:none;
+  background:var(--ink);color:var(--paper);padding:12px 22px;border-radius:99px;border:3px solid var(--paper);
+  transition:.25s;z-index:30;font-size:.95rem;
+}
+#toast.show{transform:translate(-50%,0);opacity:1}
+
+/* ---------- الفوتر ---------- */
+.foot{background:var(--ink);color:var(--paper);text-align:center;padding:42px 16px 52px;display:grid;gap:16px;justify-items:center}
+.foot p{font:400 1.8rem Lalezar,Tajawal,sans-serif}
+.btn.discord{background:#5865F2;color:#fff;font-size:1.25rem;padding:16px 34px;border-color:var(--paper);box-shadow:5px 5px 0 var(--yellow)}
+.btn.discord:hover{box-shadow:7px 7px 0 var(--yellow)}
+
+@media(max-width:760px){
+  .home-top{grid-template-columns:1fr;gap:26px}
+  .panel{transform:none}
+  .card{width:68px;height:102px;border-width:3px}
+  .card .mid span{font-size:2rem}
+  .card .tl,.card .br{font-size:.8rem}
+  .hand .card{margin-inline-start:-26px}
+  .center{gap:18px}
+}
+
+/* ---------- داخل ديسكورد ---------- */
+.act-only{display:none}
+body.activity .act-only{display:block}
+body.activity .top,body.activity .foot,body.activity .ticket,body.activity #leave,body.activity #leave2{display:none}
