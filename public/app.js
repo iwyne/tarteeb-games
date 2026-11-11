@@ -224,7 +224,8 @@ function renderGame() {
   $('#log').innerHTML = S.log.slice(-2).map(esc).join('<br>');
 
   // الأزرار
-  $('#unoBtn').hidden = spec || !(playing && S.hand.length <= 2);
+  const meP = S.players.find(q => q.id === S.me);
+  $('#unoBtn').hidden = spec || !(playing && S.hand.length <= 2) || !!(meP && meP.u);
   $('#specTag').hidden = !spec; $('#hand').hidden = spec;
   $('.room').classList.toggle('watching', spec);
   const sb = $('#specBtn'); sb.hidden = !S.specs.length; $('#specN').textContent = S.specs.length;
@@ -290,6 +291,12 @@ function flyBack(from, to, delay = 0) {
   b.animate([{ transform: 'translate(0,0) scale(1)', opacity: 1 }, { transform: `translate(${to.x - from.x}px,${to.y - from.y}px) scale(.8)`, opacity: .9 }],
     { duration: 380, delay, easing: EASE, fill: 'both' }).onfinish = () => b.remove();
 }
+function unoBurst(name) {
+  const el = document.createElement('div'); el.className = 'unoburst';
+  el.innerHTML = `<b>أونووو!!</b><span>${esc(name || '')}</span>`;
+  document.body.appendChild(el);
+  setTimeout(() => el.remove(), 1900);
+}
 function confetti() {
   const cols = ['#e8362d', '#ffc928', '#1fa35c', '#2a5bd7'];
   for (let i = 0; i < 40; i++) {
@@ -340,13 +347,14 @@ function fx() {
   if (s.phase === 'play' && s.turn === s.me && p.turn !== s.me) sfx('turn');
   const last = s.log[s.log.length - 1];
   if (last && last !== p.log[p.log.length - 1]) {
-    if (last.includes('أونو!')) sfx('uno');
+    if (last.includes('أونو!')) { sfx('unoCall'); unoBurst(last.split(':')[0]); }
     else if (last.includes('مسك')) sfx('catch');
   }
   if (s.phase === 'over') {
     const mt = s.players.find(p => p.id === s.me)?.tm;
     const won = s.teams && s.winTeam != null ? s.winTeam === mt : s.hand.length === 0;
-    if (!s.spec) setTimeout(() => { sfx(won ? 'win' : 'lose'); if (won) confetti(); }, 500);
+    if (!s.spec) setTimeout(() => { sfx('unoWin'); if (won) confetti(); }, 500);
+    else if (p.phase !== 'over') setTimeout(() => sfx('unoWin'), 500);
   }
 }
 

@@ -24,7 +24,10 @@ const sfx = (() => {
     const g = c.createGain(); g.gain.value = vol;
     s.connect(flt).connect(g).connect(c.destination); s.start(c.currentTime + t0);
   }
+  const clip = src => { let a; return () => { try { if (!a) { a = new Audio(src); a.preload = 'auto'; } a.currentTime = 0; const pr = a.play(); if (pr && pr.catch) pr.catch(() => {}); } catch {} }; };
   const bank = {
+    unoCall: clip('sounds/uno.mp3'),
+    unoWin: clip('sounds/win.mp3'),
     card: () => { noise(0, .09, 2200, .35); tone(180, 0, .08, 'triangle', .12, 90); },
     draw: () => noise(0, .07, 1400, .25),
     turn: () => { tone(660, 0, .14, 'sine', .2); tone(990, .12, .22, 'sine', .2); },

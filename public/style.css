@@ -629,3 +629,9 @@ html[dir=ltr] .cbar .tc{padding-inline:12px}
 .ohist{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0}
 .ohist span{font-size:.8rem;border:2px solid var(--ink);border-radius:99px;padding:0 10px;background:var(--surf)}
 .wopts{grid-template-columns:repeat(auto-fit,minmax(100px,1fr))}
+
+.unoburst{position:fixed;inset:0;z-index:90;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none;gap:6px;background:radial-gradient(circle,rgba(255,201,40,.55),rgba(232,54,45,.25) 60%,transparent 75%);animation:ubFade 1.9s both}
+.unoburst b{font:400 clamp(4rem,22vw,9rem)/1 Lalezar,Tajawal,sans-serif;color:var(--yellow);-webkit-text-stroke:5px #000;paint-order:stroke fill;text-shadow:8px 8px 0 #000;transform:rotate(-6deg);animation:ubPop 1.9s cubic-bezier(.2,1.6,.4,1) both}
+.unoburst span{font:400 clamp(1.4rem,6vw,2.4rem) Lalezar,Tajawal,sans-serif;background:#fff;color:#000;border:4px solid #000;box-shadow:5px 5px 0 #000;border-radius:14px;padding:2px 18px;animation:ubPop 1.9s .08s cubic-bezier(.2,1.6,.4,1) both}
+@keyframes ubPop{0%{transform:scale(.1) rotate(-30deg);opacity:0}18%{transform:scale(1.25) rotate(-6deg);opacity:1}30%{transform:scale(1) rotate(-6deg)}45%{transform:scale(1.08) rotate(-4deg)}60%{transform:scale(1) rotate(-6deg)}85%{transform:scale(1) rotate(-6deg);opacity:1}100%{transform:scale(1.5) rotate(-6deg);opacity:0}}
+@keyframes ubFade{0%{opacity:0}10%{opacity:1}80%{opacity:1}100%{opacity:0}}
