@@ -32,6 +32,7 @@ const sfx = (() => {
     catch: () => tone(220, 0, .35, 'sawtooth', .16, 70),
     penalty: () => tone(300, 0, .25, 'square', .1, 120),
     pop: () => tone(700, 0, .09, 'sine', .15, 1250),
+    tick: () => tone(1000, 0, .05, 'square', .06),
     nope: () => tone(150, 0, .1, 'square', .08),
     win: () => [523, 659, 784, 1047, 784, 1047, 1319].forEach((f, i) => tone(f, i * .11, .22, 'triangle', .2)),
     lose: () => [392, 330, 262].forEach((f, i) => tone(f, i * .16, .28, 'triangle', .16))

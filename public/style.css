@@ -263,3 +263,28 @@ body.ingame .popbar,body.ingame .chatbox{bottom:278px}
 .seat .tm.mate{background:var(--yellow)}
 .score{display:flex;gap:6px;font-size:.78rem;color:#fff}
 .score span{padding:1px 10px;border-radius:99px;border:2px solid var(--ink)}
+
+/* ---------- ملاحظات اللعب ---------- */
+.handzone{display:flex;align-items:flex-end;gap:8px;padding-inline:8px;direction:ltr}
+.hand{flex:1;min-width:0}
+.unobtn{position:static;flex:none;margin:0 4px 34px 0;width:84px;height:84px}
+.seat .arrow{position:absolute;top:-36px;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;font-size:1.3rem;line-height:1;color:var(--yellow);-webkit-text-stroke:2px var(--ink);paint-order:stroke fill;animation:bob .6s infinite alternate;z-index:3}
+.seat .arrow b{font:400 1.05rem Lalezar,sans-serif;background:var(--yellow);color:var(--ink);border:2px solid var(--ink);border-radius:99px;padding:0 9px;-webkit-text-stroke:0;box-shadow:2px 2px 0 var(--ink)}
+.seat .arrow.urgent b{background:var(--red);color:#fff}
+@keyframes bob{to{transform:translateX(-50%) translateY(7px)}}
+.turn .cd{font-family:Lalezar,sans-serif;background:var(--ink);color:var(--paper);border-radius:99px;padding:0 10px;font-size:1.1rem;margin-inline-start:8px}
+.turn.urgent .cd{background:var(--red)}
+.turn.warn{background:var(--red);color:#fff}
+.room.mustdraw .felt,.room.mustdraw #opps,.room.mustdraw #discard,.room.mustdraw .hand,.room.mustdraw .tablename,.room.mustdraw .log{opacity:.28;filter:grayscale(.6);transition:opacity .25s}
+#deck.must{z-index:5}
+#deck.must::before{content:'اسحب ⬇';position:absolute;top:-44px;left:50%;transform:translateX(-50%);white-space:nowrap;background:var(--red);color:#fff;border:3px solid var(--ink);box-shadow:3px 3px 0 var(--ink);border-radius:99px;padding:2px 14px;font:400 1.1rem Lalezar,sans-serif;animation:bob .5s infinite alternate}
+#deck.must .card{box-shadow:0 0 0 3px var(--ink),0 0 0 9px var(--yellow),0 0 0 12px var(--ink)}
+.bubble{position:fixed;z-index:36;pointer-events:none;max-width:220px;background:#fff;color:var(--ink);border:3px solid var(--ink);border-radius:18px;box-shadow:4px 4px 0 var(--ink);padding:6px 14px;font-size:.95rem;line-height:1.35;word-break:break-word;text-align:center}
+.bubble::after{content:'';position:absolute;bottom:-12px;left:50%;margin-left:-8px;border:8px solid transparent;border-top-color:var(--ink);border-bottom:0}
+.kick{width:22px;height:22px;border-radius:50%;border:2px solid var(--ink);background:#fff;color:var(--red);font:800 .75rem Tajawal,sans-serif;line-height:1;padding:0;cursor:pointer}
+.plist .kick{margin-inline-start:8px}
+.seat .kick{position:absolute;top:-4px;left:calc(50% - 42px);z-index:4}
+.quit-game{position:absolute;top:10px;right:66px;z-index:3}
+body.activity .quit-game{display:none}
+.game.soon h3{font-size:2.1rem;opacity:.55}
+@media(max-width:760px){.unobtn{width:72px;height:72px;margin-bottom:40px}}

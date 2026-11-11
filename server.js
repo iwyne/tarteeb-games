@@ -43,6 +43,7 @@ const rooms = new Map();
 const COLORS = ['red', 'yellow', 'green', 'blue'];
 const AR = { red: 'أحمر', yellow: 'أصفر', green: 'أخضر', blue: 'أزرق' };
 const MIN = 2, MAX = 6;
+const TURN_MS = +process.env.TURN_MS || 15000; // مهلة الدور
 const EMOJIS = ['😂', '😡', '😭', '👏', '🔥', '😎', '🤯', '❤️'];
 
 const rid = () => Math.random().toString(36).slice(2, 9);
@@ -68,7 +69,7 @@ function cname(c) {
   return c.color === 'wild' ? v : `${v} ${AR[c.color]}`;
 }
 
-const newRoom = code => ({ code, phase: 'lobby', players: [], host: null, deck: [], discard: [], color: null, dir: 1, turn: 0, pending: null, catchable: null, log: [], winner: null, chat: [], teams: false, score: [0, 0], winTeam: null });
+const newRoom = code => ({ code, phase: 'lobby', players: [], host: null, deck: [], discard: [], color: null, dir: 1, turn: 0, pending: null, catchable: null, log: [], winner: null, chat: [], teams: false, score: [0, 0], winTeam: null, banned: new Set(), turnSeq: 0, armed: -1, timer: null, deadline: 0 });
 const cur = r => r.players[r.turn];
 const log = (r, s) => { r.log.push(s); if (r.log.length > 30) r.log.shift(); };
 
@@ -94,7 +95,7 @@ function drawCards(r, p, n) {
 }
 function advance(r, steps) {
   r.turn = mod(r.turn + r.dir * steps, r.players.length);
-  r.pending = null;
+  r.pending = null; r.turnSeq++;
 }
 
 // وضع الفرق يحتاج ٤ أو ٦ لاعبين، والفريق = رقم المقعد زوجي/فردي (يتناوبون بالجلوس)
@@ -109,7 +110,7 @@ function start(r) {
   while (true) { c = r.deck.pop(); if (/^\d$/.test(c.v)) break; r.deck.unshift(c); }
   r.discard.push(c); r.color = c.color;
   r.turn = Math.random() * r.players.length | 0;
-  r.phase = 'play';
+  r.phase = 'play'; r.turnSeq++;
   log(r, 'بدأت اللعبة');
 }
 
@@ -147,7 +148,7 @@ function draw(r, p) {
   r.catchable = null;
   const [c] = drawCards(r, p, 1);
   log(r, `${p.name} سحب ورقة`);
-  if (c && canPlay(r, p, c)) r.pending = c.id; else advance(r, 1);
+  if (c && canPlay(r, p, c)) { r.pending = c.id; r.turnSeq++; } else advance(r, 1);
 }
 function pass(r, p) {
   if (r.phase !== 'play' || cur(r) !== p || r.pending === null) return;
@@ -176,7 +177,7 @@ function view(r, p) {
     players: r.players.map((q, i) => ({ id: q.id, name: q.name, n: q.hand.length, on: q.online, h: q.id === r.host, tm: r.teams ? i % 2 : null })),
     teams: r.teams, score: r.score, winTeam: r.winTeam,
     hand: p.hand, top: r.discard[r.discard.length - 1] || null, color: r.color, dir: r.dir,
-    turn: c ? c.id : null, deck: r.deck.length,
+    turn: c ? c.id : null, deck: r.deck.length, left: r.phase === 'play' ? Math.max(0, r.deadline - Date.now()) : 0,
     ok: mine ? p.hand.filter(x => canPlay(r, p, x)).map(x => x.id) : [],
     pending: mine ? r.pending : null,
     catch: r.catchable, log: r.log.slice(-4), winner: r.winner
@@ -188,8 +189,47 @@ const rate = (p, k, ms) => { const n = Date.now(); if (p['_' + k] && n - p['_' +
 function broadcast(r) { r.players.forEach(p => p.online && send(p.ws, view(r, p))); }
 
 // لو دور لاعب انقطع نتصرف عنه بعد ثانيتين عشان اللعبة ما توقف
+// مهلة الدور: لو انتهت الثواني يسحب السيرفر عن اللاعب (وإذا الورقة تنفع يمرّر)
+function armTurn(r) {
+  clearTimeout(r.timer);
+  if (r.phase !== 'play') return;
+  r.deadline = Date.now() + TURN_MS;
+  const seq = r.turnSeq;
+  r.timer = setTimeout(() => {
+    if (r.phase !== 'play' || r.turnSeq !== seq) return;
+    const p = cur(r);
+    log(r, `${p.name} تأخر، انسحبت له ورقة`);
+    draw(r, p);
+    if (r.phase === 'play' && cur(r) === p && r.pending !== null) pass(r, p);
+    after(r);
+  }, TURN_MS + 150);
+}
+
+// لاعب يطلع (أو ينطرد) أثناء اللعب: أوراقه ترجع للكومة والدور يتعدّل
+function leaveGame(r, p) {
+  const idx = r.players.indexOf(p);
+  if (idx < 0) return;
+  const wasTurn = r.phase === 'play' && r.turn === idx;
+  r.deck.unshift(...p.hand); p.hand = [];
+  r.players.splice(idx, 1);
+  if (!r.players.length) { clearTimeout(r.timer); rooms.delete(r.code); return; }
+  if (r.host === p.id) r.host = r.players[0].id;
+  if (r.catchable === p.id) r.catchable = null;
+  if (r.phase !== 'play') return;
+  log(r, `${p.name} طلع من اللعبة`);
+  if (r.teams) { r.teams = false; log(r, 'انلغى وضع الفرق'); }
+  if (r.players.length < 2) { r.phase = 'over'; r.winner = r.players[0].name; r.winTeam = null; log(r, `${r.winner} فاز، الباقين طلعوا`); return; }
+  const n = r.players.length;
+  if (idx < r.turn) r.turn--;
+  else if (wasTurn) { r.turn = r.dir === 1 ? idx % n : mod(idx - 1, n); r.pending = null; r.turnSeq++; }
+  r.turn = mod(r.turn, n);
+}
+
 function after(r) {
+  if (!r.players.length) return;
   if (r.phase === 'lobby') fixTeams(r);
+  if (r.phase === 'play' && r.armed !== r.turnSeq) { r.armed = r.turnSeq; armTurn(r); }
+  else if (r.phase !== 'play') clearTimeout(r.timer);
   broadcast(r);
   if (r.phase !== 'play') return;
   const p = cur(r);
@@ -217,6 +257,8 @@ const cleanName = s => String(s || '').trim().slice(0, 14) || 'لاعب';
 function join(ws, m) {
   const r = rooms.get(String(m.code || '').toUpperCase().trim());
   if (!r) return send(ws, { t: 'err', msg: 'الغرفة غير موجودة', reset: true });
+  const known = m.token && r.players.some(q => q.token === m.token);
+  if (!known && r.banned.has('ip:' + ws.ip)) return send(ws, { t: 'err', msg: 'تم طردك من هذي الغرفة' });
   let p = m.token && r.players.find(q => q.token === m.token);
   if (p) {
     if (p.ws && p.ws !== ws) { p.ws.ctx = null; try { p.ws.close(); } catch {} }
@@ -244,6 +286,7 @@ async function activity(ws, m) {
   if (!key || !u.id) return;
   let r = rooms.get(key);
   if (!r) { r = newRoom(key); rooms.set(key, r); }
+  if (r.banned.has('uid:' + u.id)) return send(ws, { t: 'err', msg: 'تم طردك من هذي الغرفة' });
   let p = r.players.find(q => q.uid === u.id);
   if (p) {
     if (p.ws && p.ws !== ws) { p.ws.ctx = null; try { p.ws.close(); } catch {} }
@@ -259,33 +302,8 @@ async function activity(ws, m) {
   after(r);
 }
 
-// دخول من داخل ديسكورد: الغرفة = معرّف النشاط، والهوية من حساب ديسكورد (نتحقق من التوكن)
-async function activity(ws, m) {
-  let u;
-  try {
-    const r = await fetch('https://discord.com/api/users/@me', { headers: { Authorization: 'Bearer ' + String(m.token || '') } });
-    if (!r.ok) throw 0;
-    u = await r.json();
-  } catch { return send(ws, { t: 'err', msg: 'تعذّر التحقق من حساب الديسكورد' }); }
-  const key = String(m.room || '').slice(0, 64).toUpperCase();
-  if (!key || !u.id) return;
-  let r = rooms.get(key);
-  if (!r) { r = newRoom(key); rooms.set(key, r); }
-  let p = r.players.find(q => q.uid === u.id);
-  if (p) {
-    if (p.ws && p.ws !== ws) { p.ws.ctx = null; try { p.ws.close(); } catch {} }
-    p.ws = ws; p.online = true;
-  } else {
-    if (r.phase !== 'lobby') return send(ws, { t: 'err', msg: 'اللعبة بدأت، انتظر الجولة الجاية' });
-    if (r.players.length >= MAX) return send(ws, { t: 'err', msg: 'الغرفة ممتلئة (٦ لاعبين)' });
-    p = addPlayer(r, cleanName(u.global_name || u.username)); p.uid = u.id; p.ws = ws;
-  }
-  ws.ctx = { r, p };
-  send(ws, { t: 'joined', code: r.code, token: '', name: p.name });
-  after(r);
-}
-
-wss.on('connection', ws => {
+wss.on('connection', (ws, req) => {
+  ws.ip = String(req.headers['x-forwarded-for'] || req.socket.remoteAddress || '').split(',')[0].trim();
   ws.dead = false;
   ws.on('pong', () => { ws.dead = false; });
   ws.on('message', raw => {
@@ -336,7 +354,17 @@ wss.on('connection', ws => {
       case 'leave':
         ws.ctx = null; send(ws, { t: 'left' });
         if (r.phase === 'lobby') return removePlayer(r, p);
-        p.online = false; p.ws = null; break;
+        leaveGame(r, p); break;
+      case 'kick': {
+        if (r.host !== p.id) return;
+        const t = r.players.find(q => q.id === m.id);
+        if (!t || t === p) return;
+        if (t.ws && t.ws.ip) r.banned.add('ip:' + t.ws.ip);
+        if (t.uid) r.banned.add('uid:' + t.uid);
+        if (t.ws) { const tw = t.ws; tw.ctx = null; send(tw, { t: 'kicked' }); }
+        if (r.phase === 'lobby') return removePlayer(r, t);
+        leaveGame(r, t); break;
+      }
     }
     after(r);
   });

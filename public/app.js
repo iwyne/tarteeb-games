@@ -52,16 +52,19 @@ function on(m) {
     if (m.reset) reset();
   } else if (m.t === 'left') {
     reset();
+  } else if (m.t === 'kicked') {
+    toast('طردك المضيف من الغرفة'); reset();
   } else if (m.t === 'chathist') {
     chatLog = m.list || []; if (!$('#chatbox').hidden) drawMsgs();
   } else if (m.t === 'chat') {
     chatLog.push(m); if (chatLog.length > 30) chatLog.shift();
+    showBubble(m.from, m.text);
     if (!$('#chatbox').hidden) drawMsgs();
-    else if (S && m.from !== S.me) { unread++; badge(); sfx('pop'); toast(`${m.name}: ${m.text}`); }
+    else if (S && m.from !== S.me) { unread++; badge(); sfx('pop'); }
   } else if (m.t === 'react') {
     showReact(m.from, m.e);
   } else if (m.t === 'state') {
-    prevS = S; S = m; render();
+    m.t0 = Date.now(); prevS = S; S = m; render();
   }
 }
 function reset() { session = {}; store.set('tarteeb-session', {}); S = null; prevS = null; render(); }
@@ -100,11 +103,12 @@ $('#again').onclick = () => send({ t: 'again' });
 
 function renderLobby() {
   const host = S.players.find(p => p.h);
+  const amHost = !!host && host.id === S.me;
   $('#roomcode').textContent = S.code;
   $('#pcount').textContent = `(${S.players.length}/6)`;
   const plist = S.teams ? [...S.players].sort((a, b) => a.tm - b.tm) : S.players;
   $('#plist').innerHTML = plist.map(p =>
-    `<li data-id="${p.id}" class="${p.on ? '' : 'off'}${S.teams ? ' t' + p.tm : ''}">${esc(p.name)}${S.teams ? `<span class="tag">فريق ${['أ', 'ب'][p.tm]}</span>` : ''}${p.id === S.me ? ' <em>(أنت)</em>' : ''}${p.h ? '<span class="crown">المضيف</span>' : ''}</li>`
+    `<li data-id="${p.id}" class="${p.on ? '' : 'off'}${S.teams ? ' t' + p.tm : ''}">${esc(p.name)}${S.teams ? `<span class="tag">فريق ${['أ', 'ب'][p.tm]}</span>` : ''}${p.id === S.me ? ' <em>(أنت)</em>' : ''}${p.h ? '<span class="crown">المضيف</span>' : ''}${amHost && !p.h && p.id !== S.me ? `<button class="kick" data-id="${p.id}" title="طرد">✕</button>` : ''}</li>`
   ).join('');
   const isHost = host && host.id === S.me, enough = S.players.length >= 2;
   $('#start').hidden = !isHost;
@@ -163,6 +167,7 @@ function renderGame() {
   const playing = S.phase === 'play', mine = playing && S.turn === S.me;
   const i = S.players.findIndex(p => p.id === S.me), n = S.players.length, m = n - 1;
   const myTm = S.players[i].tm;
+  const amHost = S.players.some(p => p.h && p.id === S.me);
 
   // الخصوم يجلسون على قوس الطاولة: اللي بعدي على يساري، وآخرهم على يميني
   const others = Array.from({ length: m }, (_, k) => S.players[(i + 1 + k) % n]);
@@ -171,7 +176,7 @@ function renderGame() {
     const x = 50 - 40 * Math.cos(a), y = 52 - 44 * Math.sin(a);
     const col = S.teams ? TC[p.tm] : PAL[S.players.indexOf(p) % 4];
     return `<div class="seat${p.id === S.turn && playing ? ' turn' : ''}${p.on ? '' : ' off'}" data-id="${p.id}" style="left:${x}%;top:${y}%">
-      <div class="avatar" style="background:${col};color:${col === '#ffc928' ? '#16130f' : '#fff'}">${esc([...p.name][0] || '?')}</div>
+      ${p.id === S.turn && playing ? '<div class="arrow"><b></b>▼</div>' : ''}${amHost ? `<button class="kick" data-id="${p.id}" title="طرد">✕</button>` : ''}<div class="avatar" style="background:${col};color:${col === '#ffc928' ? '#16130f' : '#fff'}">${esc([...p.name][0] || '?')}</div>
       <div class="nm">${esc(p.name)}</div>${S.teams ? `<span class="tm${p.tm === myTm ? ' mate' : ''}">${p.tm === myTm ? 'فريقك' : 'خصم'}</span>` : ''}<div class="backs">${'<i></i>'.repeat(Math.min(p.n, 8))}</div><span class="cnt">${p.n}</span></div>`;
   }).join('');
 
@@ -184,9 +189,16 @@ function renderGame() {
   const sc = $('#score'); sc.hidden = !S.teams;
   if (S.teams) sc.innerHTML = `<span style="background:${TC[myTm]}">فريقك ${S.score[myTm]}</span><span style="background:${TC[1 - myTm]}">${S.score[1 - myTm]} الخصم</span>`;
 
+  // ما عندك ورقة تنفع: كل شي يبهت إلا كومة السحب
+  const must = mine && S.pending === null && S.ok.length === 0;
+  $('.room').classList.toggle('mustdraw', must);
+  $('#deck').classList.toggle('must', must);
   const t = $('#turn');
-  t.className = 'turn' + (mine ? ' mine' : '');
-  t.textContent = !playing ? '' : mine ? (S.pending !== null ? 'العب الورقة اللي سحبتها أو مرّر' : 'دورك!') : `دور ${S.players.find(p => p.id === S.turn)?.name || ''}`;
+  t.className = 'turn' + (mine ? ' mine' : '') + (must ? ' warn' : '');
+  t.innerHTML = !playing ? '' : must ? 'ما عندك ورقة تنفع، اسحب من الكومة! <span class="cd"></span>'
+    : mine ? (S.pending !== null ? 'العب الورقة اللي سحبتها أو مرّر' : 'دورك!') + ' <span class="cd"></span>'
+    : `دور ${esc(S.players.find(p => p.id === S.turn)?.name || '')} <span class="cd"></span>`;
+  tick();
   $('#log').innerHTML = S.log.slice(-2).map(esc).join('<br>');
 
   // الأزرار
@@ -198,7 +210,7 @@ function renderGame() {
   const hand = $('#hand'); hand.innerHTML = '';
   const cards = [...S.hand].sort((a, b) => CORDER[a.color] - CORDER[b.color] || vrank(a.v) - vrank(b.v));
   const N = cards.length, cw = innerWidth < 760 ? 68 : 86;
-  const sp = Math.min(cw * 0.72, (innerWidth - cw - 40) / Math.max(N - 1, 1));
+  const sp = Math.min(cw * 0.72, ((hand.clientWidth || innerWidth) - cw - 20) / Math.max(N - 1, 1));
   const step = Math.min(5, 50 / Math.max(N, 1));
   cards.forEach((c, k) => {
     const el = cardEl(c, 'button'), d = k - (N - 1) / 2;
@@ -341,6 +353,36 @@ $('#chatBtn').onclick = () => openChat($('#chatbox').hidden);
 function sendChat() { const t = $('#chatin').value.trim(); if (!t) return; send({ t: 'chat', text: t }); $('#chatin').value = ''; }
 $('#chatsend').onclick = sendChat;
 $('#chatin').addEventListener('keydown', e => e.key === 'Enter' && sendChat());
+// ---------- مؤقت الدور (١٥ ثانية) ----------
+let lastTick = -1;
+function tick() {
+  if (!S || S.phase !== 'play') return;
+  const r = Math.max(0, Math.ceil((S.left - (Date.now() - S.t0)) / 1000));
+  $$('.arrow b, #turn .cd').forEach(b => b.textContent = r);
+  const urgent = r <= 5;
+  $('#turn').classList.toggle('urgent', urgent);
+  $$('.arrow').forEach(a => a.classList.toggle('urgent', urgent));
+  if (S.turn === S.me && urgent && r > 0 && r !== lastTick) sfx('tick');
+  lastTick = r;
+}
+setInterval(tick, 250);
+
+// فقاعة رسالة فوق صاحبها
+function showBubble(id, text) {
+  document.querySelectorAll(`.bubble[data-id="${id}"]`).forEach(b => b.remove());
+  const el = document.querySelector(`.seat[data-id="${id}"]`) || document.querySelector(`#plist li[data-id="${id}"]`);
+  const pos = el ? ctr(el) : { x: innerWidth / 2, y: innerHeight - 190 };
+  const b = document.createElement('div'); b.className = 'bubble'; b.dataset.id = id; b.textContent = text;
+  b.style.left = Math.min(Math.max(pos.x, 120), innerWidth - 120) + 'px';
+  b.style.top = (el ? pos.y - 85 : pos.y) + 'px';
+  document.body.appendChild(b);
+  b.animate([
+    { transform: 'translate(-50%,-100%) scale(.3)', opacity: 0 },
+    { transform: 'translate(-50%,-112%) scale(1.08)', opacity: 1, offset: .12 },
+    { transform: 'translate(-50%,-100%) scale(1)', opacity: 1, offset: .8 },
+    { transform: 'translate(-50%,-125%) scale(.95)', opacity: 0 }
+  ], { duration: 4200, easing: 'ease-out' }).onfinish = () => b.remove();
+}
 // ايموجي يطلع فوق مقعد صاحبه ويطير
 function showReact(id, e) {
   const el = document.querySelector(`.seat[data-id="${id}"]`) || document.querySelector(`#plist li[data-id="${id}"]`);
@@ -378,6 +420,12 @@ async function startActivity() {
   }
 }
 
+$('#quit').onclick = () => { if (confirm('تبي تطلع من اللعبة؟')) send({ t: 'leave' }); };
+document.addEventListener('click', e => {
+  const k = e.target.closest('.kick'); if (!k || !S) return;
+  const t = S.players.find(p => p.id === k.dataset.id);
+  if (t && (IN_DISCORD || confirm(`تطرد ${t.name} من الغرفة؟`))) send({ t: 'kick', id: k.dataset.id });
+});
 const muteBtn = $('#mute');
 muteBtn.textContent = sfx.on() ? '🔊' : '🔇';
 muteBtn.onclick = () => { muteBtn.textContent = sfx.toggle() ? '🔊' : '🔇'; };
