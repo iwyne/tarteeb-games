@@ -142,7 +142,7 @@ function renderTeams(isHost) {
   const can = S.players.length >= 4 && S.players.length % 2 === 0;
   $('#teamrow').hidden = !isHost;
   const tb = $('#teamBtn');
-  tb.textContent = S.teams ? 'وضع الفرق: مفعّل ✓' : can ? 'وضع الفرق: مطفي' : 'وضع الفرق (يحتاج ٤ أو ٦ لاعبين)';
+  tb.textContent = S.teams ? 'وضع الفرق: مفعّل ✓' : can ? 'وضع الفرق: مطفي' : 'وضع الفرق (يحتاج عدد زوجي، ٤ أو أكثر)';
   tb.disabled = !S.teams && !can;
   $('#shuffleBtn').hidden = !S.teams;
   const sl = $('#scoreline');

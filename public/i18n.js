@@ -24,7 +24,7 @@
     ['هذي غرفة الروم الصوتي. أي واحد يشغّل اللعبة من نفس الروم ينضم هنا تلقائيًا.', 'This is the voice channel room. Anyone who launches the game from the same channel joins automatically.'],
     ['نحتاج ', 'We need at least '], [' لاعبين على الأقل، انتظر ناس يدخلون', ' players, wait for people to join'], ['كل شي جاهز، ابدأ متى ما تبي', 'All set, start whenever you like'], ['ننتظر المضيف يبدأ اللعبة', 'Waiting for the host to start'],
     ['الغرفة ممتلئة، أنت متفرّج وتنضم أول ما ينفضى مكان', "The room is full, you're a spectator and will join when a spot opens"],
-    ['وضع الفرق: مفعّل ✓', 'Team mode: on ✓'], ['وضع الفرق: مطفي', 'Team mode: off'], ['وضع الفرق (يحتاج 4 أو 6 لاعبين)', 'Team mode (needs 4 or 6 players)'],
+    ['وضع الفرق: مفعّل ✓', 'Team mode: on ✓'], ['وضع الفرق: مطفي', 'Team mode: off'], ['وضع الفرق (يحتاج عدد زوجي، 4 أو أكثر)', 'Team mode (needs an even number, 4 or more)'],
     [' — الفرق تتناوب بالجلوس: لاعب منكم ولاعب منهم', ' — teams alternate seats: one of you, one of them'], [' — زر «اخلط الفرق» يبدّل الجلسة', ' — “Shuffle teams” changes the seating'],
     [' — كل فريق له قائد (أول واحد فيه) يشوف الألوان السرية ويعطي التلميحات', ' — each team has a spymaster (the first member) who sees the secret colors and gives clues'],
     [' — الأحمر يوصّل من فوق لتحت، والأزرق من اليمين لليسار', ' — Red connects top to bottom, Blue connects right to left'],
@@ -36,7 +36,7 @@
     ['حفظ الكلمات', 'Save words'], ['رجّع الكلمات العادية', 'Use default words'], ['قفل الغرفة (بدون متفرجين)', 'Lock room (no spectators)'], ['كلمة سر (اختياري)', 'Password (optional)'], ['حفظ', 'Save'],
     ['🤖 أضف بوت', '🤖 Add bot'], ['يكمّل اللاعبين الناقصين، اطرده من ✕ لو ما تبيه', 'Fills missing players, remove it with ✕'],
     ['انحفظت كلمة السر', 'Password saved'], ['انشالت كلمة السر', 'Password removed'], ['🔑 بكلمة سر', '🔑 Password'], ['🔒 مقفلة بدون متفرجين', '🔒 Locked, no spectators'], ['تراكم +2/+4', 'Stacking +2/+4'], ['مهلة الدور ', 'Turn time '], [' ث', ' s'], ['كلمات مخصصة (', 'Custom words ('],
-    ['من 2 إلى 6 لاعبين', '2 to 6 players'], ['من 2 إلى 10 لاعبين، فريقين', '2 to 10 players, two teams'], ['من 2 إلى 10 لاعبين', '2 to 10 players'], ['من 3 إلى 10 لاعبين', '3 to 10 players'], ['من 4 إلى 10 لاعبين، فريقين', '4 to 10 players, two teams'], ['من 4 إلى 10 لاعبين', '4 to 10 players'],
+    ['من 2 إلى 6 لاعبين', '2 to 6 players'], ['من 2 إلى 8 لاعبين', '2 to 8 players'], ['من 2 إلى 10 لاعبين، فريقين', '2 to 10 players, two teams'], ['من 2 إلى 10 لاعبين', '2 to 10 players'], ['من 3 إلى 10 لاعبين', '3 to 10 players'], ['من 4 إلى 10 لاعبين، فريقين', '4 to 10 players, two teams'], ['من 4 إلى 10 لاعبين', '4 to 10 players'],
     ['4 لاعبين بالضبط، فريقين (شريكك قبالتك)', 'Exactly 4 players, two teams (your partner sits opposite)'], ['4 لاعبين، فريقين', '4 players, two teams'],
     // أسماء الألعاب
     ['الكذابين الترتيب', 'Tarteeb Liars'], ['خلية الحروف', 'Letter Hive'], ['كلمة السر', 'Secret Word'], ['سبّاق الكتابة', 'Typing Race'], ['رسم وخمّن', 'Draw & Guess'], ['برا السالفة', 'The Outsider'], ['جاكارو', 'Jackaroo'], ['أونو', 'Uno'],

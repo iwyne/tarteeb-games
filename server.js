@@ -84,7 +84,7 @@ const H = {
     r.timer = setTimeout(() => { if (rooms.get(r.code) !== r) return; fn(); after(r); }, ms + 100);
   }
 };
-const GAMES = { uno: { min: 2, max: 6 } };
+const GAMES = { uno: { min: 2, max: 8 } };
 for (const k of ['codes', 'hive', 'liars', 'outside', 'typing', 'jackaroo', 'draw']) GAMES[k] = require('./games/' + k)(H);
 const META = { uno: { bots: true }, codes: { teams: true }, hive: { teams: true, bots: true }, liars: { bots: true }, outside: { bots: true }, typing: { bots: true }, jackaroo: { teams: true, bots: true }, draw: {} };
 const AVATARS = ['😎', '🦁', '🐪', '🦅', '🐺', '🦊', '🐯', '🐼', '🦄', '🐸', '👑', '🔥', '⚡', '🌙', '🎩', '🤠'];
@@ -122,7 +122,7 @@ function advance(r, steps) {
   r.pending = null; r.turnSeq++;
 }
 
-// وضع الفرق يحتاج ٤ أو ٦ لاعبين، والفريق = رقم المقعد زوجي/فردي (يتناوبون بالجلوس)
+// وضع الفرق يحتاج عدد زوجي ٤ أو أكثر، والفريق = رقم المقعد زوجي/فردي (يتناوبون بالجلوس)
 function fixTeams(r) { if (r.game !== 'uno') { r.teams = !!META[r.game].teams; return; } if (r.teams && !(r.players.length >= 4 && r.players.length % 2 === 0)) r.teams = false; }
 
 function start(r) {
