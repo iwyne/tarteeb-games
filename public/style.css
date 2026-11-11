@@ -288,3 +288,47 @@ body.ingame .popbar,body.ingame .chatbox{bottom:278px}
 body.activity .quit-game{display:none}
 .game.soon h3{font-size:2.1rem;opacity:.55}
 @media(max-width:760px){.unobtn{width:72px;height:72px;margin-bottom:40px}}
+
+/* ---------- زر الأونو بجنب الأوراق + شعارات الألعاب ---------- */
+.handzone{justify-content:center;gap:4px}
+.hand{flex:0 1 auto}
+.unobtn{position:relative;right:auto;bottom:auto;flex:none;width:112px;height:112px;margin:0 0 26px 8px;font-size:2rem;touch-action:manipulation;-webkit-tap-highlight-color:transparent;animation:unoRing 1s infinite alternate}
+.unobtn::after{content:'';position:absolute;inset:-14px;border-radius:50%}
+.unobtn[hidden]{display:block!important;visibility:hidden;animation:none}
+@keyframes unoRing{to{box-shadow:5px 5px 0 #000,0 0 0 9px rgba(255,201,40,.55)}}
+@media(max-width:760px){.unobtn{width:94px;height:94px;font-size:1.6rem;margin-bottom:34px}}
+.game .logo{position:absolute;top:14px;left:14px;width:92px;height:92px}
+.game.soon{opacity:1;justify-content:flex-end;border-color:rgba(22,19,15,.55)}
+.game.soon h3{font-size:1.7rem;line-height:1.1;opacity:1}
+
+/* ---------- تعديل بعد المعاينة ---------- */
+.handzone{height:196px}
+.hand{padding-bottom:26px}
+@media(max-width:760px){
+  .unobtn{position:absolute;right:22px;bottom:178px;margin:0;width:98px;height:98px}
+  .actions{left:12px;transform:none;bottom:178px;margin:0}
+  body.ingame .fabs{bottom:236px}
+}
+@media(max-width:760px){
+  .centerpile{top:55%;transform:translate(-50%,-50%) scale(.85)}
+  .turn{top:calc(55% + 100px)}
+  .log{top:calc(55% + 148px)}
+}
+
+/* ---------- المتصدرين / المتفرجين / التثبيت ---------- */
+.btn.yellow{background:var(--yellow)}
+.plist.specs li{background:#fff;color:var(--ink);opacity:.9}
+.spec-game{position:absolute;top:58px;left:10px;z-index:3}
+.specpanel{position:absolute;top:104px;left:10px;z-index:8;background:#fff;border:3px solid var(--ink);border-radius:14px;box-shadow:4px 4px 0 var(--ink);padding:10px 14px;display:grid;gap:6px;min-width:150px;font-size:.9rem}
+.specpanel .kick{margin-inline-start:8px}
+.specpanel em{font-style:normal;opacity:.6}
+.spectag{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:min(90%,420px);text-align:center;background:#fff;border:3px solid var(--ink);border-radius:14px;box-shadow:4px 4px 0 var(--ink);padding:12px 16px;font-weight:800}
+.room.watching .handzone{height:84px}
+body.ingame{overscroll-behavior:none}
+@media(max-width:560px){.top .hb{flex-wrap:wrap;justify-content:flex-end}}
+
+.wins{display:inline-block;background:var(--yellow);color:var(--ink);border:2px solid var(--ink);border-radius:99px;font-size:.75rem;padding:0 8px;margin-inline-start:6px;white-space:nowrap}
+.seat .wins{position:absolute;bottom:-14px;left:50%;transform:translateX(-50%);margin:0;z-index:2}
+.board{list-style:none;margin:0;padding:0;display:grid;gap:8px;width:100%;text-align:start}
+.board li{display:flex;justify-content:space-between;gap:16px;background:#fff;border:3px solid var(--ink);border-radius:12px;padding:6px 14px}
+.board li.me{background:#fff3c4}

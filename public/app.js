@@ -1,6 +1,6 @@
 // ====== غيّر هذا الرابط لرابط دعوة ديسكورد ترتيب ======
 // ====== رابط موقع الدعم (اتركه فاضي لين تجهز الموقع) ======
-const SUPPORT_URL = '';
+const SUPPORT_URL = 'https://creators.sa/17mw';
 const DISCORD_URL = 'https://discord.gg/xxVUG2ZdFP';
 // =====================================================
 
@@ -108,16 +108,21 @@ function renderLobby() {
   $('#pcount').textContent = `(${S.players.length}/6)`;
   const plist = S.teams ? [...S.players].sort((a, b) => a.tm - b.tm) : S.players;
   $('#plist').innerHTML = plist.map(p =>
-    `<li data-id="${p.id}" class="${p.on ? '' : 'off'}${S.teams ? ' t' + p.tm : ''}">${esc(p.name)}${S.teams ? `<span class="tag">فريق ${['أ', 'ب'][p.tm]}</span>` : ''}${p.id === S.me ? ' <em>(أنت)</em>' : ''}${p.h ? '<span class="crown">المضيف</span>' : ''}${amHost && !p.h && p.id !== S.me ? `<button class="kick" data-id="${p.id}" title="طرد">✕</button>` : ''}</li>`
+    `<li data-id="${p.id}" class="${p.on ? '' : 'off'}${S.teams ? ' t' + p.tm : ''}">${esc(p.name)}${p.w ? `<span class="wins">🏆 ${p.w}</span>` : ''}${S.teams ? `<span class="tag">فريق ${['أ', 'ب'][p.tm]}</span>` : ''}${p.id === S.me ? ' <em>(أنت)</em>' : ''}${p.h ? '<span class="crown">المضيف</span>' : ''}${amHost && !p.h && p.id !== S.me ? `<button class="kick" data-id="${p.id}" title="طرد">✕</button>` : ''}</li>`
   ).join('');
   const isHost = host && host.id === S.me, enough = S.players.length >= 2;
+  $('#specwrap').hidden = !S.specs.length;
+  $('#scount').textContent = `(${S.specs.length})`;
+  $('#slist').innerHTML = S.specs.map(p => `<li data-id="${p.id}">${esc(p.name)}${p.id === S.me ? ' <em>(أنت)</em>' : ''}${isHost ? `<button class="kick" data-id="${p.id}" title="طرد">✕</button>` : ''}</li>`).join('');
   $('#start').hidden = !isHost;
   $('#start').disabled = !enough;
   $('#hint').textContent = !enough ? 'نحتاج لاعبين اثنين على الأقل، انتظر أحد يدخل'
     : isHost ? 'كل شي جاهز، ابدأ متى ما تبي' : 'ننتظر المضيف يبدأ اللعبة';
+  if (S.spec) $('#hint').textContent = 'الغرفة ممتلئة، أنت متفرّج وتنضم أول ما ينفضى مكان';
   renderTeams(isHost);
 }
 function renderTeams(isHost) {
+  if (S.spec) { $('#teamrow').hidden = true; return; }
   const can = S.players.length >= 4 && S.players.length % 2 === 0;
   $('#teamrow').hidden = !isHost;
   const tb = $('#teamBtn');
@@ -165,19 +170,19 @@ $('#catch').onclick = () => send({ t: 'catch' });
 const PAL = ['#e8362d', '#2a5bd7', '#1fa35c', '#ffc928'], TC = ['#e8362d', '#2a5bd7'];
 function renderGame() {
   const playing = S.phase === 'play', mine = playing && S.turn === S.me;
-  const i = S.players.findIndex(p => p.id === S.me), n = S.players.length, m = n - 1;
-  const myTm = S.players[i].tm;
-  const amHost = S.players.some(p => p.h && p.id === S.me);
+  const i = S.players.findIndex(p => p.id === S.me), n = S.players.length, spec = !!S.spec, m = spec ? n : n - 1;
+  const myTm = spec ? null : S.players[i].tm;
+  const amHost = !spec && S.players.some(p => p.h && p.id === S.me);
 
   // الخصوم يجلسون على قوس الطاولة: اللي بعدي على يساري، وآخرهم على يميني
-  const others = Array.from({ length: m }, (_, k) => S.players[(i + 1 + k) % n]);
+  const others = Array.from({ length: m }, (_, k) => S.players[(spec ? k : i + 1 + k) % n]);
   $('#opps').innerHTML = others.map((p, k) => {
     const a = Math.PI * (k + 1) / (m + 1);
-    const x = 50 - 40 * Math.cos(a), y = 52 - 44 * Math.sin(a);
+    const x = 50 - 40 * Math.cos(a), y = 58 - 46 * Math.sin(a);
     const col = S.teams ? TC[p.tm] : PAL[S.players.indexOf(p) % 4];
     return `<div class="seat${p.id === S.turn && playing ? ' turn' : ''}${p.on ? '' : ' off'}" data-id="${p.id}" style="left:${x}%;top:${y}%">
       ${p.id === S.turn && playing ? '<div class="arrow"><b></b>▼</div>' : ''}${amHost ? `<button class="kick" data-id="${p.id}" title="طرد">✕</button>` : ''}<div class="avatar" style="background:${col};color:${col === '#ffc928' ? '#16130f' : '#fff'}">${esc([...p.name][0] || '?')}</div>
-      <div class="nm">${esc(p.name)}</div>${S.teams ? `<span class="tm${p.tm === myTm ? ' mate' : ''}">${p.tm === myTm ? 'فريقك' : 'خصم'}</span>` : ''}<div class="backs">${'<i></i>'.repeat(Math.min(p.n, 8))}</div><span class="cnt">${p.n}</span></div>`;
+      <div class="nm">${esc(p.name)}</div>${p.w ? `<span class="wins">🏆 ${p.w}</span>` : ''}${S.teams ? `<span class="tm${!spec && p.tm === myTm ? ' mate' : ''}">${spec ? 'فريق ' + ['أ', 'ب'][p.tm] : p.tm === myTm ? 'فريقك' : 'خصم'}</span>` : ''}<div class="backs">${'<i></i>'.repeat(Math.min(p.n, 8))}</div><span class="cnt">${p.n}</span></div>`;
   }).join('');
 
   // وسط الطاولة
@@ -187,7 +192,8 @@ function renderGame() {
   const disc = $('#discard'); disc.innerHTML = ''; if (S.top) disc.appendChild(cardEl(S.top));
   disc.style.setProperty('--glow', HEX[S.color] || '#555');
   const sc = $('#score'); sc.hidden = !S.teams;
-  if (S.teams) sc.innerHTML = `<span style="background:${TC[myTm]}">فريقك ${S.score[myTm]}</span><span style="background:${TC[1 - myTm]}">${S.score[1 - myTm]} الخصم</span>`;
+  if (S.teams) sc.innerHTML = spec ? `<span style="background:${TC[0]}">فريق أ ${S.score[0]}</span><span style="background:${TC[1]}">${S.score[1]} فريق ب</span>`
+    : `<span style="background:${TC[myTm]}">فريقك ${S.score[myTm]}</span><span style="background:${TC[1 - myTm]}">${S.score[1 - myTm]} الخصم</span>`;
 
   // ما عندك ورقة تنفع: كل شي يبهت إلا كومة السحب
   const must = mine && S.pending === null && S.ok.length === 0;
@@ -202,22 +208,27 @@ function renderGame() {
   $('#log').innerHTML = S.log.slice(-2).map(esc).join('<br>');
 
   // الأزرار
-  $('#unoBtn').hidden = !(playing && S.hand.length <= 2);
+  $('#unoBtn').hidden = spec || !(playing && S.hand.length <= 2);
+  $('#specTag').hidden = !spec; $('#hand').hidden = spec;
+  $('.room').classList.toggle('watching', spec);
+  const sb = $('#specBtn'); sb.hidden = !S.specs.length; $('#specN').textContent = S.specs.length;
+  if (!S.specs.length) $('#specPanel').hidden = true;
+  else if (!$('#specPanel').hidden) drawSpecPanel();
   $('#pass').hidden = !(mine && S.pending !== null);
-  $('#catch').hidden = !(playing && S.catch && S.catch !== S.me);
+  $('#catch').hidden = spec || !(playing && S.catch && S.catch !== S.me);
 
   // يدي على شكل مروحة
   const hand = $('#hand'); hand.innerHTML = '';
   const cards = [...S.hand].sort((a, b) => CORDER[a.color] - CORDER[b.color] || vrank(a.v) - vrank(b.v));
   const N = cards.length, cw = innerWidth < 760 ? 68 : 86;
-  const sp = Math.min(cw * 0.72, ((hand.clientWidth || innerWidth) - cw - 20) / Math.max(N - 1, 1));
-  const step = Math.min(5, 50 / Math.max(N, 1));
+  const sp = Math.min(cw * 0.72, (($('.handzone').clientWidth || innerWidth) - (innerWidth < 760 ? 0 : 120) - 56 - cw) / Math.max(N - 1, 1));
+  const step = Math.min(3.4, 26 / Math.max(N, 1));
   cards.forEach((c, k) => {
     const el = cardEl(c, 'button'), d = k - (N - 1) / 2;
     el.dataset.id = c.id;
     el.style.marginLeft = (k ? sp - cw : 0) + 'px';
     el.style.setProperty('--r', d * step + 'deg');
-    el.style.setProperty('--y', d * d * 1.6 + 'px');
+    el.style.setProperty('--y', d * d * 1.1 + 'px');
     if (mine) {
       const ok = S.ok.includes(c.id);
       el.classList.add(ok ? 'ok' : 'no');
@@ -232,17 +243,18 @@ function renderGame() {
   const over = S.phase === 'over';
   $('#over').hidden = !over;
   if (over) {
-    const me = S.players[i];
+    const me = S.players[i] || {};
     const wt = $('#winteam');
     if (S.teams && S.winTeam != null) {
-      $('#winner').textContent = S.winTeam === myTm ? 'فاز فريقك! 🎉' : 'فاز الفريق الخصم';
+      $('#winner').textContent = spec ? 'فاز فريق ' + ['أ', 'ب'][S.winTeam] : S.winTeam === myTm ? 'فاز فريقك! 🎉' : 'فاز الفريق الخصم';
       wt.hidden = false; wt.textContent = 'الفائزين: ' + S.players.filter(p => p.tm === S.winTeam).map(p => p.name).join(' و ');
     } else {
       wt.hidden = true;
-      $('#winner').textContent = S.winner === me.name && S.hand.length === 0 ? 'فزت! 🎉' : `فاز ${S.winner}`;
+      $('#winner').textContent = !spec && S.winner === me.name && S.hand.length === 0 ? 'فزت! 🎉' : `فاز ${S.winner}`;
     }
+    $('#board').innerHTML = [...S.players].sort((a, b) => b.w - a.w).map(p => `<li${p.id === S.me ? ' class="me"' : ''}><span>${esc(p.name)}</span><b>🏆 ${p.w}</b></li>`).join('');
     const host = S.players.find(p => p.h);
-    $('#again').hidden = !(host && host.id === S.me);
+    $('#again').hidden = spec || !(host && host.id === S.me);
     $('#waitHost').hidden = !$('#again').hidden;
   }
 }
@@ -318,7 +330,7 @@ function fx() {
   if (s.phase === 'over') {
     const mt = s.players.find(p => p.id === s.me)?.tm;
     const won = s.teams && s.winTeam != null ? s.winTeam === mt : s.hand.length === 0;
-    setTimeout(() => { sfx(won ? 'win' : 'lose'); if (won) confetti(); }, 500);
+    if (!s.spec) setTimeout(() => { sfx(won ? 'win' : 'lose'); if (won) confetti(); }, 500);
   }
 }
 
@@ -421,9 +433,14 @@ async function startActivity() {
 }
 
 $('#quit').onclick = () => { if (confirm('تبي تطلع من اللعبة؟')) send({ t: 'leave' }); };
+function drawSpecPanel() {
+  const host = S.players.find(p => p.h), amHost = !S.spec && host && host.id === S.me;
+  $('#specPanel').innerHTML = '<b>المتفرجين</b>' + S.specs.map(p => `<div>${esc(p.name)}${p.id === S.me ? ' <em>(أنت)</em>' : ''}${amHost ? `<button class="kick" data-id="${p.id}" title="طرد">✕</button>` : ''}</div>`).join('');
+}
+$('#specBtn').onclick = () => { const p = $('#specPanel'); p.hidden = !p.hidden; if (!p.hidden) drawSpecPanel(); };
 document.addEventListener('click', e => {
   const k = e.target.closest('.kick'); if (!k || !S) return;
-  const t = S.players.find(p => p.id === k.dataset.id);
+  const t = S.players.find(p => p.id === k.dataset.id) || S.specs.find(p => p.id === k.dataset.id);
   if (t && (IN_DISCORD || confirm(`تطرد ${t.name} من الغرفة؟`))) send({ t: 'kick', id: k.dataset.id });
 });
 const muteBtn = $('#mute');
@@ -432,3 +449,16 @@ muteBtn.onclick = () => { muteBtn.textContent = sfx.toggle() ? '🔊' : '🔇'; 
 
 render();
 IN_DISCORD ? startActivity() : connect();
+
+// ---------- تثبيت التطبيق (PWA) ----------
+let deferredInstall = null;
+const installBtn = $('#install');
+const standalone = matchMedia('(display-mode: standalone)').matches || navigator.standalone;
+if (!IN_DISCORD && 'serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});
+window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); deferredInstall = e; if (!standalone) installBtn.hidden = false; });
+window.addEventListener('appinstalled', () => { installBtn.hidden = true; deferredInstall = null; toast('انثبّت التطبيق 🎉'); });
+if (!IN_DISCORD && !standalone && /iphone|ipad|ipod/i.test(navigator.userAgent) && !store.get('tarteeb-ioshint')) installBtn.hidden = false;
+installBtn.onclick = async () => {
+  if (deferredInstall) { deferredInstall.prompt(); await deferredInstall.userChoice.catch(() => {}); deferredInstall = null; installBtn.hidden = true; }
+  else { toast('في سفاري: اضغط زر المشاركة ثم «إضافة إلى الشاشة الرئيسية»'); store.set('tarteeb-ioshint', 1); installBtn.hidden = true; }
+};

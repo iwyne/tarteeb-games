@@ -4,6 +4,14 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>ترتيب — ألعاب</title>
+<meta name="theme-color" content="#f3ead8">
+<meta name="description" content="ألعاب ترتيب — العب أونو مع ربعك بكود غرفة">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon-192.png" type="image/png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="ترتيب">
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -11,6 +19,7 @@
 <header class="top">
   <a class="logo" href="/"><span>ترتيب</span><small>ألعاب</small></a>
   <div class="hb">
+    <button id="install" class="btn sm yellow" hidden>ثبّت التطبيق</button>
     <a class="btn sm" data-support target="_blank" rel="noopener">الدعم</a>
     <a class="btn sm" data-discord target="_blank" rel="noopener">ديسكورد</a>
   </div>
@@ -42,10 +51,45 @@
         <h3>أونو</h3>
         <span class="tag">متاحة الحين</span>
       </article>
-      <article class="game soon"><h3>كود نيمز</h3><span class="tag">قريباً</span></article>
-      <article class="game soon"><h3>حروف مع حميد</h3><span class="tag">قريباً</span></article>
-      <article class="game soon"><h3>لايرز بار</h3><span class="tag">قريباً</span></article>
+      <article class="game soon">
+        <svg class="logo" viewBox="0 0 100 100" aria-hidden="true">
+          <rect x="9" y="9" width="86" height="86" rx="20" fill="#16130f"/>
+          <rect x="5" y="5" width="86" height="86" rx="20" fill="#e8362d"/>
+          <path d="M48 5H71a20 20 0 0 1 20 20V71a20 20 0 0 1-20 20H48Z" fill="#2a5bd7"/>
+          <rect x="5" y="5" width="86" height="86" rx="20" fill="none" stroke="#16130f" stroke-width="5"/>
+          <path d="M34 74L39.5 51.8A13 13 0 1 1 56.5 51.8L62 74Z" fill="#fffaf0" stroke="#16130f" stroke-width="4.5" stroke-linejoin="round"/>
+        </svg>
+        <h3>كلمة السر</h3><span class="tag">قريباً</span>
+      </article>
+      <article class="game soon">
+        <svg class="logo" viewBox="0 0 100 100" aria-hidden="true">
+          <g transform="translate(4 4)" fill="#16130f"><path d="M31 14L50 25V47L31 58L12 47V25Z"/><path d="M69 14L88 25V47L69 58L50 47V25Z"/><path d="M50 47L69 58V80L50 91L31 80V58Z"/></g>
+          <g stroke="#16130f" stroke-width="4" stroke-linejoin="round">
+            <path d="M31 14L50 25V47L31 58L12 47V25Z" fill="#e8362d"/><path d="M69 14L88 25V47L69 58L50 47V25Z" fill="#ffc928"/><path d="M50 47L69 58V80L50 91L31 80V58Z" fill="#2a5bd7"/>
+          </g>
+          <g font-family="Lalezar,Tajawal,sans-serif" font-size="31" text-anchor="middle" dominant-baseline="central">
+            <text x="31" y="37" fill="#fffaf0">ح</text><text x="69" y="37" fill="#16130f">ر</text><text x="50" y="70" fill="#fffaf0">ف</text>
+          </g>
+        </svg>
+        <h3>خلية الحروف</h3><span class="tag">قريباً</span>
+      </article>
+      <article class="game soon">
+        <svg class="logo" viewBox="0 0 100 100" aria-hidden="true">
+          <circle cx="48" cy="56" r="34" fill="#16130f"/>
+          <circle cx="44" cy="52" r="34" fill="#ffc928" stroke="#16130f" stroke-width="5"/>
+          <circle cx="33" cy="45" r="8" fill="#fffaf0" stroke="#16130f" stroke-width="3.5"/>
+          <circle cx="55" cy="45" r="8" fill="#fffaf0" stroke="#16130f" stroke-width="3.5"/>
+          <circle cx="36" cy="46" r="3.2" fill="#16130f"/><circle cx="58" cy="46" r="3.2" fill="#16130f"/>
+          <path d="M24 32L40 36" stroke="#16130f" stroke-width="4" stroke-linecap="round"/>
+          <path d="M48 31Q56 24 64 29" fill="none" stroke="#16130f" stroke-width="4" stroke-linecap="round"/>
+          <path d="M42 56L87 66" stroke="#16130f" stroke-width="15" stroke-linecap="round"/>
+          <path d="M42 56L87 66" stroke="#e8362d" stroke-width="8" stroke-linecap="round"/>
+          <path d="M28 72Q42 80 56 70" fill="none" stroke="#16130f" stroke-width="4" stroke-linecap="round"/>
+        </svg>
+        <h3>الكذابين الترتيب</h3><span class="tag">قريباً</span>
+      </article>
     </div>
+
   </section>
 
   <section id="connecting" hidden>
@@ -63,6 +107,10 @@
     </div>
     <h2 class="sect">اللاعبين <span id="pcount"></span></h2>
     <ul id="plist" class="plist"></ul>
+    <div id="specwrap" hidden>
+      <h2 class="sect">المتفرجين <span id="scount"></span></h2>
+      <ul id="slist" class="plist specs"></ul>
+    </div>
     <p id="hint" class="hint"></p>
     <p id="scoreline" class="hint" hidden></p>
     <div id="teamrow" class="row" hidden>
@@ -82,6 +130,8 @@
         <div class="felt"></div>
         <button id="mute" class="btn sm mute-game">🔊</button>
         <button id="quit" class="btn sm quit-game">خروج</button>
+        <button id="specBtn" class="btn sm spec-game" hidden>👁 <span id="specN">0</span></button>
+        <div id="specPanel" class="specpanel" hidden></div>
         <a class="btn sm sup-game" data-support target="_blank" rel="noopener">الدعم</a>
         <div id="opps"></div>
         <div class="centerpile">
@@ -98,6 +148,7 @@
           <button id="pass" class="btn" hidden>مرّر</button>
         </div>
         <div id="hand" class="hand"></div>
+        <div id="specTag" class="spectag" hidden>أنت تتفرّج 👁 — تدخل اللعبة أول ما تبدأ جولة جديدة</div>
         <button id="unoBtn" class="unobtn" hidden>UNO!</button>
       </div>
     </div>
@@ -106,6 +157,7 @@
         <small>الجولة انتهت</small>
         <h2 id="winner"></h2>
         <p id="winteam" class="hint" hidden></p>
+        <ol id="board" class="board"></ol>
         <div class="row">
           <button id="again" class="btn green" hidden>جولة جديدة</button>
           <button id="leave2" class="btn">اطلع</button>
