@@ -7,7 +7,7 @@ const GHELP = {
   codes: 'فريقين (أ وب). كل فريق له قائد يشوف ألوان الكلمات السرية ويعطي تلميح بكلمة وحدة + رقم. الفريق يخمّن كلماته. أول فريق يكشف كل كلماته يفوز، واللي يضغط على الكلمة القاتلة يخسر فريقه.',
   hive: 'لوحة خلايا حروف. الأحمر يوصّل من فوق لتحت، والأزرق من اليمين لليسار. اختر خلية، جاوب على سؤال يبدأ جوابه بحرف الخلية وتصير لفريقك. لو غلطت الفريق الثاني يسرقها.',
   liars: 'كل واحد يلعب ١–٣ أوراق مقلوبة ويقول إنها الورقة المطلوبة (ملك أو ملكة أو آص). اللي بعده يصدّق أو يقول «كذّاب!». اللي يخسر يسحب من دولاب القنبلة، وآخر واحد ينجو يفوز.',
-  outside: 'الكل يعرف الفئة والكلمة السرية إلا واحد (برا السالفة). كل واحد يعطي تلميح بكلمة وحدة بدون ما يقول الكلمة. بعد جولتين تصوّتون على مين برا السالفة. لو انكشف يحاول يخمّن الكلمة.',
+  outside: 'الكل يعرف الفئة والكلمة السرية إلا واحد (برا السالفة). كل واحد يسأل لاعب ثاني سؤال بصوته عن الكلمة بدون ما يقولها، والمسؤول يجاوب ثم يسأل غيره. بعد ما يخلص الكل تصوّتون على مين برا السالفة. لو انكشف يختار الكلمة من ٨ خيارات.',
   typing: 'يطلع نص وأسرع واحد يكتبه صح ياخذ نقطة. أول واحد يوصل الهدف يفوز. ما يهم التشكيل.',
   jackaroo: 'أنت وشريكك (قبالتك) تدخلون الـ٨ كرات للبيت. آص/شايب يطلّعون كرة، الباقي يحرّك بعدده، الولد يبدّل، الـ٤ رجوع، الـ٥ تحرّك أي كرة، الـ٧ تقسّمها. اللي تنزل عليه كرتك ينأكل.',
   draw: 'كل لاعب يرسم كلمة سرية والباقي يخمّنون بالكتابة. كل ما خمّنت أسرع ياخذ نقاط أكثر، والرسّام ياخذ نقاط على كل واحد يخمّن. الأعلى نقاط يفوز.'
@@ -205,8 +205,8 @@ function fx2() {
     if (g.guessed.length > pg.guessed.length && g.turn === pg.turn) sfx('uno');
     if (g.sub === 'reveal' && pg.sub !== 'reveal') sfx('pop');
   } else if (s.game === 'outside') {
-    if (g.sub === 'clue' && g.turn === s.me && pg.turn !== s.me) sfx('turn');
-    else if (g.clues.length > pg.clues.length) sfx('card');
+    if ((g.sub === 'ask' && g.asker === s.me && !(pg.sub === 'ask' && pg.asker === s.me)) || (g.sub === 'qa' && g.target === s.me && pg.target !== s.me)) sfx('turn');
+    else if (g.sub === 'qa' && pg.sub !== 'qa') sfx('card');
     if (g.sub === 'vote' && pg.sub !== 'vote') sfx('uno');
     if (g.sub === 'guess' && pg.sub !== 'guess') sfx('catch');
   } else if (s.game === 'typing') {
@@ -264,31 +264,37 @@ setTheme(store.get('tarteeb-theme') || 'paper', false);
 // ================= برا السالفة =================
 const pn = id => { const p = S.players.find(x => x.id === id); return p ? (p.av ? p.av + ' ' : '') + p.name : '؟'; };
 function renderOutside(body) {
-  const g = S.g, over = S.phase === 'over', myTurn = g.sub === 'clue' && g.turn === S.me;
-  const role = g.role === 'spy' ? `<div class="orole spy">🤫 أنت <b>برا السالفة</b> — ما تعرف الكلمة. اسمع التلميحات وتظاهر إنك تعرف</div>`
+  const g = S.g, over = S.phase === 'over', amAsker = g.sub === 'ask' && g.asker === S.me, amTarget = g.sub === 'qa' && g.target === S.me;
+  const role = g.role === 'spy' ? `<div class="orole spy">🤫 أنت <b>برا السالفة</b> — ما تعرف الكلمة. اسمع الأسئلة والأجوبة وتظاهر إنك تعرف</div>`
     : g.role === 'in' ? `<div class="orole">الكلمة السرية: <b class="oword nt">${esc(g.word)}</b></div>` : '<div class="orole">أنت تتفرّج 👁</div>';
+  const live = g.sub === 'ask' || g.sub === 'qa';
   const rows = S.players.map(p => {
-    const cl = g.clues.filter(c => c.id === p.id);
-    return `<div class="orow${g.turn === p.id && g.sub === 'clue' ? ' turn' : ''}${over && g.spy === p.id ? ' spyrow' : ''}" data-id="${p.id}"><span class="on">${esc(pn(p.id))}</span><span class="ocl nt">${cl.map(c => `<i>${esc(c.text)}</i>`).join('') || '<em>—</em>'}</span>${g.sub === 'vote' && g.voted.includes(p.id) ? '<b class="ok">✓</b>' : ''}${g.tally && g.tally[p.id] ? `<b class="vt">${g.tally[p.id]} 🗳</b>` : ''}</div>`;
+    const cur = live && (g.asker === p.id || (g.sub === 'qa' && g.target === p.id));
+    return `<div class="orow${cur ? ' cur' : ''}${over && g.spy === p.id ? ' spyrow' : ''}" data-id="${p.id}"><span class="on">${esc(pn(p.id))}</span><span class="ocl">${g.sub === 'qa' && g.asker === p.id ? '<i>يسأل</i>' : g.sub === 'qa' && g.target === p.id ? '<i>يجاوب</i>' : g.sub === 'ask' && g.asker === p.id ? '<i>دوره يسأل</i>' : ''}</span>${g.sub === 'vote' && g.voted.includes(p.id) ? '<b class="ok">✓</b>' : ''}${g.tally && g.tally[p.id] ? `<b class="vt">${g.tally[p.id]} 🗳</b>` : ''}</div>`;
   }).join('');
   let act = '';
   if (over) {
-    const sp = g.spy;
-    act = `<div class="oreveal"><div>برا السالفة كان: <b>${esc(pn(sp))}</b></div><div>الكلمة: <b class="oword nt">${esc(g.word)}</b></div>${g.guess ? `<div>تخمينه: «${esc(g.guess)}»</div>` : ''}</div>`;
-  } else if (g.sub === 'clue') {
-    act = myTurn ? `<form id="clueF" class="clueform"><input id="clueIn" maxlength="24" placeholder="تلميحك — كلمة وحدة" autocomplete="off"><button class="btn green sm">أرسل</button></form>`
-      : `<div class="muted">دور ${esc(pn(g.turn))} يعطي تلميح…</div>`;
+    act = `<div class="oreveal"><div>برا السالفة كان: <b>${esc(pn(g.spy))}</b></div><div>الكلمة: <b class="oword nt">${esc(g.word)}</b></div>${g.guess ? `<div>تخمينه: «${esc(g.guess)}»</div>` : ''}</div>`;
+  } else if (g.sub === 'ask') {
+    act = amAsker ? `<div class="vlabel">دورك! اختر مين تسأله <span class="muted">(اسأله بصوتك)</span></div><div class="vbtns">${g.canAsk.map(id => `<button type="button" class="vb ask" data-id="${id}">${esc(pn(id))}</button>`).join('')}</div>`
+      : `<div class="muted">دور ${esc(pn(g.asker))} يختار مين يسأل…</div>`;
+  } else if (g.sub === 'qa') {
+    act = `<div class="qabox"><b>${esc(pn(g.asker))}</b> ← يسأل ← <b>${esc(pn(g.target))}</b></div>` + (amTarget ? `<div class="muted">جاوب بصوتك، وبعدها اضغط</div><button type="button" id="qaDone" class="btn green">جاوبت — دوري أسأل</button>` : `<div class="muted">اسمعوا السؤال والجواب… <span class="cd2"></span></div>`);
   } else if (g.sub === 'vote') {
     act = S.spec ? '<div class="muted">التصويت شغّال…</div>' : `<div class="vlabel">مين برا السالفة؟ ${g.myVote ? '' : '<span class="muted">اختر واحد</span>'}</div><div class="vbtns">${S.players.filter(p => p.id !== S.me).map(p => `<button type="button" class="vb${g.myVote === p.id ? ' on' : ''}" data-id="${p.id}">${esc(pn(p.id))}</button>`).join('')}</div>`;
   } else if (g.sub === 'guess') {
-    act = g.role === 'spy' ? `<div class="vlabel">انكشفت! خمّن الكلمة وتفوز ($)</div><form id="guessF" class="clueform"><input id="guessIn" maxlength="30" placeholder="الكلمة…" autocomplete="off"><button class="btn red sm">خمّن</button></form>`.replace('($)', '(الفئة: ' + esc(g.cat) + ')')
+    act = g.role === 'spy' ? `<div class="vlabel">انكشفت! اختر الكلمة الصح وتفوز (الفئة: ${esc(g.cat)})</div><div class="vbtns wopts">${g.opts.map(w => `<button type="button" class="vb gw nt" data-w="${esc(w)}">${esc(w)}</button>`).join('')}</div>`
       : `<div class="vlabel">انكشف <b>${esc(pn(g.accused))}</b> — ينتظر يخمّن الكلمة…</div>`;
   }
-  const phaseTxt = over ? 'انتهت الجولة' : g.sub === 'clue' ? `التلميحات — الدور ${g.round} من ${g.rounds}` : g.sub === 'vote' ? 'وقت التصويت' : 'التخمين الأخير';
-  body.innerHTML = `<div class="ocat"><span class="oc">الفئة: <b>${esc(g.cat)}</b></span><span class="ph">${phaseTxt} <span class="cd2"></span></span></div>${role}<div class="olist">${rows}</div><div class="oact">${act}</div>${logHtml()}`;
-  const f = $('#clueF'); if (f) { setTimeout(() => $('#clueIn') && $('#clueIn').focus(), 30); f.onsubmit = e => { e.preventDefault(); const t = $('#clueIn').value.trim(); if (t) { send({ t: 'clue', text: t }); } }; }
-  const gf = $('#guessF'); if (gf) gf.onsubmit = e => { e.preventDefault(); const t = $('#guessIn').value.trim(); if (t) send({ t: 'guess', text: t }); };
-  body.querySelectorAll('.vb').forEach(b => b.onclick = () => { send({ t: 'vote', id: b.dataset.id }); sfx('pop'); });
+  const hostSkip = !over && !S.spec && live && S.players.find(p => p.h && p.id === S.me) && g.count >= S.players.length ? '<button type="button" id="toVote" class="btn sm">ابدأ التصويت الحين</button>' : '';
+  const phaseTxt = over ? 'انتهت الجولة' : live ? `الأسئلة — ${Math.min(g.count + 1, g.total)} من ${g.total}` : g.sub === 'vote' ? 'وقت التصويت' : 'التخمين الأخير';
+  const hist = g.hist.length && live ? `<div class="ohist">${g.hist.slice(-5).map(h => `<span>${esc(pn(h.from))} ← ${esc(pn(h.to))}</span>`).join('')}</div>` : '';
+  body.innerHTML = `<div class="ocat"><span class="oc">الفئة: <b>${esc(g.cat)}</b></span><span class="ph">${phaseTxt} <span class="cd2"></span></span></div>${role}<div class="olist">${rows}</div>${hist}<div class="oact">${act}${hostSkip}</div>${logHtml()}`;
+  body.querySelectorAll('.vb.ask').forEach(b => b.onclick = () => { send({ t: 'ask', id: b.dataset.id }); sfx('pop'); });
+  body.querySelectorAll('.vb:not(.ask):not(.gw)').forEach(b => b.onclick = () => { send({ t: 'vote', id: b.dataset.id }); sfx('pop'); });
+  body.querySelectorAll('.vb.gw').forEach(b => b.onclick = () => { send({ t: 'guess', text: b.dataset.w }); sfx('pop'); });
+  const d = $('#qaDone'); if (d) d.onclick = () => send({ t: 'done' });
+  const tv = $('#toVote'); if (tv) tv.onclick = () => { if (confirm(T('نبدأ التصويت الحين؟'))) send({ t: 'tovote' }); };
 }
 
 // ================= سبّاق الكتابة =================

@@ -343,9 +343,13 @@ function botAction(r) {
   }
   if (r.game === 'outside') {
     const g = r.g, words = require('./games/outside-words')[g.cat] || [], pickW = ex => { const ok = words.filter(w => w !== ex); return ok[rnd(ok.length)] || '؟'; };
-    if (g.sub === 'clue') {
-      const b = bots.find(q => q.id === g.order[g.idx]); if (!b) return null;
-      return { d: 1800 + rnd(2800), fn() { if (r.g === g && g.sub === 'clue' && g.order[g.idx] === b.id) GAMES.outside.act(r, b, { t: 'clue', text: pickW(b.id === g.spy ? '' : g.word).split(' ')[0] }); } };
+    if (g.sub === 'ask') {
+      const b = bots.find(q => q.id === g.asker); if (!b) return null;
+      return { d: 1800 + rnd(2500), fn() { if (r.g !== g || g.sub !== 'ask' || g.asker !== b.id) return; const o = GAMES.outside.view(r, b).canAsk || []; if (o.length) GAMES.outside.act(r, b, { t: 'ask', id: o[rnd(o.length)] }); } };
+    }
+    if (g.sub === 'qa') {
+      const b = bots.find(q => q.id === g.target); if (!b) return null;
+      return { d: 3500 + rnd(3500), fn() { if (r.g === g && g.sub === 'qa' && g.target === b.id) GAMES.outside.act(r, b, { t: 'done' }); } };
     }
     if (g.sub === 'vote') {
       const b = bots.find(q => !g.votes[q.id]); if (!b) return null;
@@ -353,7 +357,7 @@ function botAction(r) {
     }
     if (g.sub === 'guess') {
       const b = bots.find(q => q.id === g.spy); if (!b) return null;
-      return { d: 3000 + rnd(4000), fn() { if (r.g === g && g.sub === 'guess') GAMES.outside.act(r, b, { t: 'guess', text: pickW('') }); } };
+      return { d: 3000 + rnd(4000), fn() { if (r.g === g && g.sub === 'guess') GAMES.outside.act(r, b, { t: 'guess', text: g.opts[rnd(g.opts.length)] }); } };
     }
     return null;
   }

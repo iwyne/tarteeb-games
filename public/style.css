@@ -501,7 +501,7 @@ body{transition:background-color .3s,color .3s}
 .oword{font:400 1.7rem Lalezar,sans-serif;background:var(--yellow);color:var(--on-y);border:2px solid var(--ink);border-radius:10px;padding:0 14px;margin-inline-start:6px}
 .olist{display:grid;gap:6px}
 .orow{display:flex;align-items:center;gap:10px;padding:7px 12px;border:2px solid var(--ink);border-radius:12px;background:var(--surf)}
-.orow.turn{background:var(--yellow);color:var(--on-y);box-shadow:3px 3px 0 var(--ink)}
+.orow.cur{background:var(--yellow);color:var(--on-y);box-shadow:3px 3px 0 var(--ink)}
 .orow.spyrow{background:var(--red);color:#fff}
 .orow .on{font-weight:800;min-width:90px}
 .orow .ocl{display:flex;gap:6px;flex-wrap:wrap;flex:1}
@@ -625,3 +625,7 @@ html[dir=ltr] body{font-family:Tajawal,sans-serif}
 html[dir=ltr] .tc,html[dir=ltr] #g2sub{white-space:nowrap}
 html[dir=ltr] .cbar .role{font-size:.8rem;line-height:1.2}
 html[dir=ltr] .cbar .tc{padding-inline:12px}
+.qabox{text-align:center;font-size:1.15rem;padding:12px;border:3px solid var(--ink);border-radius:14px;background:var(--yellow);color:var(--on-y);box-shadow:4px 4px 0 var(--ink);margin-bottom:8px}
+.ohist{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0}
+.ohist span{font-size:.8rem;border:2px solid var(--ink);border-radius:99px;padding:0 10px;background:var(--surf)}
+.wopts{grid-template-columns:repeat(auto-fit,minmax(100px,1fr))}
