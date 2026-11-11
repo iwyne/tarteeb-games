@@ -109,7 +109,7 @@ label{display:grid;gap:6px;font-size:.95rem}
 .card{
   --c:#e8362d;--d:#c8201a;
   width:86px;height:128px;flex:none;position:relative;border-radius:12px;background:var(--c);
-  border:4px solid #fff;box-shadow:0 3px 0 rgba(0,0,0,.45);color:#fff;
+  border:4px solid #fff;box-shadow:0 0 0 3px var(--ink),3px 5px 0 3px var(--ink);color:#fff;
   font-family:Lalezar,Tajawal,sans-serif;padding:0;overflow:hidden;cursor:default;transition:transform .12s,filter .12s;
 }
 .card.red{--c:#e8362d;--d:#c8201a}
@@ -130,35 +130,52 @@ label{display:grid;gap:6px;font-size:.95rem}
 .card.back .mid span{color:#fff;font-size:1.5rem;transform:rotate(-25deg)}
 
 /* ---------- الطاولة ---------- */
-body.ingame{background:#14110d}
+body.ingame{overflow:hidden}
 body.ingame .foot,body.ingame .top{display:none}
-body.ingame main{width:min(1100px,100%);padding-top:14px}
-.table{min-height:calc(100vh - 28px);display:flex;flex-direction:column;justify-content:space-between;gap:12px;padding-bottom:16px;color:var(--paper)}
-.opps{display:flex;flex-wrap:wrap;gap:10px;justify-content:center}
-.opp{background:#241f19;border:3px solid #3a3228;border-radius:14px;padding:8px 14px;display:flex;gap:10px;align-items:center;min-width:110px}
-.opp.turn{border-color:var(--yellow);box-shadow:4px 4px 0 var(--yellow)}
-.opp.off{opacity:.45}
-.opp .n{background:var(--paper);color:var(--ink);border-radius:8px;padding:0 9px;font:400 1.2rem Lalezar,sans-serif}
-.center{display:flex;align-items:center;justify-content:center;gap:28px;padding:8px 0}
+body.ingame main{width:100%;max-width:none;padding:0}
+.room{height:100dvh;display:flex;flex-direction:column;color:var(--ink);overflow:hidden}
+.stage{flex:1;position:relative;min-height:0}
+.felt{position:absolute;inset:5% 4% 0;border-radius:50%/46%;background:#fffaf0;border:4px solid var(--ink);box-shadow:10px 10px 0 var(--ink)}
+.felt::before{content:'';position:absolute;inset:14px;border:3px dashed rgba(22,19,15,.3);border-radius:inherit}
+.seat{position:absolute;transform:translate(-50%,-50%);display:grid;justify-items:center;gap:3px;z-index:2}
+.seat .avatar{width:46px;height:46px;border-radius:50%;border:3px solid var(--ink);display:grid;place-items:center;font:400 1.4rem Lalezar,sans-serif;box-shadow:3px 3px 0 var(--ink)}
+.seat .nm{font-size:.85rem;background:var(--ink);color:var(--paper);padding:1px 10px;border-radius:99px;max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.seat .backs{display:flex;direction:ltr;margin-top:2px;min-height:32px}
+.seat .backs i{width:22px;height:32px;border-radius:4px;background:#16130f;border:2px solid #fff;margin-left:-13px;position:relative;box-shadow:0 0 0 2px var(--ink)}
+.seat .backs i:first-child{margin-left:0}
+.seat .backs i::after{content:'';position:absolute;inset:5px 3px;border-radius:50%;background:var(--red);transform:rotate(25deg)}
+.seat .cnt{position:absolute;top:-4px;left:calc(50% + 16px);background:var(--paper);color:var(--ink);font:400 1rem Lalezar,sans-serif;border-radius:99px;padding:0 8px;border:2px solid var(--ink)}
+.seat.turn .avatar{box-shadow:0 0 0 4px var(--yellow),0 0 0 7px var(--ink);animation:pulse .9s infinite alternate}
+.seat.off{opacity:.45}
+.centerpile{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);display:flex;gap:26px;align-items:center;z-index:2}
 .pile{background:none;border:0;padding:0;position:relative}
+.pile small{position:absolute;bottom:-22px;left:0;right:0;text-align:center;font-size:.8rem;opacity:.75}
 #deck{cursor:pointer}
-#deck:hover .card{transform:translateY(-4px)}
-.pile small{position:absolute;bottom:-22px;left:0;right:0;text-align:center;font-size:.8rem;opacity:.6}
-.ring{width:54px;height:54px;border-radius:50%;border:5px solid var(--paper);background:#555;transition:background .2s}
-.turn{text-align:center;font:400 1.7rem Lalezar,Tajawal,sans-serif;min-height:1.2em}
-.turn.mine{color:var(--yellow);animation:pulse 1s infinite alternate}
+#deck.can .card{animation:nudge 1s infinite alternate}
+@keyframes nudge{to{transform:translateY(-7px)}}
+#discard .card{box-shadow:0 0 0 3px var(--ink),0 0 0 11px var(--glow,#888),0 0 0 14px var(--ink);transition:box-shadow .3s}
+.turn{position:absolute;left:50%;top:calc(50% + 92px);transform:translateX(-50%);font:400 1.5rem Lalezar,Tajawal,sans-serif;background:#fff;border:3px solid var(--ink);box-shadow:3px 3px 0 var(--ink);padding:0 20px;border-radius:99px;white-space:nowrap;z-index:2}
+.turn:empty{display:none}
+.turn.mine{background:var(--yellow);animation:breathe 1s infinite alternate}
+@keyframes breathe{to{transform:translateX(-50%) scale(1.07)}}
 @keyframes pulse{to{transform:scale(1.07)}}
-.log{text-align:center;font-size:.95rem;opacity:.65;min-height:2.6em;line-height:1.3}
-.actions{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;min-height:50px}
-.actions .btn{box-shadow:4px 4px 0 #000;border-color:#000}
-.hand{display:flex;overflow-x:auto;padding:26px 14px 10px;min-height:170px;align-items:flex-end}
-.hand>:first-child{margin-inline-start:auto}
-.hand>:last-child{margin-inline-end:auto}
-.hand .card{margin-inline-start:-30px}
-.hand .card:first-child{margin-inline-start:0}
-.hand .card.ok{cursor:pointer;transform:translateY(-14px)}
-.hand .card.ok:hover{transform:translateY(-26px);z-index:3}
+.tablename{text-align:center;display:grid;gap:4px;justify-items:center;transform:rotate(-4deg)}
+.tablename b{font:400 clamp(1.6rem,5vw,3.4rem)/1 Lalezar,Tajawal,sans-serif}
+.tablename small{background:var(--ink);color:var(--paper);padding:1px 14px;border-radius:99px;font-size:.85rem}
+.sup-game{position:absolute;top:10px;left:10px;z-index:3}
+.log{position:absolute;left:50%;top:calc(50% + 140px);transform:translateX(-50%);width:min(80%,420px);text-align:center;font-size:.9rem;opacity:.75;line-height:1.4;z-index:2}
+.handzone{position:relative;height:200px;flex:none}
+.hand{direction:ltr;display:flex;justify-content:center;align-items:flex-end;height:100%;padding-bottom:8px}
+.hand.mine{background:radial-gradient(60% 100% at 50% 100%,rgba(255,201,40,.5),transparent 70%)}
+.hand .card{transform-origin:50% 130%;transform:translateY(var(--y,0)) rotate(var(--r,0))}
+.hand .card.ok{cursor:pointer;transform:translateY(calc(var(--y,0px) - 22px)) rotate(var(--r,0))}
+.hand .card.ok:hover{transform:translateY(calc(var(--y,0px) - 42px)) rotate(0deg) scale(1.1);z-index:5}
 .hand .card.no{filter:brightness(.5)}
+.actions{position:absolute;left:50%;bottom:100%;transform:translateX(-50%);display:flex;gap:10px;margin-bottom:-6px;z-index:6}
+.actions .btn{box-shadow:4px 4px 0 #000;border-color:#000}
+#catch:not([hidden]){animation:pulse .5s infinite alternate}
+.unobtn{position:absolute;right:18px;bottom:34px;width:92px;height:92px;border-radius:50%;background:var(--yellow);border:4px solid #000;font:400 1.6rem Lalezar,sans-serif;color:var(--ink);box-shadow:5px 5px 0 #000;cursor:pointer;z-index:6;animation:pulse .6s infinite alternate}
+.unobtn:active{transform:translate(3px,3px);box-shadow:1px 1px 0 #000}
 
 /* ---------- نوافذ ---------- */
 .overlay{position:fixed;inset:0;background:rgba(10,8,6,.72);display:grid;place-items:center;z-index:20;padding:20px}
@@ -190,11 +207,59 @@ body.ingame main{width:min(1100px,100%);padding-top:14px}
   .card{width:68px;height:102px;border-width:3px}
   .card .mid span{font-size:2rem}
   .card .tl,.card .br{font-size:.8rem}
-  .hand .card{margin-inline-start:-26px}
-  .center{gap:18px}
+  .seat .avatar{width:38px;height:38px;font-size:1.1rem}
+  .seat .backs i{width:18px;height:26px;margin-left:-11px}
+  .seat .nm{font-size:.75rem;max-width:80px}
+  .unobtn{width:76px;height:76px;right:10px;font-size:1.3rem}
+  .centerpile{gap:16px}
+  .tablename b{font-size:1.5rem}
+  .felt{border-width:9px}
 }
 
 /* ---------- داخل ديسكورد ---------- */
 .act-only{display:none}
 body.activity .act-only{display:block}
 body.activity .top,body.activity .foot,body.activity .ticket,body.activity #leave,body.activity #leave2{display:none}
+.top .hb{display:flex;gap:10px}
+.foot .fb{display:flex;gap:14px;flex-wrap:wrap;justify-content:center}
+.btn.support{background:var(--yellow);color:var(--ink);font-size:1.25rem;padding:16px 30px;border-color:var(--paper);box-shadow:5px 5px 0 var(--blue)}
+.btn.support:hover{box-shadow:7px 7px 0 var(--blue)}
+body.activity [data-support]{display:none}
+
+/* ---------- حركات ---------- */
+.mute-game{position:absolute;top:10px;right:10px;z-index:3}
+.card.fly{position:fixed;width:40px;height:58px;border-width:3px;z-index:30;pointer-events:none;margin:0}
+.card.fly .mid span{font-size:.8rem}
+.confetti{position:fixed;z-index:40;pointer-events:none;border:2px solid #16130f}
+.overlay .box{animation:boxpop .35s cubic-bezier(.2,1.4,.4,1)}
+@keyframes boxpop{from{transform:scale(.6);opacity:0}}
+.seat .cnt{transition:transform .2s}
+
+/* ---------- شات وتفاعل ---------- */
+.fabs{position:fixed;left:12px;bottom:12px;display:flex;gap:10px;z-index:15}
+body.ingame .fabs{bottom:214px}
+.fab{width:52px;height:52px;border-radius:50%;border:3px solid var(--ink);background:#fff;box-shadow:3px 3px 0 var(--ink);font-size:1.5rem;cursor:pointer;position:relative;transition:transform .1s}
+.fab:hover{transform:translate(-2px,-2px)}
+.fab i{position:absolute;top:-8px;right:-8px;background:var(--red);color:#fff;font:700 .75rem Tajawal,sans-serif;font-style:normal;border-radius:99px;padding:1px 7px;border:2px solid var(--ink)}
+.popbar,.chatbox{position:fixed;left:12px;bottom:76px;z-index:16;background:#fff;border:3px solid var(--ink);box-shadow:5px 5px 0 var(--ink)}
+body.ingame .popbar,body.ingame .chatbox{bottom:278px}
+.popbar{display:flex;gap:6px;flex-wrap:wrap;max-width:min(92vw,330px);border-radius:16px;padding:8px}
+.popbar button{font-size:1.7rem;background:none;border:0;cursor:pointer;transition:transform .1s}
+.popbar button:hover{transform:scale(1.3) rotate(-6deg)}
+.chatbox{width:min(92vw,320px);height:min(46vh,340px);display:flex;flex-direction:column;border-radius:16px;overflow:hidden}
+.msgs{flex:1;overflow-y:auto;padding:10px;display:grid;gap:6px;align-content:start}
+.msg{font-size:.9rem;line-height:1.4;word-break:break-word}
+.msg b{color:var(--blue)}
+.msg.me b{color:var(--red)}
+.chatin{display:flex;gap:8px;padding:8px;border-top:3px solid var(--ink)}
+.chatin input{padding:8px 12px;font-size:.95rem}
+.react{position:fixed;font-size:2.6rem;z-index:35;pointer-events:none;transform:translate(-50%,-50%)}
+
+/* ---------- وضع الفرق ---------- */
+.plist li.t0{background:var(--red);color:#fff}
+.plist li.t1{background:var(--blue);color:#fff}
+.plist .tag{font-size:.7rem;background:var(--ink);color:var(--paper);border-radius:99px;padding:1px 8px;margin-inline-start:6px}
+.seat .tm{font-size:.7rem;padding:0 8px;border-radius:99px;border:2px solid var(--ink);background:#fff}
+.seat .tm.mate{background:var(--yellow)}
+.score{display:flex;gap:6px;font-size:.78rem;color:#fff}
+.score span{padding:1px 10px;border-radius:99px;border:2px solid var(--ink)}

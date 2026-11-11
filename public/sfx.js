@@ -1,0 +1,44 @@
+// أصوات اللعبة — مولّدة بالكود (Web Audio) بدون ملفات صوت
+const sfx = (() => {
+  let ctx, on = true;
+  try { on = localStorage.getItem('tarteeb-mute') !== '1'; } catch {}
+  const ac = () => {
+    if (!ctx) { const C = window.AudioContext || window.webkitAudioContext; if (!C) return null; ctx = new C(); }
+    if (ctx.state === 'suspended') ctx.resume();
+    return ctx;
+  };
+  function tone(f, t0, d, type = 'sine', vol = .18, f2) {
+    const c = ac(); if (!c) return;
+    const o = c.createOscillator(), g = c.createGain(), t = c.currentTime + t0;
+    o.type = type; o.frequency.setValueAtTime(f, t);
+    if (f2) o.frequency.exponentialRampToValueAtTime(f2, t + d);
+    g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(vol, t + .01); g.gain.exponentialRampToValueAtTime(.0001, t + d);
+    o.connect(g).connect(c.destination); o.start(t); o.stop(t + d + .02);
+  }
+  function noise(t0, d, f, vol = .25) {
+    const c = ac(); if (!c) return;
+    const len = Math.floor(c.sampleRate * d), buf = c.createBuffer(1, len, c.sampleRate), data = buf.getChannelData(0);
+    for (let i = 0; i < len; i++) data[i] = (Math.random() * 2 - 1) * (1 - i / len);
+    const s = c.createBufferSource(); s.buffer = buf;
+    const flt = c.createBiquadFilter(); flt.type = 'bandpass'; flt.frequency.value = f; flt.Q.value = .8;
+    const g = c.createGain(); g.gain.value = vol;
+    s.connect(flt).connect(g).connect(c.destination); s.start(c.currentTime + t0);
+  }
+  const bank = {
+    card: () => { noise(0, .09, 2200, .35); tone(180, 0, .08, 'triangle', .12, 90); },
+    draw: () => noise(0, .07, 1400, .25),
+    turn: () => { tone(660, 0, .14, 'sine', .2); tone(990, .12, .22, 'sine', .2); },
+    uno: () => [523, 659, 784, 1047].forEach((f, i) => tone(f, i * .07, .16, 'square', .09)),
+    catch: () => tone(220, 0, .35, 'sawtooth', .16, 70),
+    penalty: () => tone(300, 0, .25, 'square', .1, 120),
+    pop: () => tone(700, 0, .09, 'sine', .15, 1250),
+    nope: () => tone(150, 0, .1, 'square', .08),
+    win: () => [523, 659, 784, 1047, 784, 1047, 1319].forEach((f, i) => tone(f, i * .11, .22, 'triangle', .2)),
+    lose: () => [392, 330, 262].forEach((f, i) => tone(f, i * .16, .28, 'triangle', .16))
+  };
+  const api = name => { if (on && bank[name]) bank[name](); };
+  api.on = () => on;
+  api.toggle = () => { on = !on; try { localStorage.setItem('tarteeb-mute', on ? '0' : '1'); } catch {} return on; };
+  addEventListener('pointerdown', () => ac(), { once: true, passive: true });
+  return api;
+})();

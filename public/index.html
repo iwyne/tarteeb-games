@@ -10,7 +10,10 @@
 
 <header class="top">
   <a class="logo" href="/"><span>ترتيب</span><small>ألعاب</small></a>
-  <a class="btn sm" data-discord target="_blank" rel="noopener">ديسكورد</a>
+  <div class="hb">
+    <a class="btn sm" data-support target="_blank" rel="noopener">الدعم</a>
+    <a class="btn sm" data-discord target="_blank" rel="noopener">ديسكورد</a>
+  </div>
 </header>
 
 <main>
@@ -61,6 +64,11 @@
     <h2 class="sect">اللاعبين <span id="pcount"></span></h2>
     <ul id="plist" class="plist"></ul>
     <p id="hint" class="hint"></p>
+    <p id="scoreline" class="hint" hidden></p>
+    <div id="teamrow" class="row" hidden>
+      <button id="teamBtn" class="btn dark"></button>
+      <button id="shuffleBtn" class="btn" hidden>اخلط الفرق</button>
+    </div>
     <div class="row">
       <button id="start" class="btn green">ابدأ اللعبة</button>
       <button id="leave" class="btn">اطلع</button>
@@ -69,26 +77,34 @@
 
   <!-- اللعبة -->
   <section id="game" hidden>
-    <div class="table">
-      <div id="opps" class="opps"></div>
-      <div class="center">
-        <button id="deck" class="pile"></button>
-        <div id="discard" class="pile"></div>
-        <div id="ring" class="ring"></div>
+    <div class="room">
+      <div class="stage">
+        <div class="felt"></div>
+        <button id="mute" class="btn sm mute-game">🔊</button>
+        <a class="btn sm sup-game" data-support target="_blank" rel="noopener">الدعم</a>
+        <div id="opps"></div>
+        <div class="centerpile">
+          <button id="deck" class="pile"></button>
+          <div class="tablename"><b>ترتيب</b><small>ألعاب</small><div id="score" class="score" hidden></div></div>
+          <div id="discard" class="pile"></div>
+        </div>
+        <div id="turn" class="turn"></div>
+        <div id="log" class="log"></div>
       </div>
-      <div id="turn" class="turn"></div>
-      <div id="log" class="log"></div>
-      <div class="actions">
-        <button id="unoBtn" class="btn yellow" hidden>أونو!</button>
-        <button id="pass" class="btn" hidden>مرّر</button>
-        <button id="catch" class="btn red" hidden>امسكه! ما قال أونو</button>
+      <div class="handzone">
+        <div class="actions">
+          <button id="catch" class="btn red" hidden>امسكه! ما قال أونو</button>
+          <button id="pass" class="btn" hidden>مرّر</button>
+        </div>
+        <div id="hand" class="hand"></div>
+        <button id="unoBtn" class="unobtn" hidden>UNO!</button>
       </div>
-      <div id="hand" class="hand"></div>
     </div>
     <div id="over" class="overlay" hidden>
       <div class="box">
         <small>الجولة انتهت</small>
         <h2 id="winner"></h2>
+        <p id="winteam" class="hint" hidden></p>
         <div class="row">
           <button id="again" class="btn green" hidden>جولة جديدة</button>
           <button id="leave2" class="btn">اطلع</button>
@@ -101,7 +117,10 @@
 
 <footer class="foot">
   <p>تبي تلعب مع الشلة؟</p>
-  <a class="btn discord" data-discord target="_blank" rel="noopener">ادخل ديسكورد ترتيب ←</a>
+  <div class="fb">
+    <a class="btn discord" data-discord target="_blank" rel="noopener">ادخل ديسكورد ترتيب ←</a>
+    <a class="btn support" data-support target="_blank" rel="noopener">موقع الدعم</a>
+  </div>
 </footer>
 
 <div id="colorModal" class="overlay" hidden>
@@ -115,8 +134,18 @@
     </div>
   </div>
 </div>
+<div id="chatfab" class="fabs" hidden>
+  <button id="emojiBtn" class="fab" title="تفاعل">😀</button>
+  <button id="chatBtn" class="fab" title="شات">💬<i id="unread" hidden>0</i></button>
+</div>
+<div id="emojiBar" class="popbar" hidden></div>
+<div id="chatbox" class="chatbox" hidden>
+  <div id="msgs" class="msgs"></div>
+  <div class="chatin"><input id="chatin" maxlength="120" placeholder="اكتب رسالة…" autocomplete="off"><button id="chatsend" class="btn sm">ارسل</button></div>
+</div>
 <div id="toast"></div>
 
+<script src="sfx.js"></script>
 <script src="app.js"></script>
 </body>
 </html>

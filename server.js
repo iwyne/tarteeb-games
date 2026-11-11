@@ -43,6 +43,7 @@ const rooms = new Map();
 const COLORS = ['red', 'yellow', 'green', 'blue'];
 const AR = { red: 'أحمر', yellow: 'أصفر', green: 'أخضر', blue: 'أزرق' };
 const MIN = 2, MAX = 6;
+const EMOJIS = ['😂', '😡', '😭', '👏', '🔥', '😎', '🤯', '❤️'];
 
 const rid = () => Math.random().toString(36).slice(2, 9);
 const mod = (a, n) => ((a % n) + n) % n;
@@ -67,7 +68,7 @@ function cname(c) {
   return c.color === 'wild' ? v : `${v} ${AR[c.color]}`;
 }
 
-const newRoom = code => ({ code, phase: 'lobby', players: [], host: null, deck: [], discard: [], color: null, dir: 1, turn: 0, pending: null, catchable: null, log: [], winner: null });
+const newRoom = code => ({ code, phase: 'lobby', players: [], host: null, deck: [], discard: [], color: null, dir: 1, turn: 0, pending: null, catchable: null, log: [], winner: null, chat: [], teams: false, score: [0, 0], winTeam: null });
 const cur = r => r.players[r.turn];
 const log = (r, s) => { r.log.push(s); if (r.log.length > 30) r.log.shift(); };
 
@@ -96,8 +97,12 @@ function advance(r, steps) {
   r.pending = null;
 }
 
+// وضع الفرق يحتاج ٤ أو ٦ لاعبين، والفريق = رقم المقعد زوجي/فردي (يتناوبون بالجلوس)
+function fixTeams(r) { if (r.teams && !(r.players.length >= 4 && r.players.length % 2 === 0)) r.teams = false; }
+
 function start(r) {
-  r.deck = buildDeck(); r.discard = []; r.dir = 1; r.pending = null; r.catchable = null; r.winner = null; r.log = [];
+  fixTeams(r);
+  r.deck = buildDeck(); r.discard = []; r.dir = 1; r.pending = null; r.catchable = null; r.winner = null; r.winTeam = null; r.log = [];
   r.players.forEach(p => { p.hand = []; p.uno = false; });
   for (let i = 0; i < 7; i++) r.players.forEach(p => p.hand.push(r.deck.pop()));
   let c;
@@ -129,7 +134,9 @@ function play(r, p, id, color) {
     log(r, `${v.name} سحب ${k} وانمنع`);
   }
   if (p.hand.length === 0) {
-    r.phase = 'over'; r.winner = p.name; log(r, `${p.name} خلّص أوراقه`);
+    r.phase = 'over'; r.winner = p.name;
+    if (r.teams) { r.winTeam = r.players.indexOf(p) % 2; r.score[r.winTeam]++; }
+    log(r, `${p.name} خلّص أوراقه`);
     return;
   }
   if (p.hand.length === 1 && !p.uno) r.catchable = p.id;
@@ -166,7 +173,8 @@ function view(r, p) {
   const mine = !!c && c.id === p.id && r.phase === 'play';
   return {
     t: 'state', code: r.code, phase: r.phase, me: p.id,
-    players: r.players.map(q => ({ id: q.id, name: q.name, n: q.hand.length, on: q.online, h: q.id === r.host })),
+    players: r.players.map((q, i) => ({ id: q.id, name: q.name, n: q.hand.length, on: q.online, h: q.id === r.host, tm: r.teams ? i % 2 : null })),
+    teams: r.teams, score: r.score, winTeam: r.winTeam,
     hand: p.hand, top: r.discard[r.discard.length - 1] || null, color: r.color, dir: r.dir,
     turn: c ? c.id : null, deck: r.deck.length,
     ok: mine ? p.hand.filter(x => canPlay(r, p, x)).map(x => x.id) : [],
@@ -175,10 +183,13 @@ function view(r, p) {
   };
 }
 function send(ws, o) { if (ws && ws.readyState === 1) ws.send(JSON.stringify(o)); }
+function cast(r, o) { r.players.forEach(p => p.online && send(p.ws, o)); }
+const rate = (p, k, ms) => { const n = Date.now(); if (p['_' + k] && n - p['_' + k] < ms) return false; p['_' + k] = n; return true; };
 function broadcast(r) { r.players.forEach(p => p.online && send(p.ws, view(r, p))); }
 
 // لو دور لاعب انقطع نتصرف عنه بعد ثانيتين عشان اللعبة ما توقف
 function after(r) {
+  if (r.phase === 'lobby') fixTeams(r);
   broadcast(r);
   if (r.phase !== 'play') return;
   const p = cur(r);
@@ -217,6 +228,34 @@ function join(ws, m) {
   }
   ws.ctx = { r, p };
   send(ws, { t: 'joined', code: r.code, token: p.token, name: p.name });
+  send(ws, { t: 'chathist', list: r.chat });
+  after(r);
+}
+
+// دخول من داخل ديسكورد: الغرفة = معرّف النشاط، والهوية من حساب ديسكورد (نتحقق من التوكن)
+async function activity(ws, m) {
+  let u;
+  try {
+    const r = await fetch('https://discord.com/api/users/@me', { headers: { Authorization: 'Bearer ' + String(m.token || '') } });
+    if (!r.ok) throw 0;
+    u = await r.json();
+  } catch { return send(ws, { t: 'err', msg: 'تعذّر التحقق من حساب الديسكورد' }); }
+  const key = String(m.room || '').slice(0, 64).toUpperCase();
+  if (!key || !u.id) return;
+  let r = rooms.get(key);
+  if (!r) { r = newRoom(key); rooms.set(key, r); }
+  let p = r.players.find(q => q.uid === u.id);
+  if (p) {
+    if (p.ws && p.ws !== ws) { p.ws.ctx = null; try { p.ws.close(); } catch {} }
+    p.ws = ws; p.online = true;
+  } else {
+    if (r.phase !== 'lobby') return send(ws, { t: 'err', msg: 'اللعبة بدأت، انتظر الجولة الجاية' });
+    if (r.players.length >= MAX) return send(ws, { t: 'err', msg: 'الغرفة ممتلئة (٦ لاعبين)' });
+    p = addPlayer(r, cleanName(u.global_name || u.username)); p.uid = u.id; p.ws = ws;
+  }
+  ws.ctx = { r, p };
+  send(ws, { t: 'joined', code: r.code, token: '', name: p.name });
+  send(ws, { t: 'chathist', list: r.chat });
   after(r);
 }
 
@@ -265,6 +304,24 @@ wss.on('connection', ws => {
     switch (m.t) {
       case 'start': if (r.host === p.id && r.phase === 'lobby' && r.players.length >= MIN) start(r); break;
       case 'play': play(r, p, m.id, m.color); break;
+      case 'emoji':
+        if (EMOJIS.includes(m.e) && rate(p, 'e', 700)) cast(r, { t: 'react', from: p.id, e: m.e });
+        return;
+      case 'chat': {
+        const text = String(m.text || '').trim().slice(0, 120);
+        if (text && rate(p, 'c', 500)) {
+          const msg = { from: p.id, name: p.name, text };
+          r.chat.push(msg); if (r.chat.length > 30) r.chat.shift();
+          cast(r, { t: 'chat', ...msg });
+        }
+        return;
+      }
+      case 'teams':
+        if (r.host === p.id && r.phase === 'lobby') { r.teams = !!m.on && r.players.length >= 4 && r.players.length % 2 === 0; r.score = [0, 0]; }
+        break;
+      case 'shuffle':
+        if (r.host === p.id && r.phase === 'lobby' && r.teams) shuffle(r.players);
+        break;
       case 'draw': draw(r, p); break;
       case 'pass': pass(r, p); break;
       case 'uno': uno(r, p); break;
@@ -273,7 +330,7 @@ wss.on('connection', ws => {
         if (r.host === p.id && r.phase === 'over') {
           r.players = r.players.filter(q => q.online);
           r.players.forEach(q => { q.hand = []; q.uno = false; });
-          r.phase = 'lobby'; r.winner = null; r.log = [];
+          r.phase = 'lobby'; r.winner = null; r.winTeam = null; r.log = [];
         }
         break;
       case 'leave':

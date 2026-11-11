@@ -1,4 +1,6 @@
 // ====== غيّر هذا الرابط لرابط دعوة ديسكورد ترتيب ======
+// ====== رابط موقع الدعم (اتركه فاضي لين تجهز الموقع) ======
+const SUPPORT_URL = '';
 const DISCORD_URL = 'https://discord.gg/xxVUG2ZdFP';
 // =====================================================
 
@@ -15,9 +17,13 @@ const store = {
 const IN_DISCORD = new URLSearchParams(location.search).has('frame_id'); // ديسكورد يضيف frame_id لما تفتح اللعبة داخله
 let session = IN_DISCORD ? {} : (store.get('tarteeb-session') || {});
 let activityHello = null;
-let S = null, ws, queue = [], wildId = null;
+let S = null, prevS = null, ws, queue = [], wildId = null;
 
 $$('[data-discord]').forEach(a => a.href = DISCORD_URL);
+$$('[data-support]').forEach(a => {
+  if (SUPPORT_URL) a.href = SUPPORT_URL;
+  else a.onclick = e => { e.preventDefault(); toast('رابط الدعم ما انضاف بعد'); };
+});
 const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 let tt;
 function toast(msg) { const t = $('#toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(tt); tt = setTimeout(() => t.classList.remove('show'), 2400); }
@@ -46,11 +52,19 @@ function on(m) {
     if (m.reset) reset();
   } else if (m.t === 'left') {
     reset();
+  } else if (m.t === 'chathist') {
+    chatLog = m.list || []; if (!$('#chatbox').hidden) drawMsgs();
+  } else if (m.t === 'chat') {
+    chatLog.push(m); if (chatLog.length > 30) chatLog.shift();
+    if (!$('#chatbox').hidden) drawMsgs();
+    else if (S && m.from !== S.me) { unread++; badge(); sfx('pop'); toast(`${m.name}: ${m.text}`); }
+  } else if (m.t === 'react') {
+    showReact(m.from, m.e);
   } else if (m.t === 'state') {
-    S = m; render();
+    prevS = S; S = m; render();
   }
 }
-function reset() { session = {}; store.set('tarteeb-session', {}); S = null; render(); }
+function reset() { session = {}; store.set('tarteeb-session', {}); S = null; prevS = null; render(); }
 
 // ---------- الرئيسية ----------
 const nameEl = $('#name'), codeEl = $('#code');
@@ -79,6 +93,8 @@ $('#copy').onclick = async () => {
   catch { toast('الكود: ' + S.code); }
 };
 $('#start').onclick = () => send({ t: 'start' });
+$('#teamBtn').onclick = () => send({ t: 'teams', on: !S.teams });
+$('#shuffleBtn').onclick = () => send({ t: 'shuffle' });
 $('#leave').onclick = $('#leave2').onclick = () => send({ t: 'leave' });
 $('#again').onclick = () => send({ t: 'again' });
 
@@ -86,14 +102,28 @@ function renderLobby() {
   const host = S.players.find(p => p.h);
   $('#roomcode').textContent = S.code;
   $('#pcount').textContent = `(${S.players.length}/6)`;
-  $('#plist').innerHTML = S.players.map(p =>
-    `<li class="${p.on ? '' : 'off'}">${esc(p.name)}${p.id === S.me ? ' <em>(أنت)</em>' : ''}${p.h ? '<span class="crown">المضيف</span>' : ''}</li>`
+  const plist = S.teams ? [...S.players].sort((a, b) => a.tm - b.tm) : S.players;
+  $('#plist').innerHTML = plist.map(p =>
+    `<li data-id="${p.id}" class="${p.on ? '' : 'off'}${S.teams ? ' t' + p.tm : ''}">${esc(p.name)}${S.teams ? `<span class="tag">فريق ${['أ', 'ب'][p.tm]}</span>` : ''}${p.id === S.me ? ' <em>(أنت)</em>' : ''}${p.h ? '<span class="crown">المضيف</span>' : ''}</li>`
   ).join('');
   const isHost = host && host.id === S.me, enough = S.players.length >= 2;
   $('#start').hidden = !isHost;
   $('#start').disabled = !enough;
   $('#hint').textContent = !enough ? 'نحتاج لاعبين اثنين على الأقل، انتظر أحد يدخل'
     : isHost ? 'كل شي جاهز، ابدأ متى ما تبي' : 'ننتظر المضيف يبدأ اللعبة';
+  renderTeams(isHost);
+}
+function renderTeams(isHost) {
+  const can = S.players.length >= 4 && S.players.length % 2 === 0;
+  $('#teamrow').hidden = !isHost;
+  const tb = $('#teamBtn');
+  tb.textContent = S.teams ? 'وضع الفرق: مفعّل ✓' : can ? 'وضع الفرق: مطفي' : 'وضع الفرق (يحتاج ٤ أو ٦ لاعبين)';
+  tb.disabled = !S.teams && !can;
+  $('#shuffleBtn').hidden = !S.teams;
+  const sl = $('#scoreline');
+  sl.hidden = !(S.teams && S.score[0] + S.score[1] > 0);
+  sl.textContent = `النتيجة — فريق أ ${S.score[0]} : ${S.score[1]} فريق ب`;
+  if (S.teams) $('#hint').textContent += ' — الفرق تتناوب بالجلوس: لاعب منكم ولاعب منهم';
 }
 
 // ---------- الكروت ----------
@@ -128,53 +158,155 @@ $('#unoBtn').onclick = () => send({ t: 'uno' });
 $('#pass').onclick = () => send({ t: 'pass' });
 $('#catch').onclick = () => send({ t: 'catch' });
 
+const PAL = ['#e8362d', '#2a5bd7', '#1fa35c', '#ffc928'], TC = ['#e8362d', '#2a5bd7'];
 function renderGame() {
   const playing = S.phase === 'play', mine = playing && S.turn === S.me;
+  const i = S.players.findIndex(p => p.id === S.me), n = S.players.length, m = n - 1;
+  const myTm = S.players[i].tm;
 
-  // الخصوم بترتيب الجلوس بعدي
-  const i = S.players.findIndex(p => p.id === S.me), n = S.players.length;
-  const others = Array.from({ length: n - 1 }, (_, k) => S.players[(i + 1 + k) % n]);
-  $('#opps').innerHTML = others.map(p =>
-    `<div class="opp ${p.id === S.turn && playing ? 'turn' : ''} ${p.on ? '' : 'off'}"><span>${esc(p.name)}</span><span class="n">${p.n}</span></div>`
-  ).join('');
+  // الخصوم يجلسون على قوس الطاولة: اللي بعدي على يساري، وآخرهم على يميني
+  const others = Array.from({ length: m }, (_, k) => S.players[(i + 1 + k) % n]);
+  $('#opps').innerHTML = others.map((p, k) => {
+    const a = Math.PI * (k + 1) / (m + 1);
+    const x = 50 - 40 * Math.cos(a), y = 52 - 44 * Math.sin(a);
+    const col = S.teams ? TC[p.tm] : PAL[S.players.indexOf(p) % 4];
+    return `<div class="seat${p.id === S.turn && playing ? ' turn' : ''}${p.on ? '' : ' off'}" data-id="${p.id}" style="left:${x}%;top:${y}%">
+      <div class="avatar" style="background:${col};color:${col === '#ffc928' ? '#16130f' : '#fff'}">${esc([...p.name][0] || '?')}</div>
+      <div class="nm">${esc(p.name)}</div>${S.teams ? `<span class="tm${p.tm === myTm ? ' mate' : ''}">${p.tm === myTm ? 'فريقك' : 'خصم'}</span>` : ''}<div class="backs">${'<i></i>'.repeat(Math.min(p.n, 8))}</div><span class="cnt">${p.n}</span></div>`;
+  }).join('');
 
-  // الطاولة
+  // وسط الطاولة
   const deck = $('#deck'); deck.innerHTML = ''; deck.appendChild(backEl());
   deck.insertAdjacentHTML('beforeend', `<small>${S.deck}</small>`);
+  deck.classList.toggle('can', mine && S.pending === null);
   const disc = $('#discard'); disc.innerHTML = ''; if (S.top) disc.appendChild(cardEl(S.top));
-  $('#ring').style.background = HEX[S.color] || '#555';
+  disc.style.setProperty('--glow', HEX[S.color] || '#555');
+  const sc = $('#score'); sc.hidden = !S.teams;
+  if (S.teams) sc.innerHTML = `<span style="background:${TC[myTm]}">فريقك ${S.score[myTm]}</span><span style="background:${TC[1 - myTm]}">${S.score[1 - myTm]} الخصم</span>`;
 
   const t = $('#turn');
   t.className = 'turn' + (mine ? ' mine' : '');
-  t.textContent = !playing ? '' : mine ? (S.pending !== null ? 'تقدر تلعب الورقة اللي سحبتها' : 'دورك!') : `دور ${S.players.find(p => p.id === S.turn)?.name || ''}`;
+  t.textContent = !playing ? '' : mine ? (S.pending !== null ? 'العب الورقة اللي سحبتها أو مرّر' : 'دورك!') : `دور ${S.players.find(p => p.id === S.turn)?.name || ''}`;
   $('#log').innerHTML = S.log.slice(-2).map(esc).join('<br>');
 
   // الأزرار
-  const me = S.players[i];
   $('#unoBtn').hidden = !(playing && S.hand.length <= 2);
   $('#pass').hidden = !(mine && S.pending !== null);
   $('#catch').hidden = !(playing && S.catch && S.catch !== S.me);
 
-  // يدي
+  // يدي على شكل مروحة
   const hand = $('#hand'); hand.innerHTML = '';
-  [...S.hand].sort((a, b) => CORDER[a.color] - CORDER[b.color] || vrank(a.v) - vrank(b.v)).forEach(c => {
-    const el = cardEl(c, 'button');
+  const cards = [...S.hand].sort((a, b) => CORDER[a.color] - CORDER[b.color] || vrank(a.v) - vrank(b.v));
+  const N = cards.length, cw = innerWidth < 760 ? 68 : 86;
+  const sp = Math.min(cw * 0.72, (innerWidth - cw - 40) / Math.max(N - 1, 1));
+  const step = Math.min(5, 50 / Math.max(N, 1));
+  cards.forEach((c, k) => {
+    const el = cardEl(c, 'button'), d = k - (N - 1) / 2;
+    el.dataset.id = c.id;
+    el.style.marginLeft = (k ? sp - cw : 0) + 'px';
+    el.style.setProperty('--r', d * step + 'deg');
+    el.style.setProperty('--y', d * d * 1.6 + 'px');
     if (mine) {
       const ok = S.ok.includes(c.id);
       el.classList.add(ok ? 'ok' : 'no');
-      el.onclick = () => ok ? playCard(c) : toast('ما تنفع الحين');
+      el.onclick = () => ok ? playCard(c) : (sfx('nope'), toast('ما تنفع الحين'));
     }
     hand.appendChild(el);
   });
+  hand.classList.toggle('mine', mine);
+  fx();
 
   // نهاية الجولة
   const over = S.phase === 'over';
   $('#over').hidden = !over;
   if (over) {
-    $('#winner').textContent = S.winner === me.name && S.hand.length === 0 ? 'فزت! 🎉' : `فاز ${S.winner}`;
+    const me = S.players[i];
+    const wt = $('#winteam');
+    if (S.teams && S.winTeam != null) {
+      $('#winner').textContent = S.winTeam === myTm ? 'فاز فريقك! 🎉' : 'فاز الفريق الخصم';
+      wt.hidden = false; wt.textContent = 'الفائزين: ' + S.players.filter(p => p.tm === S.winTeam).map(p => p.name).join(' و ');
+    } else {
+      wt.hidden = true;
+      $('#winner').textContent = S.winner === me.name && S.hand.length === 0 ? 'فزت! 🎉' : `فاز ${S.winner}`;
+    }
     const host = S.players.find(p => p.h);
     $('#again').hidden = !(host && host.id === S.me);
     $('#waitHost').hidden = !$('#again').hidden;
+  }
+}
+
+// ---------- الحركات والأصوات ----------
+const EASE = 'cubic-bezier(.2,.8,.2,1)';
+const ctr = el => { const r = el.getBoundingClientRect(); return { x: r.left + r.width / 2, y: r.top + r.height / 2 }; };
+function fromDeck(el, deck, delay = 0) {
+  const c = ctr(el);
+  el.animate([{ translate: `${deck.x - c.x}px ${deck.y - c.y}px`, scale: .5, opacity: 0 }, { translate: '0 0', scale: 1, opacity: 1 }],
+    { duration: 420, delay, easing: EASE, fill: 'backwards' });
+}
+function flyBack(from, to, delay = 0) {
+  const b = backEl(); b.classList.add('fly');
+  b.style.left = from.x - 20 + 'px'; b.style.top = from.y - 29 + 'px';
+  document.body.appendChild(b);
+  b.animate([{ transform: 'translate(0,0) scale(1)', opacity: 1 }, { transform: `translate(${to.x - from.x}px,${to.y - from.y}px) scale(.8)`, opacity: .9 }],
+    { duration: 380, delay, easing: EASE, fill: 'both' }).onfinish = () => b.remove();
+}
+function confetti() {
+  const cols = ['#e8362d', '#ffc928', '#1fa35c', '#2a5bd7'];
+  for (let i = 0; i < 40; i++) {
+    const d = document.createElement('i'); d.className = 'confetti';
+    d.style.cssText = `left:${Math.random() * 100}vw;top:-20px;width:10px;height:14px;background:${cols[i % 4]}`;
+    document.body.appendChild(d);
+    d.animate([{ transform: 'translateY(0) rotate(0)' }, { transform: `translateY(${innerHeight + 40}px) rotate(${360 + Math.random() * 540}deg)` }],
+      { duration: 1800 + Math.random() * 1600, delay: Math.random() * 500, easing: 'ease-in', fill: 'backwards' }).onfinish = () => d.remove();
+  }
+}
+function fx() {
+  const p = prevS, s = S;
+  if (!p || !s) return;
+  const deck = ctr($('#deck')), cards = $$('#hand .card');
+  const seatPos = id => { const e = document.querySelector(`.seat[data-id="${id}"]`); return e ? ctr(e) : null; };
+
+  // بداية الجولة: توزيع الأوراق
+  if (p.phase !== 'play' && s.phase === 'play') {
+    cards.forEach((el, k) => { fromDeck(el, deck, k * 90); setTimeout(() => sfx('draw'), k * 90); });
+    return;
+  }
+  if (p.phase !== 'play') return;
+
+  // ورقة انلعبت: تطير من مكان اللاعب لورقة الرمي
+  if (s.top && (!p.top || p.top.id !== s.top.id)) {
+    const disc = $('#discard .card'), dc = ctr(disc);
+    const src = p.turn === s.me ? { x: innerWidth / 2, y: innerHeight - 100 } : (seatPos(p.turn) || deck);
+    disc.animate([{ translate: `${src.x - dc.x}px ${src.y - dc.y}px`, rotate: '-30deg', scale: .7 }, { translate: '0 0', rotate: '0deg', scale: 1 }], { duration: 400, easing: EASE });
+    sfx('card');
+    if (s.top.v === 'draw2' || s.top.v === 'wild4') setTimeout(() => sfx('penalty'), 260);
+  }
+
+  // سحب الخصوم: ظهر ورقة يطير من الكومة لمقعدهم
+  s.players.forEach(q => {
+    if (q.id === s.me) return;
+    const pq = p.players.find(x => x.id === q.id), to = seatPos(q.id);
+    if (!pq || !to || q.n <= pq.n) return;
+    for (let i = 0; i < Math.min(q.n - pq.n, 4); i++) flyBack(deck, to, i * 110);
+    sfx('draw');
+  });
+
+  // أوراقي الجديدة تطير من الكومة ليدي
+  const had = new Set(p.hand.map(c => c.id));
+  const fresh = cards.filter(el => !had.has(+el.dataset.id));
+  fresh.forEach((el, k) => fromDeck(el, deck, k * 110));
+  if (fresh.length) sfx('draw');
+
+  if (s.phase === 'play' && s.turn === s.me && p.turn !== s.me) sfx('turn');
+  const last = s.log[s.log.length - 1];
+  if (last && last !== p.log[p.log.length - 1]) {
+    if (last.includes('أونو!')) sfx('uno');
+    else if (last.includes('مسك')) sfx('catch');
+  }
+  if (s.phase === 'over') {
+    const mt = s.players.find(p => p.id === s.me)?.tm;
+    const won = s.teams && s.winTeam != null ? s.winTeam === mt : s.hand.length === 0;
+    setTimeout(() => { sfx(won ? 'win' : 'lose'); if (won) confetti(); }, 500);
   }
 }
 
@@ -182,9 +314,46 @@ function render() {
   const ph = !S ? (IN_DISCORD ? 'connecting' : 'home') : S.phase === 'lobby' ? 'lobby' : 'game';
   ['home', 'connecting', 'lobby', 'game'].forEach(id => $('#' + id).hidden = id !== ph);
   document.body.classList.toggle('ingame', ph === 'game');
+  $('#chatfab').hidden = !S;
+  if (!S) { $('#chatbox').hidden = true; $('#emojiBar').hidden = true; chatLog = []; unread = 0; badge(); }
   if (ph !== 'game') $('#colorModal').hidden = true;
   if (ph === 'lobby') renderLobby();
   if (ph === 'game') renderGame();
+}
+
+// ---------- شات وتفاعل بالايموجي ----------
+let chatLog = [], unread = 0;
+const EMOJIS = ['😂', '😡', '😭', '👏', '🔥', '😎', '🤯', '❤️'];
+$('#emojiBar').innerHTML = EMOJIS.map(e => `<button data-e="${e}">${e}</button>`).join('');
+$('#emojiBtn').onclick = () => { $('#emojiBar').hidden = !$('#emojiBar').hidden; $('#chatbox').hidden = true; };
+$$('#emojiBar button').forEach(b => b.onclick = () => { send({ t: 'emoji', e: b.dataset.e }); $('#emojiBar').hidden = true; });
+function badge() { const u = $('#unread'); u.hidden = !unread; u.textContent = unread; }
+function drawMsgs() {
+  const box = $('#msgs');
+  box.innerHTML = chatLog.map(m => `<div class="msg${S && m.from === S.me ? ' me' : ''}"><b>${esc(m.name)}:</b> ${esc(m.text)}</div>`).join('');
+  box.scrollTop = box.scrollHeight;
+}
+function openChat(open) {
+  $('#chatbox').hidden = !open; $('#emojiBar').hidden = true;
+  if (open) { unread = 0; badge(); drawMsgs(); setTimeout(() => $('#chatin').focus(), 50); }
+}
+$('#chatBtn').onclick = () => openChat($('#chatbox').hidden);
+function sendChat() { const t = $('#chatin').value.trim(); if (!t) return; send({ t: 'chat', text: t }); $('#chatin').value = ''; }
+$('#chatsend').onclick = sendChat;
+$('#chatin').addEventListener('keydown', e => e.key === 'Enter' && sendChat());
+// ايموجي يطلع فوق مقعد صاحبه ويطير
+function showReact(id, e) {
+  const el = document.querySelector(`.seat[data-id="${id}"]`) || document.querySelector(`#plist li[data-id="${id}"]`);
+  const pos = el ? ctr(el) : { x: innerWidth / 2, y: innerHeight - 200 };
+  const d = document.createElement('div'); d.className = 'react'; d.textContent = e;
+  d.style.left = pos.x + 'px'; d.style.top = pos.y + 'px';
+  document.body.appendChild(d);
+  d.animate([
+    { transform: 'translate(-50%,-50%) scale(.3)', opacity: 0 },
+    { transform: 'translate(-50%,-90%) scale(1.7)', opacity: 1, offset: .25 },
+    { transform: 'translate(-50%,-230%) scale(1.3) rotate(10deg)', opacity: 0 }
+  ], { duration: 1900, easing: 'ease-out' }).onfinish = () => d.remove();
+  sfx('pop');
 }
 
 // ---------- وضع ديسكورد Activity ----------
@@ -208,6 +377,10 @@ async function startActivity() {
     msg.textContent = 'ما قدرنا نربط مع الديسكورد، جرّب تعيد تشغيل اللعبة';
   }
 }
+
+const muteBtn = $('#mute');
+muteBtn.textContent = sfx.on() ? '🔊' : '🔇';
+muteBtn.onclick = () => { muteBtn.textContent = sfx.toggle() ? '🔊' : '🔇'; };
 
 render();
 IN_DISCORD ? startActivity() : connect();
