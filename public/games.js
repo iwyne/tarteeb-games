@@ -1,9 +1,9 @@
 // واجهات الألعاب الثانية: كلمة السر، خلية الحروف، الكذابين الترتيب
 const GNAME = { uno: 'أونو', codes: 'كلمة السر', hive: 'خلية الحروف', liars: 'الكذابين الترتيب', outside: 'برا السالفة', typing: 'سبّاق الكتابة', jackaroo: 'جاكارو', draw: 'رسم وخمّن', flip: 'أونو فليب', sus: 'المندس' };
-const GINFO = { sus: 'من ٤ إلى ١٠ لاعبين (والبوتات تكمّل العدد)', flip: 'من ٢ إلى ٨ لاعبين', uno: 'من ٢ إلى ٨ لاعبين', codes: 'من ٤ إلى ١٠ لاعبين، فريقين', hive: 'من ٢ إلى ١٠ لاعبين، فريقين', liars: 'من ٢ إلى ٨ لاعبين', outside: 'من ٣ إلى ١٠ لاعبين', typing: 'من ٢ إلى ١٠ لاعبين', jackaroo: '٤ لاعبين بالضبط، فريقين (شريكك قبالتك)', draw: 'من ٢ إلى ١٠ لاعبين' };
+const GINFO = { sus: 'من ٤ إلى ١٢ لاعب (والبوتات تكمّل العدد)', flip: 'من ٢ إلى ٨ لاعبين', uno: 'من ٢ إلى ٨ لاعبين', codes: 'من ٤ إلى ١٠ لاعبين، فريقين', hive: 'من ٢ إلى ١٠ لاعبين، فريقين', liars: 'من ٢ إلى ٨ لاعبين', outside: 'من ٣ إلى ١٠ لاعبين', typing: 'من ٢ إلى ١٠ لاعبين', jackaroo: '٤ لاعبين بالضبط، فريقين (شريكك قبالتك)', draw: 'من ٢ إلى ١٠ لاعبين' };
 const BOTGAMES = ['uno', 'hive', 'liars', 'jackaroo', 'outside', 'typing', 'flip', 'sus'];
 const GHELP = {
-  sus: 'أنتم طاقم سفينة، وبينكم مندس (أو اثنين لو كنتم ٧ وفوق). امشِ بالأسهم/WASD أو اسحب على الشاشة. الطاقم يخلّصون مهامهم (العلامات الصفراء)، والمندس يقتل ويخرّب ويتنقّل بالفتحات. لو لقيت جثة بلّغ، أو اضغط زر الطوارئ بالكافتيريا. وقت الاجتماع تتناقشون وتصوّتون مين تطردون. الطاقم يفوز لو خلّصوا المهام أو طردوا المندسين، والمندس يفوز لو صار عدده نفس الطاقم أو انفجر المفاعل.',
+  sus: 'أنتم طاقم سفينة وبينكم مندسين (١–٣ حسب اختيار المضيف). امشِ بالأسهم/WASD أو اسحب على الشاشة. ما تشوف إلا اللي قدامك، والغرف الثانية ظلام. الطاقم يخلّصون مهامهم (العلامات الصفراء)، والمندس يقتل ويخرّب ويتنقّل بالفتحات. غرفة المراقبة فيها كاميرات للممرات. لو لقيت جثة بلّغ، أو اضغط زر الطوارئ بالكافتيريا. وبطور الدكتور: الدكتور يعطي درع لشخص واحد كل جولة يحميه من القتل لين الاجتماع الجاي. الطاقم يفوز لو خلّصوا المهام أو طردوا المندسين، والمندس يفوز لو صار عددهم نفس الطاقم أو انفجر المفاعل.',
   flip: 'أونو بوجهين: فاتح (أحمر/أصفر/أخضر/أزرق) وغامق (وردي/تركوازي/برتقالي/بنفسجي). ورقة «فليب» تقلب كل اللعبة للوجه الثاني. الفاتح: +١ و+٢ ملوّن، والغامق: +٥ و«منع الكل» (تلعب مرة ثانية) و«ملوّن سحب لون» (الخصم يسحب لين يطلع له اللون). +٢ والسحب لون ما تنلعب إلا لو ما عندك لون الطاولة، ومن بعدك يقدر يتحدّاك. الورقة اللي تسحبها ما تنلعب. لو بقي عندك ورقة اضغط UNO! وإلا يمسكونك ويسحبك ٢.',
   uno: 'تخلّص من أوراقك قبل الكل. العب ورقة نفس اللون أو نفس الرقم/الرمز. لما يبقى عندك ورقة وحدة اضغط UNO! وإلا يمسكونك ويسحبك +٢. مع «تراكم السحب» تقدر ترد +٢ على +٢ و+٤ على +٤.',
   codes: 'فريقين (أ وب). كل فريق له قائد يشوف ألوان الكلمات السرية ويعطي تلميح بكلمة وحدة + رقم. الفريق يخمّن كلماته. أول فريق يكشف كل كلماته يفوز، واللي يضغط على الكلمة القاتلة يخسر فريقه.',
@@ -76,7 +76,7 @@ function renderOther() {
     else if (S.game === 'outside') $('#winner2').textContent = S.spec ? (g.spyWins ? 'فاز برا السالفة' : 'فاز اللي داخل السالفة') : g.spyWins === amSpy ? 'فزت! 🎉' : (g.spyWins ? 'برا السالفة نجا!' : 'انكشف برا السالفة!');
     else $('#winner2').textContent = S.teams && S.winTeam != null ? (S.spec ? 'فاز ' + S.winner : S.winTeam === mt ? 'فاز فريقك! 🎉' : 'فاز ' + S.winner) : (S.winner === (m && m.name) ? 'فزت! 🎉' : S.winner === 'انتهت اللعبة' || S.winner === 'تعادل' ? S.winner : 'فاز ' + S.winner);
     const wt = $('#winteam2'); wt.hidden = !(S.teams && S.winTeam != null);
-    if (S.game === 'sus') { wt.hidden = false; wt.textContent = (g.why ? g.why + ' — ' : '') + 'المندس' + ((g.imps || []).length > 1 ? 'ين كانوا: ' : ' كان: ') + (g.imps || []).map(nameOf).join(' و '); }
+    if (S.game === 'sus') { wt.hidden = false; wt.innerHTML = susOverHtml(g); }
     else if (!wt.hidden) wt.textContent = 'الفائزين: ' + S.players.filter(p => p.tm === S.winTeam).map(p => p.name).join(' و ');
     $('#board2').innerHTML = [...S.players].sort((a, b) => b.w - a.w).map(p => `<li${p.id === S.me ? ' class="me"' : ''}><span>${esc(p.name)}</span><b>🏆 ${p.w}</b></li>`).join('');
     const host = S.players.find(p => p.h);
@@ -376,12 +376,14 @@ function renderLobbySet(isHost) {
   const sig = JSON.stringify([isHost, S.game, o, S.players.length >= S.max]);
   box.hidden = false;
   if (sig === lsSig) return; lsSig = sig;
-  const sum = [o.lock ? '🔒 مقفلة بدون متفرجين' : '', o.hasPass ? '🔑 بكلمة سر' : '', S.game === 'uno' && o.stack ? 'تراكم +٢/+٤' : '', S.game === 'uno' && o.turn !== 15 ? `مهلة الدور ${o.turn} ث` : '', S.game === 'typing' ? `الهدف ${o.target} نقاط` : '', S.game === 'codes' && o.nwords ? `كلمات مخصصة (${o.nwords})` : ''].filter(Boolean);
+  const sum = [o.lock ? '🔒 مقفلة بدون متفرجين' : '', o.hasPass ? '🔑 بكلمة سر' : '', S.game === 'uno' && o.stack ? 'تراكم +٢/+٤' : '', S.game === 'uno' && o.turn !== 15 ? `مهلة الدور ${o.turn} ث` : '', S.game === 'sus' ? `${o.imps || 1} ${(o.imps || 1) > 1 ? 'مندسين' : 'مندس'}` : '', S.game === 'sus' && o.doctor ? 'طور الدكتور 🩺' : '', S.game === 'typing' ? `الهدف ${o.target} نقاط` : '', S.game === 'codes' && o.nwords ? `كلمات مخصصة (${o.nwords})` : ''].filter(Boolean);
   if (!isHost) { box.innerHTML = sum.length ? `<div class="lsum">${sum.map(x => `<span>${x}</span>`).join('')}</div>` : ''; box.hidden = !sum.length; return; }
   const gm = Object.keys(GNAME).map(k => `<button type="button" class="gsw${k === S.game ? ' on' : ''}" data-g="${k}">${GNAME[k]}</button>`).join('');
   let extra = '';
   if (S.game === 'uno') extra = `<label class="chk"><input type="checkbox" id="oStack"${o.stack ? ' checked' : ''}> تراكم السحب (+٢ على +٢ و +٤ على +٤)</label>
     <label class="chk">مهلة الدور <select id="oTurn">${[10, 15, 25, 40].map(n => `<option value="${n}"${o.turn === n ? ' selected' : ''}>${n} ثانية</option>`).join('')}</select></label>`;
+  else if (S.game === 'sus') extra = `<label class="chk">عدد المندسين <select id="oImps">${[1, 2, 3].map(n => `<option value="${n}"${o.imps === n ? ' selected' : ''}>${n}</option>`).join('')}</select></label>
+    <label class="chk"><input type="checkbox" id="oDoc"${o.doctor ? ' checked' : ''}> طور الدكتور 🩺 (يعطي درع لشخص كل جولة)</label><small class="muted">٢ مندسين يحتاج ٦ لاعبين، و٣ يحتاج ٩</small>`;
   else if (S.game === 'typing') extra = `<label class="chk">الهدف <select id="oTarget">${[3, 5, 8, 12].map(n => `<option value="${n}"${o.target === n ? ' selected' : ''}>${n} نقاط</option>`).join('')}</select></label>`;
   else if (S.game === 'codes') extra = `<details class="wdet"><summary>كلمات مخصصة ${o.nwords ? `(مفعّلة: ${o.nwords})` : '(اختياري)'}</summary><textarea id="oWords" rows="4" placeholder="اكتب ٢٥ كلمة أو أكثر، كل كلمة بسطر أو افصلها بفاصلة">${esc(o.wordsText || '')}</textarea><div class="row"><button type="button" id="oWordsSave" class="btn sm">حفظ الكلمات</button><button type="button" id="oWordsClear" class="btn sm">رجّع الكلمات العادية</button></div></details>`;
   box.innerHTML = `<div class="ls-row"><b>اللعبة</b><div class="chips">${gm}</div></div>
@@ -393,6 +395,8 @@ function renderLobbySet(isHost) {
   const bind = (id, ev, fn) => { const e = $('#' + id); if (e) e[ev] = fn; };
   bind('oStack', 'onchange', e => send({ t: 'opt', k: 'stack', v: e.target.checked }));
   bind('oTurn', 'onchange', e => send({ t: 'opt', k: 'turn', v: +e.target.value }));
+  bind('oImps', 'onchange', e => send({ t: 'opt', k: 'imps', v: +e.target.value }));
+  bind('oDoc', 'onchange', e => send({ t: 'opt', k: 'doctor', v: e.target.checked }));
   bind('oTarget', 'onchange', e => send({ t: 'opt', k: 'target', v: +e.target.value }));
   bind('oLock', 'onchange', e => send({ t: 'opt', k: 'lock', v: e.target.checked }));
   bind('oPassSave', 'onclick', () => { send({ t: 'opt', k: 'pass', v: $('#oPass').value }); toast($('#oPass').value.trim() ? 'انحفظت كلمة السر' : 'انشالت كلمة السر'); });

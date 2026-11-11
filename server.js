@@ -90,7 +90,7 @@ for (const k of ['codes', 'hive', 'liars', 'outside', 'typing', 'jackaroo', 'dra
 const META = { uno: { bots: true }, codes: { teams: true }, hive: { teams: true, bots: true }, liars: { bots: true }, outside: { bots: true }, typing: { bots: true }, jackaroo: { teams: true, bots: true }, draw: {}, flip: { bots: true }, sus: { bots: true } };
 const AVATARS = ['😎', '🦁', '🐪', '🦅', '🐺', '🦊', '🐯', '🐼', '🦄', '🐸', '👑', '🔥', '⚡', '🌙', '🎩', '🤠'];
 const cleanAv = a => AVATARS.includes(a) ? a : '';
-const optsView = (r, p) => ({ stack: !!r.opts.stack, turn: r.opts.turn || 15, lock: !!r.opts.lock, hasPass: !!r.opts.pass, pass: r.host === p.id ? (r.opts.pass || '') : null, target: r.opts.target || 5, nwords: r.opts.words ? r.opts.words.length : 0, wordsText: r.host === p.id ? (r.opts.wordsText || '') : '' });
+const optsView = (r, p) => ({ stack: !!r.opts.stack, turn: r.opts.turn || 15, lock: !!r.opts.lock, hasPass: !!r.opts.pass, pass: r.host === p.id ? (r.opts.pass || '') : null, target: r.opts.target || 5, imps: r.opts.imps || 1, doctor: !!r.opts.doctor, nwords: r.opts.words ? r.opts.words.length : 0, wordsText: r.host === p.id ? (r.opts.wordsText || '') : '' });
 const maxOf = r => GAMES[r.game].max;
 
 const newRoom = (code, game = 'uno') => ({ code, game, g: null, opts: {}, owed: 0, botT: null, phase: 'lobby', players: [], host: null, deck: [], discard: [], color: null, dir: 1, turn: 0, pending: null, catchable: null, log: [], winner: null, chat: [], teams: false, score: [0, 0], winTeam: null, specs: [], recorded: false, banned: new Set(), turnSeq: 0, armed: -1, timer: null, deadline: 0 });
@@ -555,6 +555,8 @@ wss.on('connection', (ws, req) => {
         else if (k === 'pass') r.opts.pass = String(v || '').replace(/\s/g, '').slice(0, 12);
         else if (k === 'stack' && r.game === 'uno') r.opts.stack = !!v;
         else if (k === 'turn' && r.game === 'uno' && [10, 15, 25, 40].includes(+v)) r.opts.turn = +v;
+        else if (k === 'imps' && r.game === 'sus' && [1, 2, 3].includes(+v)) r.opts.imps = +v;
+        else if (k === 'doctor' && r.game === 'sus') r.opts.doctor = !!v;
         else if (k === 'target' && r.game === 'typing' && [3, 5, 8, 12].includes(+v)) r.opts.target = +v;
         else if (k === 'words' && r.game === 'codes') {
           const text = String(v || '').slice(0, 1500);

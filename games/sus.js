@@ -1,27 +1,32 @@
-// المندس: طاقم سفينة يسوّون مهامهم، وبينهم مندس (أو اثنين) يقتلون ويخرّبون.
+// المندس: طاقم سفينة يسوّون مهامهم، وبينهم مندس (١–٣) يقتلون ويخرّبون. وفيه طور الدكتور: يعطي درع لشخص واحد كل جولة.
 // الطاقم يفوز لو خلّصوا المهام أو طلّعوا المندسين بالتصويت، والمندسين يفوزون لو صار عددهم = الطاقم أو انفجر المفاعل.
-// الحركة مباشرة: المتصفح يرسل مكانه والسيرفر يتحقق منه، والسيرفر يوزّع الأماكن ١٠ مرات بالثانية (كل واحد يشوف اللي قريب منه بس).
+// الحركة مباشرة: المتصفح يرسل مكانه والسيرفر يتحقق منه (سرعة + جدران + أثاث)، ويوزّع الأماكن ١٠ مرات بالثانية.
+// كل لاعب يوصله بس اللي يشوفه فعلاً (المسافة + الجدران) أو اللي يطلع بالكاميرات.
 const M = require('../public/sus-map');
-const SPEED = 230, KILL_R = 100, REPORT_R = 140, USE_R = 95, BTN_R = 120, VENT_R = 80;
-const VIS = { crew: 340, imp: 440, dark: 125 };
+const SPEED = 190, KILL_R = 130, REPORT_R = 170, USE_R = 110, BTN_R = M.btnR + 90, VENT_R = 90, CAM_USE = 120, SHIELD_R = 170;
+const VIS = { crew: 560, imp: 700, dark: 210 };
 const KILL_CD = 25000, FIRST_CD = 12000, SABO_CD = 30000, REACT_MS = 45000, BTN_CD = 15000;
-const INTRO = 4500, TALK = 20000, VOTE = 35000, EJECT = 6500, TASKS_EACH = 5;
-const MIN_T = { wires: 1500, swipe: 700, nums: 2000, hold: 2000, wait: 4500 };
+const INTRO = 5500, TALK = 20000, VOTE = 35000, REVEAL = 4000, EJECT = 6500, TASKS_EACH = 6;
+const MIN_T = { wires: 1500, swipe: 700, nums: 2000, hold: 2000, wait: 4500, slider: 1000, simon: 3000, tap: 1500, code: 1800, temp: 1200 };
 const TASK = Object.fromEntries(M.tasks.map(t => [t.id, t]));
 const dist = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
 const rnd = n => Math.random() * n | 0;
+const sees = (a, b, rad) => Math.hypot(a.x - b.x, a.y - b.y) <= rad && M.see(a.x, a.y, b.x, b.y);
+const maxImps = n => n >= 9 ? 3 : n >= 6 ? 2 : 1;
 
 module.exports = H => {
   const name = (r, id) => (r.players.find(q => q.id === id) || {}).name || '؟';
   const plist = g => Object.values(g.P);
-  const snap = (r, id) => { const q = r.players.find(x => x.id === id), P = r.g.P[id]; if (q && !q.bot) H.sendTo(q, { t: 'snap', x: P.x, y: P.y }); };
+  const human = (r, id) => { const q = r.players.find(x => x.id === id); return q && !q.bot ? q : null; };
+  const tell = (r, id, o) => { const q = human(r, id); if (q) H.sendTo(q, o); };
+  const snap = (r, id, ev) => { const P = r.g.P[id]; tell(r, id, { t: 'snap', x: P.x, y: P.y, ev }); };
 
   function spawnAll(r) {
-    const g = r.g, ids = Object.keys(g.P), n = ids.length;
+    const g = r.g, ids = Object.keys(g.P), n = Math.max(ids.length, 6);
     ids.forEach((id, i) => {
       const a = (i / n) * Math.PI * 2 - Math.PI / 2, P = g.P[id];
-      P.x = M.button[0] + Math.cos(a) * 115; P.y = M.button[1] + Math.sin(a) * 105 + 20; P.lastMv = Date.now(); P.cur = null;
-      if (P.bot) { P.bot.path = []; P.bot.wait = 0; P.bot.goal = null; P.bot.task = null; }
+      P.x = M.spawn[0] + Math.cos(a) * M.spawnR; P.y = M.spawn[1] + Math.sin(a) * M.spawnR; P.lastMv = Date.now(); P.cur = null; P.cams = false;
+      if (P.bot) Object.assign(P.bot, { path: [], wait: 0, goal: null, task: null });
       snap(r, id);
     });
   }
@@ -47,33 +52,38 @@ module.exports = H => {
 
   function meeting(r, byId, bodyId) {
     const g = r.g;
-    g.sub = 'meet'; g.sabo = null;
-    plist(g).forEach(P => { if (!P.alive) P.known = true; });
+    g.sub = 'meet'; g.sabo = null; g.round++;
+    plist(g).forEach(P => { if (!P.alive) P.known = true; P.shield = false; P.shieldOn = null; P.cams = false; });
     g.bodies = [];
-    g.meet = { by: byId, body: bodyId || null, sub: 'talk', votes: {}, n: (g.meet ? g.meet.n : 0) + 1 };
+    g.meet = { by: byId, body: bodyId || null, sub: 'talk', votes: {}, at: Date.now(), tally: null };
     spawnAll(r);
     H.log(r, bodyId ? `${name(r, byId)} بلّغ عن جثة ${name(r, bodyId)}` : `${name(r, byId)} سوّى اجتماع طارئ`);
     const mt = g.meet;
     H.setTimer(r, TALK, () => { if (g.meet !== mt) return; mt.sub = 'vote'; botVotes(r); H.setTimer(r, VOTE, () => endVote(r)); });
   }
 
+  // نهاية التصويت: نكشف الأصوات (reveal) وبعدين نطرد (eject)
   function endVote(r) {
-    const g = r.g, mt = g.meet; if (!mt || g.sub !== 'meet') return;
+    const g = r.g, mt = g.meet; if (!mt || g.sub !== 'meet' || mt.sub === 'reveal') return;
     const cnt = {}; let skip = 0;
     Object.values(mt.votes).forEach(v => { if (v === 'skip') skip++; else cnt[v] = (cnt[v] || 0) + 1; });
     const top = Object.entries(cnt).sort((a, b) => b[1] - a[1]);
-    let out = null;
-    if (top.length && top[0][1] > skip && !(top[1] && top[1][1] === top[0][1])) out = top[0][0];
+    const tie = top[1] && top[1][1] === top[0][1];
+    const out = top.length && top[0][1] > skip && !tie ? top[0][0] : null;
     const tally = {}; Object.entries(mt.votes).forEach(([who, v]) => { (tally[v] = tally[v] || []).push(who); });
-    let text;
+    mt.sub = 'reveal'; mt.tally = tally;
+    H.setTimer(r, REVEAL, () => eject(r, out, top.length && tie && top[0][1] > skip));
+  }
+  function eject(r, out, tie) {
+    const g = r.g; let text;
+    const left = () => plist(g).filter(x => x.imp && x.alive).length;
     if (out && g.P[out]) {
       const P = g.P[out]; P.alive = false; P.known = true;
-      const left = plist(g).filter(x => x.imp && x.alive).length;
       text = `${name(r, out)} انطرد من السفينة… ${P.imp ? 'وكان المندس 😈' : 'وما كان المندس 😇'}`;
-      g.eject = { id: out, imp: P.imp, text, left, tally };
+      g.eject = { id: out, imp: P.imp, text, left: left() };
     } else {
-      text = top.length && top[1] && top[1][1] === top[0][1] && top[0][1] > skip ? 'تعادل… محد انطرد' : 'تخطّيتوا… محد انطرد';
-      g.eject = { id: null, imp: false, text, left: plist(g).filter(x => x.imp && x.alive).length, tally };
+      text = tie ? 'تعادل… محد انطرد' : 'تخطّيتوا… محد انطرد';
+      g.eject = { id: null, imp: false, text, left: left() };
     }
     H.log(r, text);
     g.sub = 'eject';
@@ -82,7 +92,7 @@ module.exports = H => {
       const now = Date.now();
       g.sub = 'play'; g.meet = null; g.eject = null;
       g.btnAt = now + BTN_CD; g.saboAt = Math.max(g.saboAt, now + 15000);
-      plist(g).forEach(P => { if (P.imp) P.killAt = now + KILL_CD; P.lastMv = now; });
+      plist(g).forEach(P => { if (P.imp) P.killAt = now + KILL_CD; P.lastMv = now; P.docUsed = false; if (P.bot) P.bot.docAt = now + 6000 + rnd(20000); });
     });
   }
 
@@ -91,19 +101,25 @@ module.exports = H => {
     if (!mt || mt.sub !== 'vote' || !P || !P.alive || mt.votes[id]) return false;
     if (v !== 'skip' && !(g.P[v] && g.P[v].alive)) return false;
     mt.votes[id] = v;
-    if (plist(g).filter(x => x.alive).every(x => mt.votes[x.id])) { H.setTimer(r, 1200, () => endVote(r)); }
+    if (plist(g).filter(x => x.alive).every(x => mt.votes[x.id])) H.setTimer(r, 900, () => endVote(r));
     return true;
   }
 
   function kill(r, P, T) {
     const g = r.g, now = Date.now();
-    T.alive = false; T.cur = null;
+    if (T.shield) {
+      // الدرع يحميه: القاتل ينصد والدكتور يدري
+      P.killAt = now + 10000;
+      tell(r, P.id, { t: 'sus', ev: 'blocked', id: T.id });
+      const doc = plist(g).find(x => x.shieldOn === T.id); if (doc) tell(r, doc.id, { t: 'sus', ev: 'saved', id: T.id });
+      tell(r, T.id, { t: 'sus', ev: 'saved', id: T.id });
+      return;
+    }
+    T.alive = false; T.cur = null; T.cams = false;
     g.bodies.push({ id: T.id, x: T.x, y: T.y });
-    P.x = T.x; P.y = T.y; P.killAt = now + KILL_CD; snap(r, P.id);
-    const vq = r.players.find(q => q.id === T.id);
-    if (vq && !vq.bot) H.sendTo(vq, { t: 'sus', ev: 'killed', by: P.c });
-    // البوتات اللي شافت القتل تتذكر القاتل
-    plist(g).forEach(B => { if (B.bot && B.alive && !B.imp && dist(B, P) < VIS.crew) B.bot.sus = P.id; });
+    P.x = T.x; P.y = T.y; P.killAt = now + KILL_CD; snap(r, P.id, 'kill');
+    tell(r, T.id, { t: 'sus', ev: 'killed', by: P.c });
+    plist(g).forEach(B => { if (B.bot && B.alive && !B.imp && sees(B, P, VIS.crew)) B.bot.sus = P.id; });
     checkWin(r);
   }
 
@@ -120,15 +136,15 @@ module.exports = H => {
   }
 
   // ---------- البوتات ----------
-  const nodeOf = (x, y) => { const q = M.rooms.find(q => x >= q.x && x <= q.x + q.w && y >= q.y && y <= q.y + q.h); return q ? q.id : null; };
-  const segOk = (a, b, free) => { const n = Math.ceil(Math.hypot(b[0] - a[0], b[1] - a[1]) / 12); for (let i = 0; i <= n; i++) if (!M.walk(a[0] + (b[0] - a[0]) * i / n, a[1] + (b[1] - a[1]) * i / n, free)) return false; return true; };
+  const segOk = (a, b, free) => { const n = Math.ceil(Math.hypot(b[0] - a[0], b[1] - a[1]) / 10); for (let i = 0; i <= n; i++) if (!M.walk(a[0] + (b[0] - a[0]) * i / n, a[1] + (b[1] - a[1]) * i / n, free)) return false; return true; };
   const ADJ = {}; M.links.forEach(([a, b]) => { (ADJ[a] = ADJ[a] || []).push(b); (ADJ[b] = ADJ[b] || []).push(a); });
+  const NK = Object.keys(M.nodes);
+  const near = (x, y, ok) => NK.filter(ok).sort((a, b) => Math.hypot(M.nodes[a][0] - x, M.nodes[a][1] - y) - Math.hypot(M.nodes[b][0] - x, M.nodes[b][1] - y))[0];
   function route(P, tx, ty) {
     const free = !P.alive, here = [P.x, P.y], goal = [tx, ty];
     if (segOk(here, goal, free)) return [goal];
-    const start = Object.keys(M.nodes).filter(k => segOk(here, M.nodes[k], free)).sort((a, b) => Math.hypot(M.nodes[a][0] - P.x, M.nodes[a][1] - P.y) - Math.hypot(M.nodes[b][0] - P.x, M.nodes[b][1] - P.y))[0];
-    const end = nodeOf(tx, ty) || Object.keys(M.nodes).sort((a, b) => Math.hypot(M.nodes[a][0] - tx, M.nodes[a][1] - ty) - Math.hypot(M.nodes[b][0] - tx, M.nodes[b][1] - ty))[0];
-    if (!start) return [goal];
+    const start = near(P.x, P.y, k => segOk(here, M.nodes[k], free)) || near(P.x, P.y, () => true);
+    const end = near(tx, ty, k => segOk(M.nodes[k], goal, free)) || near(tx, ty, () => true);
     const prev = { [start]: null }, q = [start];
     while (q.length) { const c = q.shift(); if (c === end) break; (ADJ[c] || []).forEach(n => { if (!(n in prev)) { prev[n] = c; q.push(n); } }); }
     const path = []; let c = end; while (c) { path.unshift(M.nodes[c].slice()); c = prev[c]; }
@@ -144,11 +160,12 @@ module.exports = H => {
     }
     return !b.path.length;
   }
+  const wander = (P, now) => { const k = NK[rnd(NK.length)]; goTo(P, M.nodes[k][0], M.nodes[k][1]); P.bot.wait = now + 600 + rnd(2500); };
+  const rate = (P, ms) => { const n = Date.now(); if (P._fx && n - P._fx < ms) return false; P._fx = n; return true; };
   function botStep(r, P, dt, now) {
     const g = r.g, b = P.bot;
     if (b.wait > now) return;
     if (P.imp && !P.alive) return;
-    // تخريب: الطاقم الحي يروح يصلّح
     if (g.sabo && P.alive && !P.imp) {
       const spot = g.sabo.k === 'lights' ? M.fix.lights : M.fix.reactor[b.k % 2];
       goTo(P, spot[0], spot[1]);
@@ -156,23 +173,26 @@ module.exports = H => {
       return;
     }
     if (P.alive && g.bodies.length) {
-      const bd = g.bodies.find(x => dist(x, P) < REPORT_R);
+      const bd = g.bodies.find(x => sees(P, x, REPORT_R));
       if (bd && !(P.imp && Math.random() < .85)) { meeting(r, P.id, bd.id); H.push(r); return; }
     }
+    // الدكتور البوت يعطي درع لأحد قريب
+    if (P.role === 'doc' && P.alive && !P.docUsed && now > (b.docAt || 0)) {
+      const t = plist(g).filter(x => x.alive && x !== P && dist(x, P) < SHIELD_R);
+      if (t.length) { const T = t[rnd(t.length)]; T.shield = true; P.shieldOn = T.id; P.docUsed = true; tell(r, T.id, { t: 'sus', ev: 'shielded' }); H.push(r); }
+    }
     if (P.imp && P.alive) {
+      const seen = plist(g).filter(x => x.alive && x !== P && sees(P, x, VIS.crew));
       if (now >= P.killAt) {
-        const near = plist(g).filter(x => x.alive && x !== P && dist(x, P) < VIS.crew);
-        const vic = near.filter(x => !x.imp && dist(x, P) < KILL_R);
-        if (vic.length === 1 && near.length === 1 && Math.random() < .25) { kill(r, P, vic[0]); b.path = []; b.goal = null; H.push(r); return; }
-        // يلاحق اللي ماشي لحاله
-        const lone = near.filter(x => !x.imp);
-        if (lone.length === 1 && near.length === 1 && segOk([P.x, P.y], [lone[0].x, lone[0].y])) { b.path = [[lone[0].x, lone[0].y]]; b.goal = null; walkBot(P, dt); return; }
+        const vic = seen.filter(x => !x.imp && dist(x, P) < KILL_R);
+        if (vic.length === 1 && seen.length === 1 && Math.random() < .3) { kill(r, P, vic[0]); b.path = []; b.goal = null; H.push(r); return; }
+        const lone = seen.filter(x => !x.imp);
+        if (lone.length === 1 && seen.length === 1 && segOk([P.x, P.y], [lone[0].x, lone[0].y])) { b.path = [[lone[0].x, lone[0].y]]; b.goal = null; walkBot(P, dt); return; }
       }
       if (!g.sabo && now >= g.saboAt && Math.random() < .003) { g.sabo = { k: Math.random() < .5 ? 'lights' : 'reactor', end: now + REACT_MS, a: 0, b: 0 }; g.saboAt = now + SABO_CD; H.push(r); }
-      if (!b.path.length) { const ks = Object.keys(M.nodes), k = ks[rnd(ks.length)]; goTo(P, M.nodes[k][0] + rnd(40) - 20, M.nodes[k][1] + rnd(40) - 20); b.wait = now + 400 + rnd(1800); }
+      if (!b.path.length) wander(P, now);
       walkBot(P, dt); return;
     }
-    // مهام الطاقم (حتى الشبح يكمّل مهامه)
     if (P.imp) return;
     if (b.task) {
       const t = TASK[b.task];
@@ -185,10 +205,9 @@ module.exports = H => {
     }
     const left = P.tasks.filter(x => !x.done);
     if (left.length) { const t = TASK[left[rnd(left.length)].id]; b.task = t.id; b.goal = null; goTo(P, t.x, t.y); return; }
-    if (!b.path.length) { const ks = Object.keys(M.nodes), k = ks[rnd(ks.length)]; goTo(P, M.nodes[k][0], M.nodes[k][1]); b.wait = now + 1000 + rnd(3000); }
+    if (!b.path.length) wander(P, now);
     walkBot(P, dt);
   }
-  const rate = (P, ms) => { const n = Date.now(); if (P._fx && n - P._fx < ms) return false; P._fx = n; return true; };
   function botVotes(r) {
     const g = r.g, mt = g.meet;
     plist(g).filter(P => P.bot && P.alive).forEach(P => setTimeout(() => {
@@ -202,7 +221,7 @@ module.exports = H => {
     }, 2500 + rnd(9000)));
   }
 
-  // ---------- النبضة: حركة البوتات + توزيع الأماكن ----------
+  // ---------- النبضة: حركة البوتات + توزيع الأماكن حسب الرؤية ----------
   function tick(r) {
     const g = r.g;
     const now = Date.now(), dt = Math.min(.25, (now - g.lastTick) / 1000); g.lastTick = now;
@@ -215,35 +234,41 @@ module.exports = H => {
     r.players.concat(r.specs).forEach(q => {
       if (!q.online || q.bot) return;
       const V = g.P[q.id], all = !V || !V.alive;
-      const rad = all ? 1e9 : (V.imp ? VIS.imp : lights ? VIS.dark : VIS.crew) + 40;
+      const rad = all ? 0 : (V.imp ? VIS.imp : lights ? VIS.dark : VIS.crew) + 40;
+      const cam = V && V.cams && V.alive && g.sub === 'play';
+      const vis = o => all || sees(V, o, rad) || (cam && M.cams.some(c => sees(c, o, M.camR)));
       const a = [], b = [];
       plist(g).forEach(P => {
         if (!P.alive && !all) return;
-        if (P.id === q.id || all || Math.hypot(P.x - V.x, P.y - V.y) <= rad) a.push([P.id, P.x | 0, P.y | 0, P.alive ? 0 : 1]);
+        if (P.id === q.id || vis(P)) a.push([P.id, P.x | 0, P.y | 0, P.alive ? 0 : 1]);
       });
-      g.bodies.forEach(B => { if (all || Math.hypot(B.x - V.x, B.y - V.y) <= rad) b.push([B.id, B.x | 0, B.y | 0]); });
+      g.bodies.forEach(B => { if (vis(B)) b.push([B.id, B.x | 0, B.y | 0]); });
       const s = JSON.stringify({ t: 'pos', a, b });
       if (s !== q._pos) { q._pos = s; H.sendTo(q, JSON.parse(s)); }
     });
   }
 
   return {
-    min: 4, max: 10,
+    min: 4, max: 12,
     start(r) {
-      const ids = H.shuffle(r.players.map(q => q.id));
-      const nImp = r.players.length >= 7 ? 2 : 1, cols = H.shuffle([...Array(10).keys()]);
-      const g = r.g = { sub: 'intro', P: {}, bodies: [], sabo: null, meet: null, eject: null, winSide: null, why: '', nImp, lastTick: Date.now() };
+      const n = r.players.length, ids = H.shuffle(r.players.map(q => q.id));
+      const want = Math.max(1, Math.min(3, +(r.opts.imps || 1))), nImp = Math.min(want, maxImps(n));
+      const cols = H.shuffle([...Array(12).keys()]);
+      const g = r.g = { sub: 'intro', P: {}, bodies: [], sabo: null, meet: null, eject: null, winSide: null, why: '', nImp, round: 0, doctor: !!r.opts.doctor, lastTick: Date.now() };
       const now = Date.now();
       r.players.forEach((q, i) => {
         const imp = ids.indexOf(q.id) < nImp;
         const tasks = H.shuffle(M.tasks.map(t => t.id)).slice(0, TASKS_EACH).map(id => ({ id, done: false }));
-        g.P[q.id] = { id: q.id, c: cols[i], imp, alive: true, known: false, x: 0, y: 0, lastMv: now, killAt: now + INTRO + FIRST_CD, btn: 1, tasks, cur: null, bot: q.bot ? { path: [], goal: null, wait: 0, task: null, k: i, sus: null } : null };
+        g.P[q.id] = { id: q.id, c: cols[i], imp, role: imp ? 'imp' : 'crew', alive: true, known: false, x: 0, y: 0, lastMv: now, killAt: now + INTRO + FIRST_CD, btn: 1, tasks, cur: null, shield: false, shieldOn: null, docUsed: false, cams: false,
+          bot: q.bot ? { path: [], goal: null, wait: 0, task: null, k: i, sus: null, docAt: now + INTRO + 8000 + rnd(15000) } : null };
       });
+      if (g.doctor) { const c = ids.slice(nImp); g.P[c[rnd(c.length)]].role = 'doc'; }
       g.btnAt = now + INTRO + BTN_CD; g.saboAt = now + INTRO + 20000;
       r.winner = null; r.winTeam = null; r.phase = 'play';
       r.players.forEach(q => { q._pos = null; });
       spawnAll(r);
-      H.log(r, nImp > 1 ? 'بينكم مندسين اثنين 👀' : 'بينكم مندس واحد 👀');
+      H.log(r, nImp > 1 ? `بينكم ${nImp} مندسين 👀` : 'بينكم مندس واحد 👀');
+      if (nImp < want) H.log(r, `العدد ما يكفي لـ${want} مندسين، صاروا ${nImp}`);
       H.setTimer(r, INTRO, () => { g.sub = 'play'; g.lastTick = Date.now(); plist(g).forEach(P => { P.lastMv = Date.now(); }); });
       clearInterval(g.iv);
       g.iv = setInterval(() => { if (r.g !== g || r.phase !== 'play' || !H.alive(r)) return clearInterval(g.iv); tick(r); }, 100);
@@ -259,6 +284,7 @@ module.exports = H => {
         if (Math.hypot(x - P.x, y - P.y) > max || !M.walk(x, y, !P.alive)) { P.lastMv = now; H.sendTo(p, { t: 'snap', x: P.x, y: P.y }); return 'quiet'; }
         P.x = x; P.y = y; P.lastMv = now;
         if (P.cur && Math.hypot(x - TASK[P.cur.id].x, y - TASK[P.cur.id].y) > USE_R + 20) P.cur = null;
+        if (P.cams && Math.hypot(x - M.camSpot[0], y - M.camSpot[1]) > CAM_USE + 20) { P.cams = false; return; }
         return 'quiet';
       }
       if (m.t === 'vote') return vote(r, p.id, String(m.v)) ? undefined : 'quiet';
@@ -291,31 +317,44 @@ module.exports = H => {
         if (!P.imp || !P.alive) return 'quiet';
         for (const grp of M.vents) {
           const i = grp.findIndex(v => dist(v, P) <= VENT_R);
-          if (i >= 0) { const v = grp[(i + 1) % grp.length]; P.x = v.x; P.y = v.y; P.lastMv = now; snap(r, p.id); return 'quiet'; }
+          if (i >= 0) { const v = grp[(i + 1) % grp.length]; P.x = v.x; P.y = v.y; P.lastMv = now; snap(r, p.id, 'vent'); return 'quiet'; }
         }
         return 'quiet';
       }
       if (m.t === 'sabo') {
         if (!P.imp || !P.alive || g.sabo || now < g.saboAt || !['lights', 'reactor'].includes(m.k)) return 'quiet';
-        g.sabo = { k: m.k, end: now + REACT_MS, a: 0, b: 0 }; g.saboAt = now + SABO_CD; return;
+        g.sabo = { k: m.k, end: now + REACT_MS, a: 0, b: 0 }; g.saboAt = now + SABO_CD; P.cams = false; return;
       }
       if (m.t === 'fix') return fixPress(r, P) ? undefined : 'quiet';
+      if (m.t === 'cams') {
+        const on = !!m.on && P.alive && Math.hypot(P.x - M.camSpot[0], P.y - M.camSpot[1]) <= CAM_USE + 10;
+        if (on === P.cams) return 'quiet';
+        P.cams = on; p._pos = null; return;
+      }
+      if (m.t === 'shield') {
+        const T = g.P[m.id];
+        if (P.role !== 'doc' || !P.alive || P.docUsed || !T || !T.alive || T === P || dist(P, T) > SHIELD_R) return 'quiet';
+        T.shield = true; P.shieldOn = T.id; P.docUsed = true;
+        tell(r, T.id, { t: 'sus', ev: 'shielded' }); return;
+      }
       return 'quiet';
     },
     view(r, p) {
       const g = r.g; if (!g) return null;
       const now = Date.now(), P = g.P[p.id], over = r.phase === 'over', all = over || !P || !P.alive;
-      const imps = plist(g).filter(x => x.imp).map(x => x.id);
+      const imps = plist(g).filter(x => x.imp).map(x => x.id), doc = plist(g).find(x => x.role === 'doc');
       return {
-        sub: g.sub, nImp: g.nImp,
-        me: P ? { c: P.c, imp: P.imp, alive: P.alive, tasks: P.tasks, btn: P.btn, killIn: Math.max(0, P.killAt - now), cur: P.cur ? P.cur.id : null } : null,
+        sub: g.sub, nImp: g.nImp, doctor: g.doctor, round: g.round,
+        me: P ? { c: P.c, imp: P.imp, role: P.role, alive: P.alive, tasks: P.tasks, btn: P.btn, killIn: Math.max(0, P.killAt - now), cur: P.cur ? P.cur.id : null, shield: P.shield, shieldOn: P.shieldOn, docUsed: P.docUsed, cams: P.cams } : null,
         col: Object.fromEntries(plist(g).map(x => [x.id, x.c])),
         dead: plist(g).filter(x => !x.alive && (all || x.known)).map(x => x.id),
         imps: over || (P && P.imp) ? imps : [],
+        doc: over && doc ? doc.id : null,
         prog: progress(g),
+        camsOn: plist(g).some(x => x.cams),
         sabo: g.sabo ? { k: g.sabo.k, left: g.sabo.k === 'reactor' ? Math.max(0, g.sabo.end - now) : 0, a: now - g.sabo.a < 1200, b: now - g.sabo.b < 1200 } : null,
         saboIn: P && P.imp ? Math.max(0, g.saboAt - now) : 0, btnIn: Math.max(0, g.btnAt - now),
-        meet: g.meet ? { by: g.meet.by, body: g.meet.body, sub: g.meet.sub, voted: Object.keys(g.meet.votes), mine: g.meet.votes[p.id] || null } : null,
+        meet: g.meet ? { by: g.meet.by, body: g.meet.body, sub: g.meet.sub, voted: Object.keys(g.meet.votes), mine: g.meet.votes[p.id] || null, tally: g.meet.tally, ago: now - g.meet.at } : null,
         eject: g.eject, win: g.winSide, why: g.why
       };
     },
@@ -325,7 +364,7 @@ module.exports = H => {
       if (g.meet) { delete g.meet.votes[p.id]; Object.keys(g.meet.votes).forEach(k => { if (g.meet.votes[k] === p.id) g.meet.votes[k] = 'skip'; }); }
       delete g.P[p.id]; g.bodies = g.bodies.filter(b => b.id !== p.id);
       if (P.imp) H.log(r, `${p.name} طلع… وكان مندس`);
-      if (!checkWin(r) && g.meet && g.meet.sub === 'vote' && plist(g).filter(x => x.alive).every(x => g.meet.votes[x.id])) H.setTimer(r, 1200, () => endVote(r));
+      if (!checkWin(r) && g.meet && g.meet.sub === 'vote' && plist(g).filter(x => x.alive).every(x => g.meet.votes[x.id])) H.setTimer(r, 900, () => endVote(r));
     }
   };
 };
