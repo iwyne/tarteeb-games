@@ -73,7 +73,7 @@ module.exports = H => {
     H.setTimer(r, RESULT_MS, () => nextRound(r, loser));
   }
   return {
-    min: 2, max: 6,
+    min: 2, max: 8,
     start(r) {
       r.players.forEach(p => { p.alive = true; p.pulls = 0; p.bomb = Math.random() * 6 | 0; p.hand = []; });
       r.g = { round: 0, table: 'K', turn: null, sub: 'play', last: null, pile: 0, result: null };

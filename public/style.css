@@ -410,7 +410,7 @@ body.ingame2 main{width:100%;max-width:760px;padding:0 12px 90px}
 .lp .backs i{width:14px;height:20px;border-radius:3px;background:var(--ink);border:2px solid #fff;margin-left:-8px;box-shadow:0 0 0 1.5px var(--ink)}
 .lp .cnt{margin-inline-start:6px;font:400 1rem Lalezar,sans-serif}
 .lp .risk{font-size:.75rem;font-weight:800;background:var(--surf);border:2px solid var(--ink);border-radius:99px;padding:0 8px}
-.lp.turn .av{box-shadow:0 0 0 4px var(--yellow),0 0 0 7px var(--ink);animation:pulse .9s infinite alternate}
+.lp.cur .av{box-shadow:0 0 0 4px var(--yellow),0 0 0 7px var(--ink);animation:pulse .9s infinite alternate}
 .lp.dead{opacity:.45;filter:grayscale(1)}
 .lp .arrow{position:absolute;top:-22px;left:50%;transform:translateX(-50%);font-size:1rem;text-align:center;line-height:1;color:var(--ink);animation:bob .8s infinite alternate}
 .lp .arrow b{display:block;background:var(--yellow);border:2px solid var(--ink);border-radius:99px;padding:0 8px;font-size:.8rem}
@@ -575,7 +575,7 @@ body{transition:background-color .3s,color .3s}
 .jtxt.sm{font-size:14px;opacity:.75}
 .jlab{height:100%;display:grid;place-items:center;align-content:center;background:var(--surf);border:3px solid;border-radius:10px;font-size:13px;line-height:1.15;overflow:hidden;white-space:nowrap}
 .jlab small{font-size:11px;opacity:.8}
-.jlab.turn{background:var(--yellow);color:var(--on-y);box-shadow:2px 2px 0 var(--ink)}
+.jlab.cur{background:var(--yellow);color:var(--on-y);box-shadow:2px 2px 0 var(--ink)}
 .jhand{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
 .jc{width:76px;height:108px;border:3px solid var(--ink);border-radius:12px;background:#fffaf0;color:var(--ink);box-shadow:3px 3px 0 var(--ink);display:grid;place-items:center;align-content:center;font-family:Lalezar,sans-serif;cursor:pointer;transition:transform .15s;padding:2px}
 .jc b{font-size:1.9rem;font-weight:400;line-height:1}
