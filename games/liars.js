@@ -1,5 +1,5 @@
 // الكذابين الترتيب: ورقة الطاولة (ملك/ملكة/آص) — تلعب ١–٣ أوراق مقلوبة وتقول إنها منها.
-// اللي بعدك يصدّقك ويلعب، أو يقول «كذّاب!». الخاسر يسحب من دولاب القنبلة (٦ خانات، وحدة فيها قنبلة).
+// اللي بعدك يصدّقك ويلعب، أو يقول «كذّاب!». الخاسر يسحب زناد مسدس روليت (٦ خانات، وحدة فيها رصاصة).
 const TURN_MS = +process.env.LIARS_TURN_MS || 30000, RESULT_MS = +process.env.LIARS_RESULT_MS || 6500;
 const TABLE = ['K', 'Q', 'A'];
 module.exports = H => {
@@ -64,7 +64,7 @@ module.exports = H => {
     if (hit) loser.alive = false;
     g.result = { caller: p.id, liar: liar ? liar.id : null, cards: cards.map(c => c.t), truthful, loser: loser.id, hit, pulls: loser.pulls, table: g.table };
     g.sub = 'result';
-    H.log(r, `${p.name}: كذّاب! — ${truthful ? 'كان صادق' : 'فعلاً كذّاب'}، ${loser.name} ${hit ? 'طلعت له القنبلة 💥 وطلع من اللعبة' : 'نجا'}`);
+    H.log(r, `${p.name}: كذّاب! — ${truthful ? 'كان صادق' : 'فعلاً كذّاب'}، ${loser.name} ${hit ? 'انطلقت عليه الرصاصة 💥 وطلع من اللعبة' : 'نجا'}`);
     const left = alive(r);
     if (left.length <= 1) {
       r.phase = 'over'; r.winner = left[0] ? left[0].name : '—'; if (left[0]) H.win(r, [left[0]]);

@@ -26,6 +26,8 @@ const sfx = (() => {
   }
   const clip = src => { let a; return () => { try { if (!a) { a = new Audio(src); a.preload = 'auto'; } a.currentTime = 0; const pr = a.play(); if (pr && pr.catch) pr.catch(() => {}); } catch {} }; };
   const bank = {
+    bang: () => { noise(0, .35, 260, .95); tone(90, 0, .35, 'sawtooth', .35, 28); tone(1200, 0, .06, 'square', .12, 200); },
+    gclick: () => { tone(1700, 0, .03, 'square', .16); tone(900, .05, .04, 'square', .1); },
     unoCall: clip('sounds/uno.mp3'),
     unoWin: clip('sounds/win.mp3'),
     card: () => { noise(0, .09, 2200, .35); tone(180, 0, .08, 'triangle', .12, 90); },

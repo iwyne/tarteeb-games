@@ -680,3 +680,33 @@ html[dir=ltr] .cbar .tc{padding-inline:12px}
 .fbtns{display:flex;gap:10px;justify-content:center}
 .fact{display:flex;justify-content:center}
 .fwrap.dark .muted,.fwrap.dark .vlabel{color:#d8cfe6}
+/* ===== مسدس الكذابين ===== */
+.gunbox{position:relative;display:grid;justify-items:center;gap:6px;margin:14px 0 6px;min-height:230px}
+.gunwrap{width:min(46vw,190px);transform-origin:50% 60%;animation:gunBob 2.6s ease-in-out infinite alternate}
+.gunsvg{display:block;width:100%;height:auto;filter:drop-shadow(4px 5px 0 rgba(0,0,0,.25))}
+.guntxt{font-weight:800;font-size:.95rem;text-align:center}
+.gunbox.live .gunwrap{width:min(60vw,250px);animation:none}
+.gunbox.anim .gunwrap{animation:gunIn 1s cubic-bezier(.2,.8,.25,1) both}
+.gunbox.anim .cyl{animation:cylSpin .95s cubic-bezier(.15,.7,.2,1) both}
+.gunbox.anim.mine .gunwrap{animation:gunInMine 1s cubic-bezier(.2,.8,.25,1) both}
+.gunbox.live:not(.anim) .gunwrap{transform:scale(1.12)}
+.gunbox.mine.live .guntxt{color:var(--red);font-size:1.2rem}
+.gunbox.hit.live .guntxt::after{content:' 💥'}
+@keyframes gunBob{from{transform:translateY(0) rotate(-1.5deg)}to{transform:translateY(-6px) rotate(1.5deg)}}
+@keyframes gunIn{0%{transform:scale(.45) translateY(60px);opacity:0}45%{opacity:1}100%{transform:scale(1.12) translateY(0)}}
+@keyframes gunInMine{0%{transform:scale(.4) translateY(80px);opacity:0}50%{opacity:1}100%{transform:scale(1.15) translateY(0)}}
+@keyframes cylSpin{0%{transform:rotate(0)}100%{transform:rotate(900deg)}}
+.gflash{position:fixed;inset:0;z-index:95;pointer-events:none;opacity:0}
+.gflash.bang{background:radial-gradient(circle,#fff 0,#ffd23f 25%,#e8362d 60%,rgba(0,0,0,.85));animation:gBang .9s 1s ease-out both}
+.gflash.click{background:rgba(255,255,255,.35);animation:gClick .25s 1s ease-out both}
+.gunbox.anim.mine.hit{animation:gShake .5s 1s both}
+@keyframes gBang{0%{opacity:0}8%{opacity:1}100%{opacity:0}}
+@keyframes gClick{0%{opacity:0}30%{opacity:1}100%{opacity:0}}
+@keyframes gShake{0%,100%{transform:translate(0)}20%{transform:translate(-8px,5px)}40%{transform:translate(9px,-6px)}60%{transform:translate(-6px,-4px)}80%{transform:translate(5px,6px)}}
+@media(prefers-reduced-motion:reduce){.gunwrap,.gunbox.anim .gunwrap,.gunbox.anim .cyl{animation:none!important}.gflash{display:none}}
+.gunbox.mine.live:not(.anim) .gunwrap{transform:scale(1.15)}
+.gunin{display:grid;justify-items:center;gap:6px}
+.gunbox.live .gunin{position:fixed;left:0;right:0;bottom:8px;z-index:80;pointer-events:none}
+.gunbox.live .guntxt{background:var(--paper);border:3px solid var(--ink);border-radius:99px;padding:2px 16px;box-shadow:3px 3px 0 var(--ink)}
+.gunbox .gunwrap{width:min(38vw,150px)}
+.gunbox.live .gunwrap{width:min(42vw,185px)}

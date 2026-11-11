@@ -7,7 +7,7 @@ const GHELP = {
   uno: 'تخلّص من أوراقك قبل الكل. العب ورقة نفس اللون أو نفس الرقم/الرمز. لما يبقى عندك ورقة وحدة اضغط UNO! وإلا يمسكونك ويسحبك +٢. مع «تراكم السحب» تقدر ترد +٢ على +٢ و+٤ على +٤.',
   codes: 'فريقين (أ وب). كل فريق له قائد يشوف ألوان الكلمات السرية ويعطي تلميح بكلمة وحدة + رقم. الفريق يخمّن كلماته. أول فريق يكشف كل كلماته يفوز، واللي يضغط على الكلمة القاتلة يخسر فريقه.',
   hive: 'لوحة خلايا حروف. الأحمر يوصّل بالطول (من فوق لتحت) والأزرق بالعرض (من اليمين لليسار). اختر خلية، جاوب على سؤال يبدأ جوابه بحرف الخلية وتصير لفريقك، واللي يكسب خلية يكمّل. لو غلطت الفريق الثاني يسرقها، ولو ما أحد جاوب تنحرق. إذا ما أحد وصّل يفوز اللي جاوب أكثر.',
-  liars: 'كل واحد يلعب ١–٣ أوراق مقلوبة ويقول إنها الورقة المطلوبة (ملك أو ملكة أو آص). اللي بعده يصدّق أو يقول «كذّاب!». اللي يخسر يسحب من دولاب القنبلة، وآخر واحد ينجو يفوز.',
+  liars: 'كل واحد يلعب ١–٣ أوراق مقلوبة ويقول إنها الورقة المطلوبة (ملك أو ملكة أو آص). اللي بعده يصدّق أو يقول «كذّاب!». اللي يخسر يسحب زناد المسدس (روليت: ٦ خانات وفيها رصاصة وحدة)، وآخر واحد ينجو يفوز.',
   outside: 'الكل يعرف الفئة والكلمة السرية إلا واحد (برا السالفة). كل واحد يسأل لاعب ثاني سؤال بصوته عن الكلمة بدون ما يقولها، والمسؤول يجاوب ثم يسأل غيره. بعد ما يخلص الكل تصوّتون على مين برا السالفة. لو انكشف يختار الكلمة من ٨ خيارات.',
   typing: 'يطلع نص وأسرع واحد يكتبه صح ياخذ نقطة. أول واحد يوصل الهدف يفوز. ما يهم التشكيل.',
   jackaroo: 'أنت وشريكك (قبالتك) تدخلون الـ٨ كرات للبيت. آص/شايب يطلّعون كرة، الباقي يحرّك بعدده، الولد يبدّل، الـ٤ رجوع، الـ٥ تحرّك أي كرة، الـ٧ تقسّمها. اللي تنزل عليه كرتك ينأكل.',
@@ -36,7 +36,7 @@ function renderTeamsOther(isHost) {
   sl.textContent = `النتيجة — فريق أ ${S.score[0]} : ${S.score[1]} فريق ب`;
   const tip = { codes: ' — كل فريق له قائد (أول واحد فيه) يشوف الألوان السرية ويعطي التلميحات', hive: ' — الأحمر يوصّل من فوق لتحت، والأزرق من اليمين لليسار', liars: '', jackaroo: ' — شريكك قبالتك. لما تخلّص كراتك تلعب بكرات شريكك' }[S.game];
   if (S.teams) $('#hint').textContent += tip + ' — زر «اخلط الفرق» يبدّل الجلسة';
-  else if (S.game === 'liars') $('#hint').textContent += ' — تلعب أوراق مقلوبة وتكذب، واللي ينكشف يسحب من دولاب القنبلة';
+  else if (S.game === 'liars') $('#hint').textContent += ' — تلعب أوراق مقلوبة وتكذب، واللي ينكشف يسحب الزناد (روليت)';
 }
 $('#quit2').onclick = () => window.quitGame();
 $('#leave2b').onclick = () => send({ t: 'leave' });
@@ -145,6 +145,33 @@ function renderHive(body, mt) {
   const f = $('#ansForm'); if (f) { f.onsubmit = e => { e.preventDefault(); const t = $('#ansIn').value.trim(); if (!t) return; send({ t: 'answer', text: t }); $('#ansIn').value = ''; }; }
 }
 
+
+// ---- المسدس (روليت) ----
+let gunSeen = '';
+function gunSvg(pulls, hit) {
+  const ch = [];
+  for (let k = 0; k < 6; k++) {
+    const a = (k * 60 - 90) * Math.PI / 180, x = 120 + 44 * Math.cos(a), y = 132 + 44 * Math.sin(a);
+    let inner = '<circle r="15" fill="#16130f"/>';
+    if (hit && k === pulls - 1) inner = '<circle r="15" fill="#16130f"/><circle r="11" fill="#e0a526" stroke="#7a5410" stroke-width="2"/><circle r="4" fill="#fff3b0"/>';
+    else if (k < pulls) inner = '<circle r="15" fill="#3b372f"/><path d="M-7-7L7 7M7-7L-7 7" stroke="#8b8478" stroke-width="3" stroke-linecap="round"/>';
+    ch.push(`<g transform="translate(${x.toFixed(1)} ${y.toFixed(1)})">${inner}</g>`);
+  }
+  return `<svg class="gunsvg" viewBox="0 0 240 250" aria-hidden="true">
+    <ellipse cx="124" cy="240" rx="82" ry="8" fill="rgba(0,0,0,.18)"/>
+    <rect x="90" y="196" width="60" height="46" rx="14" fill="#8a5a2b" stroke="#16130f" stroke-width="5"/>
+    <circle cx="120" cy="38" r="27" fill="#aeb4bf" stroke="#16130f" stroke-width="5"/>
+    <circle cx="120" cy="38" r="12" fill="#16130f"/><circle cx="115" cy="33" r="3" fill="#6b7280"/>
+    <rect x="112" y="60" width="16" height="22" fill="#aeb4bf" stroke="#16130f" stroke-width="4"/>
+    <g class="cyl" style="transform-origin:120px 132px">
+      <circle cx="120" cy="132" r="78" fill="#c9ced8" stroke="#16130f" stroke-width="6"/>
+      <circle cx="120" cy="132" r="68" fill="none" stroke="#8d94a3" stroke-width="3"/>
+      ${ch.join('')}
+      <circle cx="120" cy="132" r="13" fill="#8d94a3" stroke="#16130f" stroke-width="4"/>
+    </g>
+  </svg>`;
+}
+
 // ================= الكذابين الترتيب =================
 const LNAME = { K: 'ملك', Q: 'ملكة', A: 'آص', J: 'جوكر' }, LSYM = { K: '♚', Q: '♛', A: 'A', J: '★' };
 let lsel = new Set();
@@ -155,10 +182,10 @@ function renderLiars(body) {
   if (!myTurn) lsel.clear();
   const chips = S.players.map(p => {
     const q = g.pl.find(x => x.id === p.id) || {}, risk = 6 - (q.pulls || 0);
-    return `<div class="lp${q.alive ? '' : ' dead'}${g.turn === p.id && g.sub === 'play' && !over ? ' turn' : ''}${p.on ? '' : ' off'}" data-id="${p.id}">
+    return `<div class="lp${q.alive ? '' : ' dead'}${g.turn === p.id && g.sub === 'play' && !over ? ' cur' : ''}${p.on ? '' : ' off'}" data-id="${p.id}">
       <div class="av" style="background:${PAL[S.players.indexOf(p) % 4]};color:${S.players.indexOf(p) % 4 === 3 ? '#16130f' : '#fff'}">${q.alive ? face(p) : '💀'}</div>
       <div class="nm">${esc(p.name)}${p.w ? ` <i>🏆${p.w}</i>` : ''}</div>
-      ${q.alive ? `<div class="backs">${'<i></i>'.repeat(Math.min(q.n, 6))}<span class="cnt">${q.n}</span></div><div class="risk" title="خطر القنبلة">💣 <bdi dir="ltr">1/${risk}</bdi></div>` : '<div class="risk">طلع</div>'}
+      ${q.alive ? `<div class="backs">${'<i></i>'.repeat(Math.min(q.n, 6))}<span class="cnt">${q.n}</span></div><div class="risk" title="خطر الرصاصة">🔫 <bdi dir="ltr">1/${risk}</bdi></div>` : '<div class="risk">طلع</div>'}
       ${g.turn === p.id && g.sub === 'play' && !over ? '<div class="arrow"><b class="cd2"></b>▼</div>' : ''}</div>`;
   }).join('');
   let center;
@@ -167,7 +194,7 @@ function renderLiars(body) {
     center = `<div class="lres"><div class="rl">${esc(nameOf(res.caller))} قال «كذّاب!» على ${esc(nameOf(res.liar))}</div>
       <div class="rc">${res.cards.map((t, i) => lcard(t, ' flip" style="animation-delay:' + i * 150 + 'ms')).join('')}</div>
       <div class="rv ${res.truthful ? 'tr' : 'ly'}">${res.truthful ? 'كان صادق!' : 'فعلاً كذّاب!'}</div>
-      <div class="rb">${esc(nameOf(res.loser))} يسحب من دولاب القنبلة (${res.pulls}/6): <b>${res.hit ? '💥 بووم! طلع' : 'نجا ✅'}</b></div></div>`;
+      <div class="rb">${esc(nameOf(res.loser))} يسحب الزناد (${res.pulls}/6): <b>${res.hit ? '💥 بووم! طلع' : 'كليك… نجا ✅'}</b></div></div>`;
   } else {
     center = `<div class="ltable"><div class="need">الورقة المطلوبة ${lcard(g.table)}</div>
       <div class="pile">${g.pile ? `<span class="pc">${Math.min(g.pile, 8) ? '<i></i>'.repeat(Math.min(g.pile, 8)) : ''}</span> ${g.pile} ورقة مقلوبة` : 'الطاولة فاضية'}</div>
@@ -176,8 +203,16 @@ function renderLiars(body) {
   }
   const hand = g.hand.map(c => `<button class="lc c${c.t}${lsel.has(c.id) ? ' sel' : ''}" data-id="${c.id}"${myTurn && !g.must ? '' : ' disabled'}><b>${LSYM[c.t]}</b><small>${LNAME[c.t]}</small></button>`).join('');
   const acts = myTurn ? `${g.must ? '' : `<button id="putBtn" class="btn green"${lsel.size ? '' : ' disabled'}>العب ${lsel.size ? lsel.size + ' ' + (lsel.size > 1 ? 'أوراق' : 'ورقة') : 'المحدد'}</button>`}${g.last ? '<button id="callBtn" class="btn red">كذّاب! ☝️</button>' : ''}` : '';
+  const resNow = g.sub === 'result' && res ? res : null, myq = g.pl.find(x => x.id === S.me) || {};
+  const gkey = resNow ? [resNow.loser, resNow.pulls, resNow.cards.join('')].join('-') : '', gAnim = !!resNow && gkey !== gunSeen;
+  if (resNow) gunSeen = gkey; else if (!over) gunSeen = '';
+  const gunPulls = resNow ? resNow.pulls : (myq.pulls || 0), imLoser = resNow && resNow.loser === S.me;
+  const gunBox = S.spec || (!resNow && !myq.alive) || over ? '' : `<div class="gunbox${resNow ? ' live' : ''}${gAnim ? ' anim' : ''}${resNow && resNow.hit ? ' hit' : ''}${imLoser ? ' mine' : ''}">
+      <div class="gunin"><div class="gunwrap">${gunSvg(gunPulls, resNow && resNow.hit)}</div>
+      <div class="guntxt">${resNow ? (imLoser ? 'المسدس عليك! 😰' : 'المسدس على ' + esc(nameOf(resNow.loser))) : 'مسدسك — خطر الرصاصة <bdi dir="ltr">1/' + (6 - (myq.pulls || 0)) + '</bdi>'}</div>
+      ${gAnim ? `<div class="gflash ${resNow.hit ? 'bang' : 'click'}"></div>` : ''}</div>`;
   body.innerHTML = `<div class="lrow">${chips}</div>${center}
-    <div class="lhand">${S.spec ? '<div class="spectag2">أنت تتفرّج 👁</div>' : !g.alive ? '<div class="spectag2">طلعت من اللعبة، تتفرّج 👁</div>' : `<div class="acts">${acts}</div><div class="hand2">${hand}</div>`}</div>${logHtml()}`;
+    <div class="lhand">${S.spec ? '<div class="spectag2">أنت تتفرّج 👁</div>' : !g.alive ? '<div class="spectag2">طلعت من اللعبة، تتفرّج 👁</div>' : `<div class="acts">${acts}</div><div class="hand2">${hand}</div>`}</div>${gunBox}${logHtml()}`;
   body.querySelectorAll('.hand2 .lc').forEach(b => b.onclick = () => {
     const id = +b.dataset.id; if (lsel.has(id)) lsel.delete(id); else if (lsel.size < 3) lsel.add(id); else toast('أقصى شي ٣ أوراق');
     sfx('pop'); renderLiars(body);
@@ -192,7 +227,7 @@ function fx2() {
   const g = s.g, pg = p.g; if (!g || !pg) return;
   if (s.game === 'liars') {
     if (g.turn === s.me && pg.turn !== s.me && g.sub === 'play') sfx('turn');
-    if (g.sub === 'result' && pg.sub !== 'result') setTimeout(() => sfx(g.result.hit ? 'penalty' : g.result.truthful ? 'nope' : 'catch'), 700);
+    if (g.sub === 'result' && pg.sub !== 'result') { [0, 140, 280, 420, 560, 700].forEach(t => setTimeout(() => sfx('tick'), t)); setTimeout(() => sfx(g.result.hit ? 'bang' : 'gclick'), 1000); }
     else if (g.pile > pg.pile) sfx('card');
   } else if (s.game === 'codes') {
     if (g.cards.filter(c => c.open).length > pg.cards.filter(c => c.open).length) sfx('card');
@@ -488,7 +523,7 @@ function renderJack(body) {
   });
   const lab = [0, 1, 2, 3].map(s => {
     const a = ang(s * 20 + 10), x = C + 150 * Math.cos(a), y = C + 150 * Math.sin(a), p = S.players[s];
-    return `<foreignObject x="${(x - 52).toFixed(0)}" y="${(y - 20).toFixed(0)}" width="104" height="40"><div class="jlab${g.turn === s && !over ? ' turn' : ''}" style="border-color:${JCOL[s]}"><b>${esc(p ? pn(p.id) : '؟')}</b><small>🃏${g.cnt[s]} · 🏠${g.home[s]}/4</small></div></foreignObject>`;
+    return `<foreignObject x="${(x - 52).toFixed(0)}" y="${(y - 20).toFixed(0)}" width="104" height="40"><div class="jlab${g.turn === s && !over ? ' cur' : ''}" style="border-color:${JCOL[s]}"><b>${esc(p ? pn(p.id) : '؟')}</b><small>🃏${g.cnt[s]} · 🏠${g.home[s]}/4</small></div></foreignObject>`;
   }).join('');
   const centre = `<text x="${C}" y="${C - 6}" class="jtxt">${over ? '' : mineTurn ? 'دورك!' : 'دور ' + esc(pn((S.players[g.turn] || {}).id))}</text><text x="${C}" y="${C + 16}" class="jtxt sm">${g.last ? esc(pn((S.players[g.last.who] || {}).id) + ' ' + g.last.text) : ''}</text>`;
   const hand = g.hand.map(c => {
