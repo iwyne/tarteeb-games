@@ -6,7 +6,7 @@ const GHELP = {
   flip: 'أونو بوجهين: فاتح (أحمر/أصفر/أخضر/أزرق) وغامق (وردي/تركوازي/برتقالي/بنفسجي). ورقة «فليب» تقلب كل اللعبة للوجه الثاني. الفاتح: +١ و+٢ ملوّن، والغامق: +٥ و«منع الكل» (تلعب مرة ثانية) و«ملوّن سحب لون» (الخصم يسحب لين يطلع له اللون). +٢ والسحب لون ما تنلعب إلا لو ما عندك لون الطاولة، ومن بعدك يقدر يتحدّاك. الورقة اللي تسحبها ما تنلعب. لو بقي عندك ورقة اضغط UNO! وإلا يمسكونك ويسحبك ٢.',
   uno: 'تخلّص من أوراقك قبل الكل. العب ورقة نفس اللون أو نفس الرقم/الرمز. لما يبقى عندك ورقة وحدة اضغط UNO! وإلا يمسكونك ويسحبك +٢. مع «تراكم السحب» تقدر ترد +٢ على +٢ و+٤ على +٤.',
   codes: 'فريقين (أ وب). كل فريق له قائد يشوف ألوان الكلمات السرية ويعطي تلميح بكلمة وحدة + رقم. الفريق يخمّن كلماته. أول فريق يكشف كل كلماته يفوز، واللي يضغط على الكلمة القاتلة يخسر فريقه.',
-  hive: 'لوحة خلايا حروف. الأحمر يوصّل من فوق لتحت، والأزرق من اليمين لليسار. اختر خلية، جاوب على سؤال يبدأ جوابه بحرف الخلية وتصير لفريقك. لو غلطت الفريق الثاني يسرقها.',
+  hive: 'لوحة خلايا حروف. الأحمر يوصّل بالطول (من فوق لتحت) والأزرق بالعرض (من اليمين لليسار). اختر خلية، جاوب على سؤال يبدأ جوابه بحرف الخلية وتصير لفريقك، واللي يكسب خلية يكمّل. لو غلطت الفريق الثاني يسرقها، ولو ما أحد جاوب تنحرق. إذا ما أحد وصّل يفوز اللي جاوب أكثر.',
   liars: 'كل واحد يلعب ١–٣ أوراق مقلوبة ويقول إنها الورقة المطلوبة (ملك أو ملكة أو آص). اللي بعده يصدّق أو يقول «كذّاب!». اللي يخسر يسحب من دولاب القنبلة، وآخر واحد ينجو يفوز.',
   outside: 'الكل يعرف الفئة والكلمة السرية إلا واحد (برا السالفة). كل واحد يسأل لاعب ثاني سؤال بصوته عن الكلمة بدون ما يقولها، والمسؤول يجاوب ثم يسأل غيره. بعد ما يخلص الكل تصوّتون على مين برا السالفة. لو انكشف يختار الكلمة من ٨ خيارات.',
   typing: 'يطلع نص وأسرع واحد يكتبه صح ياخذ نقطة. أول واحد يوصل الهدف يفوز. ما يهم التشكيل.',
@@ -72,7 +72,7 @@ function renderOther() {
   if (over) {
     const g = S.g || {}, amSpy = g.role === 'spy';
     if (S.game === 'outside') $('#winner2').textContent = S.spec ? (g.spyWins ? 'فاز برا السالفة' : 'فاز اللي داخل السالفة') : g.spyWins === amSpy ? 'فزت! 🎉' : (g.spyWins ? 'برا السالفة نجا!' : 'انكشف برا السالفة!');
-    else $('#winner2').textContent = S.teams && S.winTeam != null ? (S.spec ? 'فاز ' + S.winner : S.winTeam === mt ? 'فاز فريقك! 🎉' : 'فاز ' + S.winner) : (S.winner === (m && m.name) ? 'فزت! 🎉' : S.winner === 'انتهت اللعبة' ? S.winner : 'فاز ' + S.winner);
+    else $('#winner2').textContent = S.teams && S.winTeam != null ? (S.spec ? 'فاز ' + S.winner : S.winTeam === mt ? 'فاز فريقك! 🎉' : 'فاز ' + S.winner) : (S.winner === (m && m.name) ? 'فزت! 🎉' : S.winner === 'انتهت اللعبة' || S.winner === 'تعادل' ? S.winner : 'فاز ' + S.winner);
     const wt = $('#winteam2'); wt.hidden = !(S.teams && S.winTeam != null);
     if (!wt.hidden) wt.textContent = 'الفائزين: ' + S.players.filter(p => p.tm === S.winTeam).map(p => p.name).join(' و ');
     $('#board2').innerHTML = [...S.players].sort((a, b) => b.w - a.w).map(p => `<li${p.id === S.me ? ' class="me"' : ''}><span>${esc(p.name)}</span><b>🏆 ${p.w}</b></li>`).join('');
@@ -118,9 +118,9 @@ function renderHive(body, mt) {
   let cells = '', edges = '';
   g.cells.forEach((c, i) => {
     const r = i / 5 | 0, cc = i % 5, [x, y] = hc(r, cc);
-    const fill = c.o === 0 ? TCOL[0] : c.o === 1 ? TCOL[1] : 'var(--surf2)';
+    const fill = c.o === 0 ? TCOL[0] : c.o === 1 ? TCOL[1] : c.o === 2 ? '#8b8478' : 'var(--surf2)';
     const sel = g.cell === i;
-    cells += `<g class="hx${c.o === null && myPick ? ' go' : ''}${sel ? ' sel' : ''}" data-i="${i}"><polygon points="${hexPts(x, y)}" style="fill:${sel ? '#ffc928' : fill}"/><text x="${x}" y="${y + 1}" style="fill:${c.o !== null && !sel ? '#fff' : sel ? '#16130f' : 'var(--ink)'}">${esc(c.l)}</text></g>`;
+    cells += `<g class="hx${c.o === null && myPick ? ' go' : ''}${sel ? ' sel' : ''}" data-i="${i}"><polygon points="${hexPts(x, y)}" style="fill:${sel ? '#ffc928' : fill}"/><text x="${x}" y="${y + 1}" style="fill:${c.o !== null && !sel ? '#fff' : sel ? '#16130f' : 'var(--ink)'}">${c.o === 2 ? '✕' : esc(c.l)}</text></g>`;
   });
   const line = (pts, col) => `<polyline points="${pts.map(p => p.join(',')).join(' ')}" fill="none" stroke="${col}" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>`;
   let top = [], bot = [], lef = [], rig = [];
@@ -128,7 +128,7 @@ function renderHive(body, mt) {
   for (let r = 0; r < 5; r++) { const [x, y] = hc(r, 0); lef.push(vtx(x, y, 210), vtx(x, y, 150), vtx(x, y, 90)); const [x2, y2] = hc(r, 4); rig.push(vtx(x2, y2, 270), vtx(x2, y2, 330), vtx(x2, y2, 30)); }
   edges = line(top, TCOL[0]) + line(bot, TCOL[0]) + line(lef, TCOL[1]) + line(rig, TCOL[1]);
   let panel;
-  if (over) panel = `<div class="hq"><b>${esc(S.winner)} وصّل الخلية!</b></div>`;
+  if (over) panel = `<div class="hq"><b>${g.end === 'tie' ? 'تعادل — ما أحد وصّل والعدد متساوي' : g.end === 'count' ? esc(S.winner) + ' فاز — ما أحد وصّل وجاوب أكثر (' + g.counts[S.winTeam] + ' مقابل ' + g.counts[1 - S.winTeam] + ')' : esc(S.winner) + ' وصّل الخلية!'}</b></div>`;
   else if (g.sub === 'pick') panel = `<div class="hq"><span class="tc t${g.turn} on">فريق ${TN[g.turn]}</span> يختار حرف ${myPick ? '— اضغط على خلية' : ''} <span class="cd2"></span></div>`;
   else {
     const mineA = !S.spec && mt === g.answering;
@@ -139,7 +139,7 @@ function renderHive(body, mt) {
   const team = t => `<div class="hteam t${t}"><b>فريق ${TN[t]}</b> ${S.players.filter(p => p.tm === t).map(p => `<span class="pchip" data-id="${p.id}">${p.av ? esc(p.av) + ' ' : ''}${esc(p.name)}${p.w ? ` <i>🏆${p.w}</i>` : ''}</span>`).join('')}</div>`;
   body.innerHTML = `${team(0)}${team(1)}
     <svg class="hboard" viewBox="0 0 ${W.toFixed(0)} ${H.toFixed(0)}">${edges}${cells}</svg>
-    <div class="hint2">الأحمر: من فوق لتحت &nbsp;•&nbsp; الأزرق: من اليمين لليسار</div>
+    <div class="hint2">🔴 الأحمر يوصل بالطول (من فوق لتحت) &nbsp;•&nbsp; 🔵 الأزرق يوصل بالعرض (من اليمين لليسار) &nbsp;•&nbsp; اللي يكسب خلية يكمّل</div>
     ${panel}${logHtml()}`;
   body.querySelectorAll('.hx.go').forEach(el => el.onclick = () => send({ t: 'pick', i: +el.dataset.i }));
   const f = $('#ansForm'); if (f) { f.onsubmit = e => { e.preventDefault(); const t = $('#ansIn').value.trim(); if (!t) return; send({ t: 'answer', text: t }); $('#ansIn').value = ''; }; }

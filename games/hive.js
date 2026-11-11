@@ -40,17 +40,28 @@ module.exports = H => {
     if (!pool.length) { QS.filter(q => norm(q.l) === letter).forEach(q => g.used.delete(q)); pool = QS.filter(q => norm(q.l) === letter); }
     const q = pool[Math.random() * pool.length | 0]; g.used.add(q); return q;
   }
+  function endCount(r) { // ما أحد وصّل: اللي جاوب أكثر يفوز
+    const g = r.g, c = [0, 0]; g.cells.forEach(x => { if (x.o === 0 || x.o === 1) c[x.o]++; });
+    r.phase = 'over'; g.counts = c;
+    if (c[0] === c[1]) { r.winTeam = null; r.winner = 'تعادل'; g.end = 'tie'; H.log(r, `ما أحد وصّل والعدد متساوي (${c[0]} لكل فريق) — تعادل`); H.setTimer(r, 0, null); return; }
+    const w = c[0] > c[1] ? 0 : 1;
+    r.winTeam = w; r.score[w]++; r.winner = 'فريق ' + ['أ', 'ب'][w]; g.end = 'count';
+    H.log(r, `ما أحد وصّل — ${r.winner} جاوب أكثر (${c[w]} مقابل ${c[1 - w]}) وفاز!`); H.win(r, team(r, w)); H.setTimer(r, 0, null);
+  }
   function resolve(r, winnerTeam) { // winnerTeam: الفريق اللي كسب الخلية أو null
     const g = r.g, cell = g.cells[g.cell], q = g.q;
-    if (winnerTeam !== null) cell.o = winnerTeam;
+    if (winnerTeam !== null) cell.o = winnerTeam; else cell.o = 2; // ما أحد جاوب: الخلية تنحرق
     H.log(r, winnerTeam === null ? `ما أحد جاوب — الجواب: ${q.a[0]}` : `فريق ${['أ', 'ب'][winnerTeam]} أخذ حرف ${cell.l}`);
     g.result = { cell: g.cell, ok: winnerTeam, ans: q.a[0] };
     if (winnerTeam !== null && connected(g.cells, winnerTeam)) {
-      r.phase = 'over'; r.winTeam = winnerTeam; r.score[winnerTeam]++; r.winner = 'فريق ' + ['أ', 'ب'][winnerTeam];
-      H.log(r, `${r.winner} وصّل الخلية!`); H.win(r, team(r, winnerTeam));
+      r.phase = 'over'; r.winTeam = winnerTeam; r.score[winnerTeam]++; r.winner = 'فريق ' + ['أ', 'ب'][winnerTeam]; g.end = 'connect';
+      H.log(r, `${r.winner} وصّل الخلية!`); H.win(r, team(r, winnerTeam)); H.setTimer(r, 0, null);
       return;
     }
-    g.turn = 1 - g.picker; g.q = null; g.cell = null; setSub(r, 'pick');
+    g.q = null; g.cell = null;
+    if (!g.cells.some(x => x.o === null)) return endCount(r);
+    g.turn = winnerTeam !== null ? winnerTeam : 1 - g.picker; // اللي يكسب الخلية يكمّل
+    setSub(r, 'pick');
   }
   function timeout(r) {
     const g = r.g; if (!g || r.phase !== 'play') return;
@@ -69,7 +80,7 @@ module.exports = H => {
     start(r) {
       r.players.forEach((p, i) => { p.team = i % 2; });
       const letters = H.shuffle(LETTERS.slice()).slice(0, N * N);
-      r.g = { cells: letters.map(l => ({ l, o: null })), turn: Math.random() < .5 ? 0 : 1, sub: 'pick', cell: null, q: null, picker: 0, used: new Set(), result: null };
+      r.g = { cells: letters.map(l => ({ l, o: null })), turn: Math.random() < .5 ? 0 : 1, sub: 'pick', cell: null, q: null, picker: 0, used: new Set(), result: null, end: null, counts: null };
       r.winTeam = null; r.winner = null; r.phase = 'play';
       H.log(r, `بدأت اللعبة — يبدأ فريق ${['أ', 'ب'][r.g.turn]}`);
       setSub(r, 'pick');
@@ -93,7 +104,7 @@ module.exports = H => {
       const g = r.g; if (!g) return null;
       return {
         cells: g.cells, turn: g.turn, sub: g.sub, cell: g.cell, picker: g.picker,
-        q: g.q ? { q: g.q.q, l: g.q.l } : null, result: g.result,
+        q: g.q ? { q: g.q.q, l: g.q.l } : null, result: g.result, end: g.end, counts: g.counts,
         answering: g.sub === 'answer' ? g.turn : g.sub === 'steal' ? 1 - g.picker : null
       };
     },
