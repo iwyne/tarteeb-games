@@ -484,7 +484,12 @@ async function startActivity() {
   }
 }
 
-$('#quit').onclick = () => { if (confirm(T('تبي تطلع من اللعبة؟'))) send({ t: 'leave' }); };
+window.quitGame = () => {
+  const host = S && S.players.find(p => p.h), amHost = !S.spec && host && host.id === S.me;
+  if (amHost && S.phase === 'play') { if (confirm(T('تبي ترجع الكل للغرفة؟'))) send({ t: 'tolobby' }); return; }
+  if (confirm(T('تبي تطلع من اللعبة؟'))) send({ t: 'leave' });
+};
+$('#quit').onclick = () => window.quitGame();
 function drawSpecPanel() {
   const host = S.players.find(p => p.h), amHost = !S.spec && host && host.id === S.me;
   $('#specPanel').innerHTML = '<b>المتفرجين</b>' + S.specs.map(p => `<div>${esc(p.name)}${p.id === S.me ? ' <em>(أنت)</em>' : ''}${amHost ? `<button class="kick" data-id="${p.id}" title="طرد">✕</button>` : ''}</div>`).join('');

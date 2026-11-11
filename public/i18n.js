@@ -14,7 +14,7 @@
     ['رابط الدعم ما انضاف بعد', 'Support link not added yet'], ['انقطع الاتصال… نرجع نتصل', 'Disconnected… reconnecting'],
     ['انثبّت التطبيق 🎉', 'App installed 🎉'], ['في سفاري: اضغط زر المشاركة ثم «إضافة إلى الشاشة الرئيسية»', 'In Safari: tap Share, then “Add to Home Screen”'],
     ['التنبيهات محظورة من إعدادات المتصفح', 'Notifications are blocked in your browser settings'], ['بنبّهك لما يجي دورك والصفحة بالخلفية', "We'll alert you on your turn while the page is in the background"], ['انطفى التنبيه', 'Alerts off'],
-    ['اننسخ الرابط، ارسله في الديسكورد', 'Link copied, send it on Discord'], ['الكود: ', 'Code: '], ['طردك المضيف من الغرفة', 'The host kicked you from the room'], ['تطرد', 'Kick'], ['من الغرفة؟', 'from the room?'], ['تبي تطلع من اللعبة؟', 'Leave the game?'],
+    ['اننسخ الرابط، ارسله في الديسكورد', 'Link copied, send it on Discord'], ['الكود: ', 'Code: '], ['طردك المضيف من الغرفة', 'The host kicked you from the room'], ['تطرد', 'Kick'], ['من الغرفة؟', 'from the room?'], ['تبي تطلع من اللعبة؟', 'Leave the game?'], ['تبي ترجع الكل للغرفة؟', 'Send everyone back to the lobby?'],
     ['كلمة سر الغرفة:', 'Room password:'], ['تم التطوير من قبل', 'Developed by'],
     // ===== ورق ورقة ثيمات =====
     ['ورق', 'Paper'], ['ليل', 'Night'], ['بحر', 'Sea'], ['غروب', 'Sunset'], ['نعناع', 'Mint'], ['ليلكي', 'Lilac'], ['ورد', 'Rose'],

@@ -37,7 +37,7 @@ function renderTeamsOther(isHost) {
   if (S.teams) $('#hint').textContent += tip + ' — زر «اخلط الفرق» يبدّل الجلسة';
   else if (S.game === 'liars') $('#hint').textContent += ' — تلعب أوراق مقلوبة وتكذب، واللي ينكشف يسحب من دولاب القنبلة';
 }
-$('#quit2').onclick = () => { if (confirm(T('تبي تطلع من اللعبة؟'))) send({ t: 'leave' }); };
+$('#quit2').onclick = () => window.quitGame();
 $('#leave2b').onclick = () => send({ t: 'leave' });
 $('#again2').onclick = () => send({ t: 'again' });
 $('#mute2').textContent = sfx.on() ? '🔊' : '🔇';

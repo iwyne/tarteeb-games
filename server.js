@@ -558,6 +558,15 @@ wss.on('connection', (ws, req) => {
           r.phase = 'lobby'; r.winner = null; r.winTeam = null; r.log = []; r.g = null; clearTimeout(r.timer); r.deadline = 0;
         }
         break;
+      case 'tolobby':
+        if (r.host === p.id && r.phase === 'play') {
+          clearTimeout(r.timer); clearTimeout(r.botT); r.botT = null;
+          if (r.g && r.g.hintT) clearTimeout(r.g.hintT);
+          r.players = r.players.filter(q => q.online || q.bot);
+          r.players.forEach(q => { q.hand = []; q.uno = false; });
+          r.phase = 'lobby'; r.winner = null; r.winTeam = null; r.log = []; r.g = null; r.owed = 0; r.pending = null; r.catchable = null; r.deadline = 0;
+        }
+        break;
       case 'leave':
         ws.ctx = null; send(ws, { t: 'left' });
         if (p.spec) { r.specs = r.specs.filter(q => q !== p); break; }
