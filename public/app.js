@@ -17,13 +17,14 @@ const store = {
 const IN_DISCORD = new URLSearchParams(location.search).has('frame_id'); // ديسكورد يضيف frame_id لما تفتح اللعبة داخله
 let session = IN_DISCORD ? {} : (store.get('tarteeb-session') || {});
 let activityHello = null;
-let S = null, prevS = null, ws, queue = [], wildId = null;
+let lastJoin = null, S = null, prevS = null, ws, queue = [], wildId = null;
 
 $$('[data-discord]').forEach(a => a.href = DISCORD_URL);
 $$('[data-support]').forEach(a => {
   if (SUPPORT_URL) a.href = SUPPORT_URL;
   else a.onclick = e => { e.preventDefault(); toast('رابط الدعم ما انضاف بعد'); };
 });
+const T = s => window.I18N ? I18N.t(s) : s;
 const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 let tt;
 function toast(msg) { const t = $('#toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(tt); tt = setTimeout(() => t.classList.remove('show'), 2400); }
@@ -49,6 +50,7 @@ function on(m) {
     history.replaceState(null, '', location.pathname);
   } else if (m.t === 'err') {
     toast(m.msg);
+    if (m.needpass && lastJoin) { const pw = prompt(T('كلمة سر الغرفة:')); if (pw) send({ ...lastJoin, pass: pw }); }
     if (m.reset) reset();
   } else if (m.t === 'left') {
     reset();
@@ -61,10 +63,12 @@ function on(m) {
     showBubble(m.from, m.text);
     if (!$('#chatbox').hidden) drawMsgs();
     else if (S && m.from !== S.me) { unread++; badge(); sfx('pop'); }
+  } else if (m.t === 'stroke' || m.t === 'strokes') {
+    if (typeof drawNet === 'function') drawNet(m);
   } else if (m.t === 'react') {
     showReact(m.from, m.e);
   } else if (m.t === 'state') {
-    m.t0 = Date.now(); prevS = S; S = m; render();
+    m.t0 = Date.now(); prevS = S; S = m; render(); notifyTurn();
   }
 }
 function reset() { session = {}; store.set('tarteeb-session', {}); S = null; prevS = null; render(); }
@@ -75,16 +79,24 @@ nameEl.value = store.get('tarteeb-name') || '';
 const urlRoom = new URLSearchParams(location.search).get('room');
 if (urlRoom) codeEl.value = urlRoom.slice(0, 4).toUpperCase();
 
+const AVS = ['😎', '🦁', '🐪', '🦅', '🐺', '🦊', '🐯', '🐼', '🦄', '🐸', '👑', '🔥', '⚡', '🌙', '🎩', '🤠'];
+let myAv = store.get('tarteeb-av') || '';
+const drawAv = () => { $('#avBtn').textContent = myAv || '🙂'; $$('#avPick button').forEach(b => b.classList.toggle('on', b.dataset.a === myAv)); };
+$('#avPick').innerHTML = AVS.map(a => `<button type="button" data-a="${a}">${a}</button>`).join('');
+$('#avBtn').onclick = () => { $('#avPick').hidden = !$('#avPick').hidden; };
+$$('#avPick button').forEach(b => b.onclick = () => { myAv = myAv === b.dataset.a ? '' : b.dataset.a; store.set('tarteeb-av', myAv); drawAv(); $('#avPick').hidden = true; sfx('pop'); });
+drawAv();
+const face = p => p.av ? esc(p.av) : esc([...p.name][0] || '?');
 function myName() { const n = nameEl.value.trim(); if (n) store.set('tarteeb-name', n); return n; }
 $('#create').onclick = () => {
   const name = myName(); if (!name) { toast('اكتب اسمك أول'); return nameEl.focus(); }
-  session = {}; send({ t: 'create', name });
+  session = {}; lastJoin = null; send({ t: 'create', name, game: SEL, av: myAv });
 };
 $('#join').onclick = () => {
   const name = myName(); if (!name) { toast('اكتب اسمك أول'); return nameEl.focus(); }
   const code = codeEl.value.trim().toUpperCase();
   if (code.length !== 4) { toast('الكود أربع خانات'); return codeEl.focus(); }
-  session = {}; send({ t: 'join', name, code });
+  session = {}; lastJoin = { t: 'join', name, code, av: myAv }; send(lastJoin);
 };
 codeEl.addEventListener('keydown', e => e.key === 'Enter' && $('#join').click());
 nameEl.addEventListener('keydown', e => e.key === 'Enter' && (codeEl.value.trim() ? $('#join') : $('#create')).click());
@@ -105,24 +117,28 @@ function renderLobby() {
   const host = S.players.find(p => p.h);
   const amHost = !!host && host.id === S.me;
   $('#roomcode').textContent = S.code;
-  $('#pcount').textContent = `(${S.players.length}/6)`;
+  $('#pcount').textContent = `(${S.players.length}/${S.max})`;
+  $('#lobbyTitle').textContent = 'غرفة ' + GNAME[S.game];
   const plist = S.teams ? [...S.players].sort((a, b) => a.tm - b.tm) : S.players;
   $('#plist').innerHTML = plist.map(p =>
-    `<li data-id="${p.id}" class="${p.on ? '' : 'off'}${S.teams ? ' t' + p.tm : ''}">${esc(p.name)}${p.w ? `<span class="wins">🏆 ${p.w}</span>` : ''}${S.teams ? `<span class="tag">فريق ${['أ', 'ب'][p.tm]}</span>` : ''}${p.id === S.me ? ' <em>(أنت)</em>' : ''}${p.h ? '<span class="crown">المضيف</span>' : ''}${amHost && !p.h && p.id !== S.me ? `<button class="kick" data-id="${p.id}" title="طرد">✕</button>` : ''}</li>`
+    `<li data-id="${p.id}" class="${p.on ? '' : 'off'}${S.teams ? ' t' + p.tm : ''}">${p.av ? `<span class="pav">${esc(p.av)}</span>` : ''}${esc(p.name)}${p.bot ? ' <span class="botx">بوت</span>' : ''}${p.w ? `<span class="wins">🏆 ${p.w}</span>` : ''}${S.teams ? `<span class="tag">فريق ${['أ', 'ب'][p.tm]}</span>` : ''}${p.id === S.me ? ' <em>(أنت)</em>' : ''}${p.h ? '<span class="crown">المضيف</span>' : ''}${amHost && !p.h && p.id !== S.me ? `<button class="kick" data-id="${p.id}" title="طرد">✕</button>` : ''}</li>`
   ).join('');
-  const isHost = host && host.id === S.me, enough = S.players.length >= 2;
+  const isHost = host && host.id === S.me, enough = S.players.length >= S.min;
   $('#specwrap').hidden = !S.specs.length;
   $('#scount').textContent = `(${S.specs.length})`;
   $('#slist').innerHTML = S.specs.map(p => `<li data-id="${p.id}">${esc(p.name)}${p.id === S.me ? ' <em>(أنت)</em>' : ''}${isHost ? `<button class="kick" data-id="${p.id}" title="طرد">✕</button>` : ''}</li>`).join('');
   $('#start').hidden = !isHost;
   $('#start').disabled = !enough;
-  $('#hint').textContent = !enough ? 'نحتاج لاعبين اثنين على الأقل، انتظر أحد يدخل'
+  $('#hint').textContent = !enough ? `نحتاج ${S.min} لاعبين على الأقل، انتظر ناس يدخلون`
     : isHost ? 'كل شي جاهز، ابدأ متى ما تبي' : 'ننتظر المضيف يبدأ اللعبة';
   if (S.spec) $('#hint').textContent = 'الغرفة ممتلئة، أنت متفرّج وتنضم أول ما ينفضى مكان';
+  renderLobbySet(isHost);
   renderTeams(isHost);
 }
 function renderTeams(isHost) {
   if (S.spec) { $('#teamrow').hidden = true; return; }
+  if (S.game !== 'uno') return renderTeamsOther(isHost);
+  $('#teamBtn').hidden = false;
   const can = S.players.length >= 4 && S.players.length % 2 === 0;
   $('#teamrow').hidden = !isHost;
   const tb = $('#teamBtn');
@@ -181,7 +197,7 @@ function renderGame() {
     const x = 50 - 40 * Math.cos(a), y = 58 - 46 * Math.sin(a);
     const col = S.teams ? TC[p.tm] : PAL[S.players.indexOf(p) % 4];
     return `<div class="seat${p.id === S.turn && playing ? ' turn' : ''}${p.on ? '' : ' off'}" data-id="${p.id}" style="left:${x}%;top:${y}%">
-      ${p.id === S.turn && playing ? '<div class="arrow"><b></b>▼</div>' : ''}${amHost ? `<button class="kick" data-id="${p.id}" title="طرد">✕</button>` : ''}<div class="avatar" style="background:${col};color:${col === '#ffc928' ? '#16130f' : '#fff'}">${esc([...p.name][0] || '?')}</div>
+      ${p.id === S.turn && playing ? '<div class="arrow"><b></b>▼</div>' : ''}${amHost ? `<button class="kick" data-id="${p.id}" title="طرد">✕</button>` : ''}<div class="avatar" style="background:${col};color:${col === '#ffc928' ? '#16130f' : '#fff'}">${face(p)}</div>
       <div class="nm">${esc(p.name)}</div>${p.w ? `<span class="wins">🏆 ${p.w}</span>` : ''}${S.teams ? `<span class="tm${!spec && p.tm === myTm ? ' mate' : ''}">${spec ? 'فريق ' + ['أ', 'ب'][p.tm] : p.tm === myTm ? 'فريقك' : 'خصم'}</span>` : ''}<div class="backs">${'<i></i>'.repeat(Math.min(p.n, 8))}</div><span class="cnt">${p.n}</span></div>`;
   }).join('');
 
@@ -202,8 +218,8 @@ function renderGame() {
   const t = $('#turn');
   t.className = 'turn' + (mine ? ' mine' : '') + (must ? ' warn' : '');
   t.innerHTML = !playing ? '' : must ? 'ما عندك ورقة تنفع، اسحب من الكومة! <span class="cd"></span>'
-    : mine ? (S.pending !== null ? 'العب الورقة اللي سحبتها أو مرّر' : 'دورك!') + ' <span class="cd"></span>'
-    : `دور ${esc(S.players.find(p => p.id === S.turn)?.name || '')} <span class="cd"></span>`;
+    : mine ? (S.pending !== null ? 'العب الورقة اللي سحبتها أو مرّر' : S.owed > 0 ? `رد بـ +${S.top && S.top.v === 'wild4' ? '٤' : '٢'} أو اسحب ${S.owed}!` : 'دورك!') + ' <span class="cd"></span>'
+    : `دور ${esc(S.players.find(p => p.id === S.turn)?.name || '')}${S.owed > 0 ? ` — عليه يسحب ${S.owed}` : ''} <span class="cd"></span>`;
   tick();
   $('#log').innerHTML = S.log.slice(-2).map(esc).join('<br>');
 
@@ -335,14 +351,16 @@ function fx() {
 }
 
 function render() {
-  const ph = !S ? (IN_DISCORD ? 'connecting' : 'home') : S.phase === 'lobby' ? 'lobby' : 'game';
-  ['home', 'connecting', 'lobby', 'game'].forEach(id => $('#' + id).hidden = id !== ph);
+  const ph = !S ? (IN_DISCORD ? 'connecting' : 'home') : S.phase === 'lobby' ? 'lobby' : S.game === 'uno' ? 'game' : 'game2';
+  ['home', 'connecting', 'lobby', 'game', 'game2'].forEach(id => $('#' + id).hidden = id !== ph);
   document.body.classList.toggle('ingame', ph === 'game');
-  $('#chatfab').hidden = !S;
+  document.body.classList.toggle('ingame2', ph === 'game2');
+  $('#chatfab').hidden = !S; drawBell();
   if (!S) { $('#chatbox').hidden = true; $('#emojiBar').hidden = true; chatLog = []; unread = 0; badge(); }
   if (ph !== 'game') $('#colorModal').hidden = true;
   if (ph === 'lobby') renderLobby();
   if (ph === 'game') renderGame();
+  if (ph === 'game2') renderOther();
 }
 
 // ---------- شات وتفاعل بالايموجي ----------
@@ -354,12 +372,46 @@ $$('#emojiBar button').forEach(b => b.onclick = () => { send({ t: 'emoji', e: b.
 function badge() { const u = $('#unread'); u.hidden = !unread; u.textContent = unread; }
 function drawMsgs() {
   const box = $('#msgs');
-  box.innerHTML = chatLog.map(m => `<div class="msg${S && m.from === S.me ? ' me' : ''}"><b>${esc(m.name)}:</b> ${esc(m.text)}</div>`).join('');
+  box.innerHTML = chatLog.map(m => `<div class="msg${S && m.from === S.me ? ' me' : ''}"><b>${esc(m.name)}:</b> <span class="nt">${esc(m.text)}</span></div>`).join('');
   box.scrollTop = box.scrollHeight;
 }
 function openChat(open) {
   $('#chatbox').hidden = !open; $('#emojiBar').hidden = true;
   if (open) { unread = 0; badge(); drawMsgs(); setTimeout(() => $('#chatin').focus(), 50); }
+}
+const QUICK = ['يلا!', 'دورك', 'حظ أوفر', 'ههههه', 'GG', 'لحظة', 'والله؟!', 'تسلم'];
+$('#quick').innerHTML = QUICK.map(q => `<button type="button">${q}</button>`).join('');
+$$('#quick button').forEach(b => b.onclick = () => send({ t: 'chat', text: b.textContent }));
+// تنبيه الدور: يشتغل لين تكون الصفحة مفتوحة (حتى لو بتبويب ثاني)
+let notifyOn = !!store.get('tarteeb-notify') && 'Notification' in window && Notification.permission === 'granted';
+const drawBell = () => { const b = $('#bellBtn'); b.hidden = !S || !('Notification' in window); b.textContent = notifyOn ? '🔔' : '🔕'; };
+$('#bellBtn').onclick = async () => {
+  if (!notifyOn) {
+    let perm = Notification.permission; if (perm === 'default') perm = await Notification.requestPermission();
+    if (perm !== 'granted') return toast('التنبيهات محظورة من إعدادات المتصفح');
+    notifyOn = true; toast('بنبّهك لما يجي دورك والصفحة بالخلفية');
+  } else { notifyOn = false; toast('انطفى التنبيه'); }
+  store.set('tarteeb-notify', notifyOn); drawBell();
+};
+function isMyTurn(s) {
+  if (!s || s.spec || s.phase !== 'play') return false;
+  const g = s.g, m = s.players.find(p => p.id === s.me), tm = m ? m.tm : null;
+  if (s.game === 'uno') return s.turn === s.me;
+  if (!g) return false;
+  if (s.game === 'liars') return g.sub === 'play' && g.turn === s.me;
+  if (s.game === 'outside') return g.sub === 'clue' && g.turn === s.me;
+  if (s.game === 'codes') return g.turn === tm;
+  if (s.game === 'jackaroo') return g.turn === g.seat;
+  if (s.game === 'draw') return g.sub === 'choose' && g.drawer === s.me;
+  if (s.game === 'hive') return (g.sub === 'pick' && g.turn === tm) || g.answering === tm;
+  return false;
+}
+function notifyTurn() {
+  if (!notifyOn || !document.hidden) return;
+  if (isMyTurn(S) && !(prevS && prevS.game === S.game && isMyTurn(prevS))) {
+    try { new Notification('ترتيب — دورك!', { body: 'ارجع للعبة', tag: 'turn', icon: 'icons/icon-192.png' }); } catch {}
+    if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
+  }
 }
 $('#chatBtn').onclick = () => openChat($('#chatbox').hidden);
 function sendChat() { const t = $('#chatin').value.trim(); if (!t) return; send({ t: 'chat', text: t }); $('#chatin').value = ''; }
@@ -382,7 +434,7 @@ setInterval(tick, 250);
 // فقاعة رسالة فوق صاحبها
 function showBubble(id, text) {
   document.querySelectorAll(`.bubble[data-id="${id}"]`).forEach(b => b.remove());
-  const el = document.querySelector(`.seat[data-id="${id}"]`) || document.querySelector(`#plist li[data-id="${id}"]`);
+  const el = document.querySelector(`.seat[data-id="${id}"], .lp[data-id="${id}"], .pchip[data-id="${id}"]`) || document.querySelector(`#plist li[data-id="${id}"]`);
   const pos = el ? ctr(el) : { x: innerWidth / 2, y: innerHeight - 190 };
   const b = document.createElement('div'); b.className = 'bubble'; b.dataset.id = id; b.textContent = text;
   b.style.left = Math.min(Math.max(pos.x, 120), innerWidth - 120) + 'px';
@@ -397,7 +449,7 @@ function showBubble(id, text) {
 }
 // ايموجي يطلع فوق مقعد صاحبه ويطير
 function showReact(id, e) {
-  const el = document.querySelector(`.seat[data-id="${id}"]`) || document.querySelector(`#plist li[data-id="${id}"]`);
+  const el = document.querySelector(`.seat[data-id="${id}"], .lp[data-id="${id}"], .pchip[data-id="${id}"]`) || document.querySelector(`#plist li[data-id="${id}"]`);
   const pos = el ? ctr(el) : { x: innerWidth / 2, y: innerHeight - 200 };
   const d = document.createElement('div'); d.className = 'react'; d.textContent = e;
   d.style.left = pos.x + 'px'; d.style.top = pos.y + 'px';
@@ -424,7 +476,7 @@ async function startActivity() {
     const { access_token } = await r.json();
     if (!access_token) throw new Error('no token');
     await sdk.commands.authenticate({ access_token });
-    activityHello = { t: 'activity', room: sdk.instanceId, token: access_token };
+    activityHello = { t: 'activity', room: sdk.instanceId, token: access_token, av: myAv };
     connect();
   } catch (e) {
     console.error(e);
@@ -432,7 +484,7 @@ async function startActivity() {
   }
 }
 
-$('#quit').onclick = () => { if (confirm('تبي تطلع من اللعبة؟')) send({ t: 'leave' }); };
+$('#quit').onclick = () => { if (confirm(T('تبي تطلع من اللعبة؟'))) send({ t: 'leave' }); };
 function drawSpecPanel() {
   const host = S.players.find(p => p.h), amHost = !S.spec && host && host.id === S.me;
   $('#specPanel').innerHTML = '<b>المتفرجين</b>' + S.specs.map(p => `<div>${esc(p.name)}${p.id === S.me ? ' <em>(أنت)</em>' : ''}${amHost ? `<button class="kick" data-id="${p.id}" title="طرد">✕</button>` : ''}</div>`).join('');
@@ -441,7 +493,7 @@ $('#specBtn').onclick = () => { const p = $('#specPanel'); p.hidden = !p.hidden;
 document.addEventListener('click', e => {
   const k = e.target.closest('.kick'); if (!k || !S) return;
   const t = S.players.find(p => p.id === k.dataset.id) || S.specs.find(p => p.id === k.dataset.id);
-  if (t && (IN_DISCORD || confirm(`تطرد ${t.name} من الغرفة؟`))) send({ t: 'kick', id: k.dataset.id });
+  if (t && (IN_DISCORD || confirm(T('تطرد') + ` ${t.name} ` + T('من الغرفة؟')))) send({ t: 'kick', id: k.dataset.id });
 });
 const muteBtn = $('#mute');
 muteBtn.textContent = sfx.on() ? '🔊' : '🔇';

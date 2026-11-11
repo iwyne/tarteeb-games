@@ -5,7 +5,13 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>ترتيب — ألعاب</title>
 <meta name="theme-color" content="#f3ead8">
-<meta name="description" content="ألعاب ترتيب — العب أونو مع ربعك بكود غرفة">
+<meta name="description" content="ألعاب ترتيب — أونو، جاكارو، رسم وخمّن وأكثر مع ربعك بكود غرفة">
+<meta property="og:type" content="website">
+<meta property="og:title" content="ترتيب — ألعاب">
+<meta property="og:description" content="أونو، جاكارو، رسم وخمّن، برا السالفة وغيرها. سوّ غرفة وعطّ الكود لربعك.">
+<meta property="og:image" content="icons/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<script>try{var t=JSON.parse(localStorage.getItem("tarteeb-theme"));if(t&&t!=="paper")document.documentElement.dataset.theme=t}catch(e){}try{if(JSON.parse(localStorage.getItem("tarteeb-lang"))==="en"){document.documentElement.lang="en";document.documentElement.dir="ltr"}}catch(e){}try{if(sessionStorage.getItem("tarteeb-splash")||/frame_id/.test(location.search))document.documentElement.classList.add("nosplash")}catch(e){}</script>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icons/icon-192.png" type="image/png">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
@@ -15,10 +21,20 @@
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
+<div id="splash" aria-hidden="true">
+  <button id="spLang" class="splang" type="button">EN</button>
+  <div class="sp-cards"><i class="c1">+2</i><i class="c2">7</i><i class="c3">⇄</i><i class="c4">★</i></div>
+  <h1 class="sp-title">ترتيب<span>.</span></h1>
+  <p class="sp-tag">أونو • جاكارو • رسم وخمّن • برا السالفة</p>
+  <div class="sp-bar"><i></i></div>
+  <p class="sp-credit"><span>تم التطوير من قبل</span> <bdi dir="ltr" class="team">TRTB TEAM</bdi></p>
+</div>
 
 <header class="top">
   <a class="logo" href="/"><span>ترتيب</span><small>ألعاب</small></a>
   <div class="hb">
+    <button id="langBtn" class="btn sm" type="button" title="Language">EN</button>
+    <button id="themeTop" class="btn sm themebtn" title="الثيم">🎨</button>
     <button id="install" class="btn sm yellow" hidden>ثبّت التطبيق</button>
     <a class="btn sm" data-support target="_blank" rel="noopener">الدعم</a>
     <a class="btn sm" data-discord target="_blank" rel="noopener">ديسكورد</a>
@@ -30,11 +46,13 @@
   <section id="home">
     <div class="home-top">
       <div class="hero">
-        <h1>الأونو<br>صار عندنا<span class="dot">.</span></h1>
-        <p>سوّ غرفة، عطّ الكود لربعك، وابدأوا. من ٢ إلى ٦ لاعبين.</p>
+        <h1>الألعاب<br>صارت عندنا<span class="dot">.</span></h1>
+        <p>اختر لعبة، سوّ غرفة، عطّ الكود لربعك، وابدأوا.</p>
       </div>
       <div class="panel">
-        <label>اسمك<input id="name" maxlength="14" placeholder="اكتب اسمك" autocomplete="off"></label>
+        <div class="avrow"><button id="avBtn" class="avbtn" type="button" title="اختر صورتك">🙂</button><label>اسمك<input id="name" maxlength="14" placeholder="اكتب اسمك" autocomplete="off"></label></div>
+        <div id="avPick" class="avpick" hidden></div>
+        <div class="pickrow">اللعبة: <b id="gname">أونو</b> <small id="ginfo"></small></div>
         <button id="create" class="btn red">سوّ غرفة جديدة</button>
         <div class="or"><span>أو ادخل بكود</span></div>
         <div class="joinrow">
@@ -46,12 +64,12 @@
 
     <h2 class="sect">الألعاب</h2>
     <div class="games">
-      <article class="game uno">
+      <article class="game uno sel" data-game="uno" tabindex="0">
         <div class="fan"><i class="y">7</i><i class="b">+2</i><i class="g">⇄</i></div>
         <h3>أونو</h3>
-        <span class="tag">متاحة الحين</span>
+        <span class="tag">من ٢ إلى ٦ لاعبين</span>
       </article>
-      <article class="game soon">
+      <article class="game play" data-game="codes" tabindex="0">
         <svg class="logo" viewBox="0 0 100 100" aria-hidden="true">
           <rect x="9" y="9" width="86" height="86" rx="20" fill="#16130f"/>
           <rect x="5" y="5" width="86" height="86" rx="20" fill="#e8362d"/>
@@ -59,9 +77,9 @@
           <rect x="5" y="5" width="86" height="86" rx="20" fill="none" stroke="#16130f" stroke-width="5"/>
           <path d="M34 74L39.5 51.8A13 13 0 1 1 56.5 51.8L62 74Z" fill="#fffaf0" stroke="#16130f" stroke-width="4.5" stroke-linejoin="round"/>
         </svg>
-        <h3>كلمة السر</h3><span class="tag">قريباً</span>
+        <h3>كلمة السر</h3><span class="tag">من ٤ إلى ١٠ لاعبين</span>
       </article>
-      <article class="game soon">
+      <article class="game play" data-game="hive" tabindex="0">
         <svg class="logo" viewBox="0 0 100 100" aria-hidden="true">
           <g transform="translate(4 4)" fill="#16130f"><path d="M31 14L50 25V47L31 58L12 47V25Z"/><path d="M69 14L88 25V47L69 58L50 47V25Z"/><path d="M50 47L69 58V80L50 91L31 80V58Z"/></g>
           <g stroke="#16130f" stroke-width="4" stroke-linejoin="round">
@@ -71,9 +89,9 @@
             <text x="31" y="37" fill="#fffaf0">ح</text><text x="69" y="37" fill="#16130f">ر</text><text x="50" y="70" fill="#fffaf0">ف</text>
           </g>
         </svg>
-        <h3>خلية الحروف</h3><span class="tag">قريباً</span>
+        <h3>خلية الحروف</h3><span class="tag">من ٢ إلى ١٠ لاعبين</span>
       </article>
-      <article class="game soon">
+      <article class="game play" data-game="liars" tabindex="0">
         <svg class="logo" viewBox="0 0 100 100" aria-hidden="true">
           <circle cx="48" cy="56" r="34" fill="#16130f"/>
           <circle cx="44" cy="52" r="34" fill="#ffc928" stroke="#16130f" stroke-width="5"/>
@@ -86,7 +104,55 @@
           <path d="M42 56L87 66" stroke="#e8362d" stroke-width="8" stroke-linecap="round"/>
           <path d="M28 72Q42 80 56 70" fill="none" stroke="#16130f" stroke-width="4" stroke-linecap="round"/>
         </svg>
-        <h3>الكذابين الترتيب</h3><span class="tag">قريباً</span>
+        <h3>الكذابين الترتيب</h3><span class="tag">من ٢ إلى ٦ لاعبين</span>
+      </article>
+      <article class="game play" data-game="outside" tabindex="0">
+        <svg class="logo" viewBox="0 0 100 100" aria-hidden="true">
+          <rect x="9" y="9" width="86" height="86" rx="20" fill="#16130f"/>
+          <rect x="5" y="5" width="86" height="86" rx="20" fill="#2a5bd7" stroke="#16130f" stroke-width="5"/>
+          <circle cx="40" cy="48" r="27" fill="none" stroke="#fffaf0" stroke-width="4" stroke-dasharray="3 7" stroke-linecap="round"/>
+          <g stroke="#16130f" stroke-width="3.5">
+            <circle cx="30" cy="42" r="8.5" fill="#e8362d"/><circle cx="50" cy="42" r="8.5" fill="#1fa35c"/>
+            <path d="M18 66Q30 52 42 66Z" fill="#e8362d"/><path d="M38 66Q50 52 62 66Z" fill="#1fa35c"/>
+            <circle cx="74" cy="64" r="11" fill="#ffc928"/>
+          </g>
+          <text x="74" y="65" font-family="Lalezar,Tajawal,sans-serif" font-size="17" text-anchor="middle" dominant-baseline="central" fill="#16130f">؟</text>
+        </svg>
+        <h3>برا السالفة</h3><span class="tag">من ٣ إلى ١٠ لاعبين</span>
+      </article>
+      <article class="game play" data-game="typing" tabindex="0">
+        <svg class="logo" viewBox="0 0 100 100" aria-hidden="true">
+          <rect x="9" y="9" width="86" height="86" rx="20" fill="#16130f"/>
+          <rect x="5" y="5" width="86" height="86" rx="20" fill="#1fa35c" stroke="#16130f" stroke-width="5"/>
+          <g stroke="#16130f" stroke-width="3.5" stroke-linejoin="round">
+            <rect x="15" y="20" width="18" height="18" rx="4" fill="#fffaf0"/><rect x="36" y="20" width="18" height="18" rx="4" fill="#fffaf0"/><rect x="57" y="20" width="18" height="18" rx="4" fill="#ffc928"/>
+            <rect x="15" y="41" width="18" height="18" rx="4" fill="#fffaf0"/><rect x="36" y="41" width="18" height="18" rx="4" fill="#e8362d"/><rect x="57" y="41" width="18" height="18" rx="4" fill="#fffaf0"/>
+            <rect x="22" y="62" width="48" height="16" rx="4" fill="#fffaf0"/>
+          </g>
+          <path d="M70 36L58 58H66L61 76L78 50H69Z" fill="#ffc928" stroke="#16130f" stroke-width="3.5" stroke-linejoin="round"/>
+        </svg>
+        <h3>سبّاق الكتابة</h3><span class="tag">من ٢ إلى ١٠ لاعبين</span>
+      </article>
+      <article class="game play" data-game="jackaroo" tabindex="0">
+        <svg class="logo" viewBox="0 0 100 100" aria-hidden="true">
+          <rect x="9" y="9" width="86" height="86" rx="20" fill="#16130f"/>
+          <rect x="5" y="5" width="86" height="86" rx="20" fill="#ffc928" stroke="#16130f" stroke-width="5"/>
+          <circle cx="48" cy="48" r="29" fill="#fffaf0" stroke="#16130f" stroke-width="4"/>
+          <circle cx="48" cy="48" r="13" fill="none" stroke="#16130f" stroke-width="3" stroke-dasharray="2 6" stroke-linecap="round"/>
+          <g stroke="#16130f" stroke-width="3.5"><circle cx="48" cy="19" r="9" fill="#e8362d"/><circle cx="77" cy="48" r="9" fill="#2a5bd7"/><circle cx="48" cy="77" r="9" fill="#ff9f43"/><circle cx="19" cy="48" r="9" fill="#19b5c9"/></g>
+        </svg>
+        <h3>جاكارو</h3><span class="tag">٤ لاعبين، فريقين</span>
+      </article>
+      <article class="game play" data-game="draw" tabindex="0">
+        <svg class="logo" viewBox="0 0 100 100" aria-hidden="true">
+          <rect x="9" y="9" width="86" height="86" rx="20" fill="#16130f"/>
+          <rect x="5" y="5" width="86" height="86" rx="20" fill="#e8362d" stroke="#16130f" stroke-width="5"/>
+          <rect x="16" y="18" width="58" height="46" rx="8" fill="#fffaf0" stroke="#16130f" stroke-width="4"/>
+          <path d="M26 52Q34 28 44 44T64 30" fill="none" stroke="#2a5bd7" stroke-width="5" stroke-linecap="round"/>
+          <path d="M60 80L82 38L92 44L70 86Z" fill="#ffc928" stroke="#16130f" stroke-width="4" stroke-linejoin="round"/>
+          <path d="M60 80L58 90L70 86Z" fill="#16130f"/>
+        </svg>
+        <h3>رسم وخمّن</h3><span class="tag">من ٢ إلى ١٠ لاعبين</span>
       </article>
     </div>
 
@@ -98,7 +164,7 @@
 
   <!-- اللوبي -->
   <section id="lobby" hidden>
-    <h2 class="sect">غرفتكم جاهزة</h2>
+    <h2 class="sect" id="lobbyTitle">غرفتكم جاهزة</h2>
     <p class="hint act-only">هذي غرفة الروم الصوتي. أي واحد يشغّل اللعبة من نفس الروم ينضم هنا تلقائيًا.</p>
     <div class="ticket">
       <small>كود الغرفة</small>
@@ -111,6 +177,8 @@
       <h2 class="sect">المتفرجين <span id="scount"></span></h2>
       <ul id="slist" class="plist specs"></ul>
     </div>
+    <div id="lobbyset" class="lobbyset"></div>
+    <details id="ghelp" class="jhelp" hidden><summary>كيف تلعب؟</summary><p id="ghelpTxt" class="ghelptxt"></p></details>
     <p id="hint" class="hint"></p>
     <p id="scoreline" class="hint" hidden></p>
     <div id="teamrow" class="row" hidden>
@@ -120,6 +188,35 @@
     <div class="row">
       <button id="start" class="btn green">ابدأ اللعبة</button>
       <button id="leave" class="btn">اطلع</button>
+    </div>
+  </section>
+
+  <!-- الألعاب الثانية -->
+  <section id="game2" hidden>
+    <div class="g2">
+      <div class="g2bar">
+        <div class="g2title"><b id="g2name"></b><span id="g2sub"></span></div>
+        <div class="g2btns">
+          <button id="specBtn2" class="btn sm" hidden>👁 <span id="specN2">0</span></button>
+          <button id="mute2" class="btn sm">🔊</button>
+          <button id="quit2" class="btn sm">خروج</button>
+        </div>
+      </div>
+      <div id="specPanel2" class="specpanel" hidden></div>
+      <div id="g2body" class="g2body"></div>
+    </div>
+    <div id="over2" class="overlay" hidden>
+      <div class="box">
+        <small>الجولة انتهت</small>
+        <h2 id="winner2"></h2>
+        <p id="winteam2" class="hint" hidden></p>
+        <ol id="board2" class="board"></ol>
+        <div class="row">
+          <button id="again2" class="btn green" hidden>رجوع للوبي</button>
+          <button id="leave2b" class="btn">اطلع</button>
+        </div>
+        <p id="waitHost2" class="hint" hidden>ننتظر المضيف يبدأ جولة جديدة</p>
+      </div>
     </div>
   </section>
 
@@ -174,6 +271,7 @@
     <a class="btn discord" data-discord target="_blank" rel="noopener">ادخل ديسكورد ترتيب ←</a>
     <a class="btn support" data-support target="_blank" rel="noopener">موقع الدعم</a>
   </div>
+  <p class="credit"><span>تم التطوير من قبل</span> <bdi dir="ltr" class="team">TRTB TEAM</bdi></p>
 </footer>
 
 <div id="colorModal" class="overlay" hidden>
@@ -188,17 +286,22 @@
   </div>
 </div>
 <div id="chatfab" class="fabs" hidden>
+  <button id="themeFab" class="fab themebtn" title="الثيم">🎨</button>
+  <button id="bellBtn" class="fab" title="تنبيه الدور" hidden>🔕</button>
   <button id="emojiBtn" class="fab" title="تفاعل">😀</button>
   <button id="chatBtn" class="fab" title="شات">💬<i id="unread" hidden>0</i></button>
 </div>
 <div id="emojiBar" class="popbar" hidden></div>
 <div id="chatbox" class="chatbox" hidden>
   <div id="msgs" class="msgs"></div>
+  <div id="quick" class="quick"></div>
   <div class="chatin"><input id="chatin" maxlength="120" placeholder="اكتب رسالة…" autocomplete="off"><button id="chatsend" class="btn sm">ارسل</button></div>
 </div>
 <div id="toast"></div>
 
 <script src="sfx.js"></script>
 <script src="app.js"></script>
+<script src="games.js"></script>
+<script src="i18n.js"></script>
 </body>
 </html>
