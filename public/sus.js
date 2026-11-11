@@ -1,9 +1,9 @@
 // واجهة لعبة المندس: رسم السفينة على كانفس (جدران، أثاث، ظلام خارج نظرك)، الحركة (أسهم/WASD أو جويستك)،
 // المهام (١٠ ألعاب صغيرة)، الكاميرات، الدكتور، الاجتماعات والتصويت، وكل الأنميشنات
 const SCOL = ['#e8362d', '#2a5bd7', '#1f9d55', '#ffc928', '#ff8a1f', '#8a4fd6', '#ff6fae', '#19c3d6', '#8a5a2b', '#f4efe6', '#9be22d', '#6b7280'];
-const SR = { USE: 110, KILL: 130, REPORT: 170, BTN: SUSMAP.btnR + 90, VENT: 90, CAM: 120, SHIELD: 170, SPEED: 190, VIS: 560, IMP: 700, DARK: 210 };
+const SR = { USE: 110, KILL: 130, REPORT: 170, BTN: 160, VENT: 90, CAM: 120, SHIELD: 170, SPEED: 190, VIS: 560, IMP: 700, DARK: 210 };
 const SMIN = { wires: 1500, swipe: 700, nums: 2000, hold: 2000, wait: 4500, slider: 1000, simon: 3000, tap: 1500, code: 1800, temp: 1200 };
-const STASK = Object.fromEntries(SUSMAP.tasks.map(t => [t.id, t]));
+let STASK = {};
 const SU = { me: null, oth: {}, bodies: [], keys: {}, joy: null, sent: 0, lastX: 0, lastY: 0, task: null, map: false, cams: false, fixing: 0, act: {}, stars: [], hud: 0, fx: [], seenBodies: new Set(), splashKey: null };
 for (let i = 0; i < 140; i++) SU.stars.push([Math.random(), Math.random(), Math.random() < .2 ? 2.2 : 1.2, Math.random()]);
 
@@ -16,6 +16,7 @@ const shade = (h, k) => { const n = parseInt(h.slice(1), 16), f = c => Math.max(
 
 // ---------- الشخصية (كرة بعيون وأنتينا — شخصية خاصة بالموقع) ----------
 function guySvg(c, dead) {
+  if (SUSMAP.theme === 'forest') return hoodSvg(c, dead);
   const f = SCOL[c] || SCOL[0];
   return `<svg viewBox="0 0 60 64" class="sguy${dead ? ' dead' : ''}"><path d="M30 13V5" stroke="#16130f" stroke-width="3"/><circle cx="30" cy="5" r="4" fill="${f}" stroke="#16130f" stroke-width="2.5"/>
   <ellipse cx="21" cy="57" rx="7" ry="4" fill="${f}" stroke="#16130f" stroke-width="3"/><ellipse cx="39" cy="57" rx="7" ry="4" fill="${f}" stroke="#16130f" stroke-width="3"/>
@@ -23,6 +24,7 @@ function guySvg(c, dead) {
   ${dead ? '<path d="M20 29l6 6m0-6l-6 6M34 29l6 6m0-6l-6 6" stroke="#16130f" stroke-width="3" stroke-linecap="round"/>' : '<ellipse cx="24" cy="32" rx="5" ry="6.5" fill="#fff" stroke="#16130f" stroke-width="2.5"/><ellipse cx="37" cy="32" rx="5" ry="6.5" fill="#fff" stroke="#16130f" stroke-width="2.5"/><circle cx="25" cy="33" r="2.6" fill="#16130f"/><circle cx="38" cy="33" r="2.6" fill="#16130f"/>'}</svg>`;
 }
 function drawGuy(ctx, x, y, c, dir, phase, ghost, t) {
+  if (SUSMAP.theme === 'forest') return drawHood(ctx, x, y, c, dir, phase, ghost, t);
   const f = SCOL[c] || SCOL[0], bob = ghost ? Math.sin(t / 300) * 4 : phase ? Math.abs(Math.sin(phase)) * 3.5 : 0;
   ctx.save(); ctx.translate(x, y - bob); ctx.scale(1.15, 1.15);
   if (ghost) ctx.globalAlpha = .5;
@@ -47,6 +49,7 @@ function drawGuy(ctx, x, y, c, dir, phase, ghost, t) {
   ctx.restore();
 }
 function drawBody(ctx, x, y, c) {
+  if (SUSMAP.theme === 'forest') return drawHoodBody(ctx, x, y, c);
   const f = SCOL[c] || SCOL[0];
   ctx.save(); ctx.translate(x, y + 6); ctx.rotate(-.25); ctx.scale(1.15, 1.15);
   ctx.lineWidth = 4; ctx.strokeStyle = '#16130f';
@@ -67,7 +70,7 @@ function susNet(m) {
     SU.me = { x: m.x, y: m.y, dir: SU.me ? SU.me.dir : 1, ph: 0 }; SU.lastX = m.x; SU.lastY = m.y; return;
   }
   if (m.t === 'sus') {
-    if (m.ev === 'killed') { SU.killedFx = Date.now(); SU.killer = m.by; closeTask(); closeCams(); sfx('bang'); renderSusOverlays(); }
+    if (m.ev === 'killed') { SU.killedFx = Date.now(); SU.killer = m.by; closeTask(); closeCams(); sfx(SUSMAP.theme === 'forest' ? 'scream' : 'bang'); renderSusOverlays(); }
     else if (m.ev === 'blocked') { sPop('🛡️ عليه درع! ما قدرت تقتله', 'red'); sfx('nope'); }
     else if (m.ev === 'saved') { sPop(m.id === S.me ? '🛡️ أحد حاول يقتلك… والدرع حماك!' : `🩺 درعك أنقذ ${sname(m.id)}!`, 'green'); sfx('win'); }
     else if (m.ev === 'shielded') { sPop('🛡️ الدكتور عطاك درع لين الاجتماع الجاي', 'blue'); sfx('pop'); }
@@ -103,18 +106,19 @@ function patterns(ctx) {
   return PAT;
 }
 // الجدران الفوقية (عمق ثلاثي الأبعاد): أجزاء الحافة العلوية اللي فوقها فضاء
-const WALLS = (() => {
+let WALLS = [];
+function calcWalls() {
   const M = SUSMAP, out = [];
   M.rooms.concat(M.halls).forEach(q => {
     let s = null;
     for (let x = q.x; x <= q.x + q.w; x += 10) {
       const wall = !M.area(x + 5, q.y - 8) && x + 10 <= q.x + q.w + 0.1;
       if (wall && s === null) s = x;
-      if ((!wall || x + 10 > q.x + q.w) && s !== null) { out.push({ x: s, y: q.y, w: (wall ? x + 10 : x) - s, f: q.f || '#cfc9bd' }); s = null; }
+      if ((!wall || x + 10 > q.x + q.w) && s !== null) { if (!q.out) out.push({ x: s, y: q.y, w: (wall ? x + 10 : x) - s, f: roomCol(q) }); s = null; }
     }
   });
   return out;
-})();
+}
 function shipPath(ctx, grow) { ctx.beginPath(); SUSMAP.rooms.concat(SUSMAP.halls).forEach(q => ctx.rect(q.x - grow, q.y - grow, q.w + grow * 2, q.h + grow * 2)); }
 function rrect(ctx, x, y, w, h, r) { ctx.beginPath(); ctx.moveTo(x + r, y); ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r); ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath(); }
 function mark(ctx, x, y, col, ch, s = 1) { ctx.save(); ctx.translate(x, y); ctx.scale(s, s); ctx.fillStyle = col; ctx.strokeStyle = '#16130f'; ctx.lineWidth = 4; ctx.beginPath(); ctx.arc(0, 0, 16, 0, 7); ctx.fill(); ctx.stroke(); ctx.fillStyle = '#16130f'; ctx.font = '400 24px Lalezar, sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(ch, 0, 2); ctx.restore(); }
@@ -126,6 +130,7 @@ function drawObs(ctx, o, t) {
   shadow();
   const disc = (r, f) => { ctx.fillStyle = f; ctx.beginPath(); ctx.arc(o.x, o.y, r, 0, 7); ctx.fill(); ctx.stroke(); };
   const box = (f, r = 10) => { ctx.fillStyle = f; rrect(ctx, o.x, o.y, o.w, o.h, r); ctx.fill(); ctx.stroke(); };
+  if (FOBS[o.k]) { FOBS[o.k](ctx, o, t, disc, box); ctx.restore(); return; }
   switch (o.k) {
     case 'button': disc(o.r, '#cfd6e0'); ctx.fillStyle = 'rgba(255,255,255,.5)'; ctx.beginPath(); ctx.arc(o.x - 18, o.y - 20, 22, 0, 7); ctx.fill(); ctx.fillStyle = '#9aa3b2'; ctx.beginPath(); ctx.arc(o.x, o.y, 34, 0, 7); ctx.fill(); ctx.stroke(); ctx.fillStyle = '#e8362d'; ctx.beginPath(); ctx.arc(o.x, o.y - 4 + Math.sin(t / 400) * 1.5, 22, 0, 7); ctx.fill(); ctx.stroke(); ctx.fillStyle = 'rgba(255,255,255,.55)'; ctx.beginPath(); ctx.arc(o.x - 7, o.y - 11, 6, 0, 7); ctx.fill(); break;
     case 'table': disc(o.r, '#d8dee6'); ctx.fillStyle = 'rgba(255,255,255,.55)'; ctx.beginPath(); ctx.arc(o.x - 14, o.y - 16, 18, 0, 7); ctx.fill(); ctx.fillStyle = '#ffc928'; ctx.beginPath(); ctx.arc(o.x + 12, o.y + 8, 9, 0, 7); ctx.fill(); ctx.lineWidth = 3; ctx.stroke(); break;
@@ -150,13 +155,15 @@ function drawObs(ctx, o, t) {
 
 // يرسم السفينة من منظور كاميرا (cx,cy,sc). who: مين نرسم من اللاعبين/الجثث
 function drawWorld(ctx, W, H, cx, cy, sc, t, who) {
-  const M = SUSMAP, g = S.g, me = g.me, P = patterns(ctx);
-  ctx.fillStyle = '#15122b'; ctx.fillRect(0, 0, W, H);
-  SU.stars.forEach(([x, y, s, z]) => { const px = ((x * 1600 - cx * sc * .15 * z) % 1600 + 1600) % 1600 / 1600 * W, py = ((y * 1000 - cy * sc * .15 * z) % 1000 + 1000) % 1000 / 1000 * H; ctx.globalAlpha = .35 + .65 * Math.abs(Math.sin(t / 900 + x * 40)); ctx.fillStyle = '#f3ead8'; ctx.fillRect(px, py, s, s); });
+  const M = SUSMAP, g = S.g, me = g.me, P = patterns(ctx), FOR = M.theme === 'forest';
+  ctx.fillStyle = FOR ? '#050805' : '#15122b'; ctx.fillRect(0, 0, W, H);
+  if (!FOR) SU.stars.forEach(([x, y, s, z]) => { const px = ((x * 1600 - cx * sc * .15 * z) % 1600 + 1600) % 1600 / 1600 * W, py = ((y * 1000 - cy * sc * .15 * z) % 1000 + 1000) % 1000 / 1000 * H; ctx.globalAlpha = .35 + .65 * Math.abs(Math.sin(t / 900 + x * 40)); ctx.fillStyle = '#f3ead8'; ctx.fillRect(px, py, s, s); });
   ctx.globalAlpha = 1;
   ctx.save(); ctx.translate(W / 2, H / 2); ctx.scale(sc, sc); ctx.translate(-cx, -cy);
   const vx0 = cx - W / 2 / sc - 200, vx1 = cx + W / 2 / sc + 200, vy0 = cy - H / 2 / sc - 200, vy1 = cy + H / 2 / sc + 200;
   const inView = (x, y, w = 0, h = 0) => x + w > vx0 && x < vx1 && y + h > vy0 && y < vy1;
+  if (FOR) forestGround(ctx, inView, t, P);
+  else {
   // ظل السفينة والجدران
   ctx.save(); ctx.translate(16, 18); shipPath(ctx, 14); ctx.fillStyle = '#0b0918'; ctx.fill(); ctx.restore();
   shipPath(ctx, 14); ctx.fillStyle = '#16130f'; ctx.fill();
@@ -168,10 +175,13 @@ function drawWorld(ctx, W, H, cx, cy, sc, t, who) {
   // أسماء الغرف
   ctx.textAlign = 'center'; ctx.textBaseline = 'top'; ctx.font = '400 46px Lalezar, Tajawal, sans-serif'; ctx.fillStyle = 'rgba(22,19,15,.22)';
   M.rooms.forEach(q => { if (inView(q.x, q.y, q.w, q.h)) ctx.fillText(q.name, q.x + q.w / 2, q.y + 58); });
+  }
   // الفتحات
-  M.vents.flat().forEach(v => { if (!inView(v.x - 40, v.y - 30, 80, 60)) return; ctx.fillStyle = '#9aa0ab'; ctx.strokeStyle = '#16130f'; ctx.lineWidth = 4; rrect(ctx, v.x - 32, v.y - 20, 64, 40, 8); ctx.fill(); ctx.stroke(); ctx.lineWidth = 3.5; ctx.beginPath(); for (let i = -1; i <= 1; i++) { ctx.moveTo(v.x - 21, v.y + i * 9); ctx.lineTo(v.x + 21, v.y + i * 9); } ctx.stroke(); });
+  if (FOR) M.vents.flat().forEach(v => { if (!inView(v.x - 50, v.y - 40, 100, 80)) return; ctx.fillStyle = '#0a0705'; ctx.strokeStyle = '#3b2a1a'; ctx.lineWidth = 6; ctx.beginPath(); ctx.ellipse(v.x, v.y, 36, 22, 0, 0, 7); ctx.fill(); ctx.stroke(); ctx.strokeStyle = '#4a3420'; ctx.lineWidth = 4; for (let i = 0; i < 4; i++) { ctx.beginPath(); ctx.moveTo(v.x - 30 + i * 20, v.y - 18); ctx.quadraticCurveTo(v.x - 24 + i * 20, v.y, v.x - 34 + i * 22, v.y + 14); ctx.stroke(); } });
+  else M.vents.flat().forEach(v => { if (!inView(v.x - 40, v.y - 30, 80, 60)) return; ctx.fillStyle = '#9aa0ab'; ctx.strokeStyle = '#16130f'; ctx.lineWidth = 4; rrect(ctx, v.x - 32, v.y - 20, 64, 40, 8); ctx.fill(); ctx.stroke(); ctx.lineWidth = 3.5; ctx.beginPath(); for (let i = -1; i <= 1; i++) { ctx.moveTo(v.x - 21, v.y + i * 9); ctx.lineTo(v.x + 21, v.y + i * 9); } ctx.stroke(); });
   // لوحات المهام
-  M.tasks.forEach(tk => { if (!inView(tk.x - 30, tk.y - 30, 60, 60)) return; ctx.fillStyle = '#5b6170'; ctx.strokeStyle = '#16130f'; ctx.lineWidth = 4; rrect(ctx, tk.x - 22, tk.y - 17, 44, 34, 7); ctx.fill(); ctx.stroke(); ctx.fillStyle = '#7ee0a8'; ctx.fillRect(tk.x - 14, tk.y - 10, 28, 12); });
+  if (FOR) M.tasks.forEach(tk => { if (!inView(tk.x - 30, tk.y - 30, 60, 60)) return; ctx.fillStyle = '#5a3e26'; ctx.strokeStyle = '#120c07'; ctx.lineWidth = 4; rrect(ctx, tk.x - 20, tk.y - 16, 40, 32, 4); ctx.fill(); ctx.stroke(); ctx.fillStyle = `rgba(255,190,90,${.6 + .3 * Math.sin(t / 200 + tk.x)})`; ctx.beginPath(); ctx.arc(tk.x, tk.y - 2, 6, 0, 7); ctx.fill(); });
+  else M.tasks.forEach(tk => { if (!inView(tk.x - 30, tk.y - 30, 60, 60)) return; ctx.fillStyle = '#5b6170'; ctx.strokeStyle = '#16130f'; ctx.lineWidth = 4; rrect(ctx, tk.x - 22, tk.y - 17, 44, 34, 7); ctx.fill(); ctx.stroke(); ctx.fillStyle = '#7ee0a8'; ctx.fillRect(tk.x - 14, tk.y - 10, 28, 12); });
   // شاشة الكاميرات
   { const [x, y] = M.camSpot; ctx.fillStyle = 'rgba(126,224,168,.25)'; ctx.beginPath(); ctx.arc(x, y, 34, 0, 7); ctx.fill(); }
   // الكاميرات (تولّع أحمر لما أحد يتفرّج)
@@ -205,6 +215,7 @@ function drawWorld(ctx, W, H, cx, cy, sc, t, who) {
   SU.fx = SU.fx.filter(f => now - f.t0 < f.life);
   SU.fx.forEach(f => { const k = (now - f.t0) / f.life, dt = (now - f.t0) / 1000; ctx.globalAlpha = 1 - k; ctx.fillStyle = f.col; ctx.beginPath(); ctx.arc(f.x + f.vx * dt, f.y + f.vy * dt + 40 * dt * dt, f.r * (1 - k * .5), 0, 7); ctx.fill(); });
   ctx.globalAlpha = 1;
+  if (FOR) forestAir(ctx, inView, t, cx, cy, W / sc, H / sc);
   ctx.restore();
 }
 
@@ -224,7 +235,7 @@ function visPoly(x, y, rad) {
 // ---------- البناء ----------
 function susBuild(body) {
   body.dataset.built = 'sus';
-  SU.me = null; SU.oth = {}; SU.bodies = []; SU.task = null; SU.map = false; SU.cams = false; SU.fx = []; SU.seenBodies = new Set();
+  SU.me = null; SU.oth = {}; SU.bodies = []; SU.task = null; SU.map = false; SU.cams = false; SU.fx = []; SU.seenBodies = new Set(); SU.nextScare = performance.now() + 25000 + Math.random() * 20000; SU.nextFlash = performance.now() + 15000 + Math.random() * 15000;
   body.innerHTML = `<div class="susw" id="susW">
     <canvas id="sCv"></canvas>
     <div id="sVig" class="svig"></div>
@@ -242,7 +253,7 @@ function susBuild(body) {
       <button type="button" class="sbtn imp" id="sSaboB" title="تخريب">⚡<b>تخريب</b><i></i></button>
       <button type="button" class="sbtn doc" id="sShieldB" title="درع (F)">🛡️<b>درع</b></button>
     </div>
-    <div id="sSaboMenu" class="ssabomenu" hidden><button type="button" data-k="lights">💡 طفّ الكهرباء</button><button type="button" data-k="reactor">☢️ فجّر المفاعل</button></div>
+    <div id="sSaboMenu" class="ssabomenu" hidden><button type="button" data-k="lights">${SUSMAP.sabo.lights.btn}</button><button type="button" data-k="reactor">${SUSMAP.sabo.reactor.btn}</button></div>
     <div id="sJoy" class="sjoy" hidden><i></i></div>
     <div id="sMapBox" class="smapbox" hidden><canvas id="sMapCv"></canvas><small>اضغط بأي مكان عشان تسكّر</small></div>
     <div id="sCams" class="scams" hidden><div class="scamhead"><b>📹 الكاميرات</b><button type="button" class="sx" id="sCamX">✕</button></div><div class="scamgrid">${SUSMAP.cams.map((c, i) => `<div class="scam"><canvas data-i="${i}"></canvas><span>${c.n}</span><em>● REC</em></div>`).join('')}</div></div>
@@ -252,6 +263,7 @@ function susBuild(body) {
     <div id="sMeet" class="smeet" hidden></div>
     <div id="sEject" class="sfull seject" hidden></div>
     <div id="sKilled" class="sfull skilled" hidden></div>
+    <div id="sScare" class="sscare" hidden></div>
   </div>`;
   const cv = $('#sCv');
   cv.addEventListener('pointerdown', e => { if (SU.task || !sg()) return; cv.setPointerCapture(e.pointerId); SU.joy = { id: e.pointerId, ox: e.clientX, oy: e.clientY, dx: 0, dy: 0 }; drawJoy(); });
@@ -325,6 +337,7 @@ function susFrame(t) {
     if ((SU.me.x !== SU.lastX || SU.me.y !== SU.lastY) && t - SU.sent > 66) { SU.sent = t; SU.lastX = SU.me.x; SU.lastY = SU.me.y; send({ t: 'mv', x: Math.round(SU.me.x * 10) / 10, y: Math.round(SU.me.y * 10) / 10 }); }
   }
   Object.values(SU.oth).forEach(o => { const dx = o.tx - o.x, dy = o.ty - o.y, d = Math.hypot(dx, dy); const k = Math.min(1, dt * 12); o.x += dx * k; o.y += dy * k; if (Math.abs(dx) > .5) o.dir = dx > 0 ? 1 : -1; o.ph = d > 1 ? o.ph + dt * 13 : 0; });
+  if (SUSMAP.theme === 'forest' && me && me.alive && g.sub === 'play' && S.phase === 'play') scaresTick(t);
   susDraw(t);
   if (SU.cams) drawCams(t);
   if (SU.map) susMap(t);
@@ -348,14 +361,18 @@ function susDraw(t) {
     if (!SU.fog) SU.fog = document.createElement('canvas');
     const F = SU.fog; if (F.width !== cv.width || F.height !== cv.height) { F.width = cv.width; F.height = cv.height; }
     const f = F.getContext('2d'); f.setTransform(dpr, 0, 0, dpr, 0, 0);
-    f.globalCompositeOperation = 'source-over'; f.clearRect(0, 0, W, H); f.fillStyle = 'rgba(8,6,18,.9)'; f.fillRect(0, 0, W, H);
+    const FOR = M.theme === 'forest', flash = SU.flash && t - SU.flash < 220;
+    f.globalCompositeOperation = 'source-over'; f.clearRect(0, 0, W, H); f.fillStyle = FOR ? `rgba(2,3,2,${flash ? .55 : SU.blackout && t < SU.blackout ? 1 : .96})` : 'rgba(8,6,18,.9)'; f.fillRect(0, 0, W, H);
     f.globalCompositeOperation = 'destination-out';
     const poly = visPoly(SU.me.x, SU.me.y, rad), toS = (x, y) => [W / 2 + (x - cx) * sc, H / 2 + (y - cy) * sc];
-    const gr = f.createRadialGradient(W / 2, H / 2, rad * sc * .7, W / 2, H / 2, rad * sc);
+    const fl = FOR ? 1 + Math.sin(t / 90) * .02 + Math.sin(t / 37) * .015 : 1;
+    const gr = f.createRadialGradient(W / 2, H / 2, rad * sc * (FOR ? .45 : .7) * fl, W / 2, H / 2, rad * sc * fl);
     gr.addColorStop(0, 'rgba(0,0,0,1)'); gr.addColorStop(1, 'rgba(0,0,0,0)');
     f.fillStyle = gr; f.beginPath(); poly.forEach(([x, y], i) => { const [a, b] = toS(x, y); i ? f.lineTo(a, b) : f.moveTo(a, b); }); f.closePath(); f.fill();
     ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.drawImage(F, 0, 0); ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    if (FOR) { const lg = ctx.createRadialGradient(W / 2, H / 2 - 10, 10, W / 2, H / 2, rad * sc * .55); lg.addColorStop(0, 'rgba(255,180,90,.16)'); lg.addColorStop(1, 'rgba(255,180,90,0)'); ctx.fillStyle = lg; ctx.fillRect(0, 0, W, H); scaresDraw(ctx, W, H, t, rad * sc); }
   }
+  if (M.theme === 'forest') { const k = SU.flash ? Math.max(0, 1 - (t - SU.flash) / 260) : 0; if (k > 0) { ctx.fillStyle = `rgba(255,60,50,${k * .35})`; ctx.fillRect(0, 0, W, H); } }
   // أسهم على طرف الشاشة للمهام والتخريب
   if (follow && g.sub === 'play') {
     const tg = [];
@@ -391,7 +408,7 @@ function susMap(t) {
   ctx.save(); ctx.translate(W / 2, H / 2); if (rot) ctx.rotate(Math.PI / 2); ctx.scale(sc, sc); ctx.translate(-M.W / 2, -M.H / 2);
   const label = (s, x, y) => { ctx.save(); ctx.translate(x, y); if (rot) ctx.rotate(-Math.PI / 2); ctx.fillText(s, 0, 0); ctx.restore(); };
   shipPath(ctx, 16); ctx.fillStyle = '#16130f'; ctx.fill(); shipPath(ctx, 0); ctx.fillStyle = '#cfc9bd'; ctx.fill();
-  M.rooms.forEach(q => { ctx.fillStyle = q.f; ctx.fillRect(q.x, q.y, q.w, q.h); });
+  M.rooms.forEach(q => { ctx.fillStyle = M.theme === 'forest' ? shade(roomCol(q), 1.9) : q.f; ctx.fillRect(q.x, q.y, q.w, q.h); });
   ctx.fillStyle = '#16130f'; ctx.font = '400 ' + (rot ? 90 : 72) + 'px Lalezar, sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
   M.rooms.forEach(q => label(q.name, q.x + q.w / 2, q.y + q.h / 2));
   if (g.me && !g.me.imp) g.me.tasks.forEach(x => { if (!x.done) { const tk = STASK[x.id]; ctx.fillStyle = '#ffc928'; ctx.strokeStyle = '#16130f'; ctx.lineWidth = 10; ctx.beginPath(); ctx.arc(tk.x, tk.y, 40, 0, 7); ctx.fill(); ctx.stroke(); } });
@@ -445,7 +462,7 @@ function susHud() {
   vig.className = 'svig' + (g.sabo && play ? ' on' : '');
   if (g.sabo && play) {
     bn.hidden = false; bn.className = 'sbanner ' + g.sabo.k;
-    bn.textContent = g.sabo.k === 'lights' ? '💡 الكهرباء طافية! روحوا صلّحوها بغرفة الكهرباء' : `☢️ المفاعل بينفجر بعد ${Math.ceil(sleft(g.sabo.left) / 1000)} — لازم اثنين يمسكون اللوحتين بالمفاعل مع بعض`;
+    const SB = SUSMAP.sabo; bn.textContent = g.sabo.k === 'lights' ? SB.lights.msg : `${SB.reactor.btn.split(' ')[0]} ${SB.reactor.msg} ${Math.ceil(sleft(g.sabo.left) / 1000)} — ${SB.reactor.how}`;
   } else if (me && !me.alive && play) { bn.hidden = false; bn.className = 'sbanner ghost'; bn.textContent = me.imp ? '👻 أنت ميت — تفرّج على الباقين' : '👻 أنت ميت — كمّل مهامك عشان يفوز الطاقم'; }
   else if (doc && play && !me.docUsed) { bn.hidden = false; bn.className = 'sbanner docb'; bn.textContent = '🩺 قرّب من أحد واضغط «درع» — يحميه من القتل لين الاجتماع الجاي'; }
   else bn.hidden = true;
@@ -453,7 +470,9 @@ function susHud() {
 
 // ---------- تحديث الحالة ----------
 function renderSus(body) {
+  if (SU.mapKey !== (S.g.map || 'ship')) { susUseMap(S.g.map || 'ship'); body.dataset.built = ''; }
   if (body.dataset.built !== 'sus' || !$('#sCv')) susBuild(body);
+  $('#susW').classList.toggle('forest', SUSMAP.theme === 'forest');
   if (!SU.loop) { SU.loop = true; SU.lt = performance.now(); requestAnimationFrame(susFrame); }
   const g = S.g, me = g.me;
   const pr = g.prog[1] ? Math.round(g.prog[0] / g.prog[1] * 100) : 0;
@@ -481,24 +500,29 @@ function renderSusOverlays() {
     const team = imp ? g.imps : S.players.filter(p => g.col[p.id] != null).map(p => p.id);
     const line = [...team].sort((a, b) => (a === S.me ? -1 : b === S.me ? 1 : 0));
     const ord = []; line.forEach((id, i) => { i % 2 ? ord.push(id) : ord.unshift(id); });
-    intro.innerHTML = `<div class="shush">🤫</div><div class="sintro ${imp ? 'imp' : doc ? 'doc' : 'crew'}">
-      <h2>${!me ? 'تتفرّج 👁' : imp ? 'مندس' : doc ? 'دكتور 🩺' : 'طاقم'}</h2>
+    const FOR = SUSMAP.theme === 'forest';
+    intro.innerHTML = `<div class="shush">${FOR ? '🩸' : '🤫'}</div><div class="sintro ${imp ? 'imp' : doc ? 'doc' : 'crew'}">
+      <h2>${!me ? 'تتفرّج 👁' : imp ? 'مندس' : doc ? 'دكتور 🩺' : FOR ? 'ناجين' : 'طاقم'}</h2>
       <p>${!me ? '' : imp ? (g.imps.length > 1 ? 'أنت وشركاك المندسين — اقتلوا بدون ما ينكشفون' : 'أنت المندس — اقتلهم واحد واحد بدون ما يشوفك أحد') : doc ? 'أنت من الطاقم، وتقدر تعطي درع لشخص واحد كل جولة' : `بينكم ${g.nImp === 1 ? 'مندس واحد' : g.nImp === 2 ? 'مندسين اثنين' : '٣ مندسين'}… خلّص مهامك وانتبه`}</p>
       <div class="sline">${ord.map((id, i) => `<div class="sl${id === S.me ? ' me' : ''}" style="animation-delay:${1.3 + Math.abs(i - (ord.length - 1) / 2) * .12}s">${guySvg(g.col[id])}<b>${esc(sname(id))}</b></div>`).join('')}</div></div>`;
-    sfx('alarm');
+    sfx(FOR ? 'thunder' : 'alarm');
   }
   if (intro.hidden) intro.dataset.k = '';
   // انقتلت
-  const kd = $('#sKilled'), kOn = SU.killedFx && Date.now() - SU.killedFx < 2800;
+  const scareMs = SUSMAP.theme === 'forest' ? 1700 : 0, ka = SU.killedFx ? Date.now() - SU.killedFx : 1e9;
+  const sc2 = $('#sScare'); sc2.hidden = !(ka < scareMs);
+  if (!sc2.hidden && sc2.dataset.k !== String(SU.killedFx)) { sc2.dataset.k = String(SU.killedFx); sc2.innerHTML = `<div class="sface">${faceSvg()}</div>`; setTimeout(renderSusOverlays, scareMs - ka + 20); }
+  const kd = $('#sKilled'), kOn = SU.killedFx && ka >= scareMs && ka < 2800 + scareMs;
   kd.hidden = !kOn;
   if (kOn && kd.dataset.k !== String(SU.killedFx)) { kd.dataset.k = String(SU.killedFx); kd.innerHTML = `<div class="skill"><div class="kk">${guySvg(SU.killer)}</div><span class="knife">🔪</span><div class="kv">${guySvg(me ? me.c : 0, true)}</div></div><h2>انقتلت!</h2><p>تقدر تكمّل مهامك كشبح 👻</p>`; setTimeout(renderSusOverlays, 2900); }
+  else if (SU.killedFx && ka < scareMs) kd.hidden = true;
   // الاجتماع: أول ثانيتين شاشة الإنذار وبعدين التصويت
   const inMeet = g.sub === 'meet' && g.meet;
   const sp = $('#sSplash'), splashOn = inMeet && g.meet.sub === 'talk' && sleft(2200 - g.meet.ago) > 0;
   sp.hidden = !splashOn;
   if (splashOn && sp.dataset.k !== g.meet.by + g.round) {
     sp.dataset.k = g.meet.by + g.round;
-    sp.innerHTML = g.meet.body ? `<div class="spbox body"><div class="spicon">${guySvg(scol(g.meet.body), true)}</div><h2>جثة!</h2><p>${esc(sname(g.meet.by))} بلّغ</p></div>` : `<div class="spbox"><div class="spicon">🚨</div><h2>اجتماع طارئ!</h2><p>${esc(sname(g.meet.by))} ضغط الزر</p></div>`;
+    sp.innerHTML = g.meet.body ? `<div class="spbox body"><div class="spicon">${guySvg(scol(g.meet.body), true)}</div><h2>جثة!</h2><p>${esc(sname(g.meet.by))} بلّغ</p></div>` : `<div class="spbox"><div class="spicon">${SUSMAP.theme === 'forest' ? '🔔' : '🚨'}</div><h2>${SUSMAP.meetWord}</h2><p>${esc(sname(g.meet.by))} ${SUSMAP.btnWord}</p></div>`;
     setTimeout(renderSusOverlays, Math.max(50, sleft(2200 - g.meet.ago) + 30));
   }
   const mt = $('#sMeet'); mt.hidden = !inMeet || splashOn;
@@ -545,7 +569,7 @@ function susFx() {
   const p = prevS, s = S; if (!p || p.game !== 'sus' || !p.g || !s.g) return;
   const g = s.g, pg = p.g;
   if (g.sub !== 'play' && pg.sub === 'play') { toggleMap(false); $('#sSaboMenu').hidden = true; }
-  if (g.sub === 'meet' && pg.sub !== 'meet') { sfx('alarm'); closeTask(); SU.oth = {}; SU.bodies = []; SU.fx = []; }
+  if (g.sub === 'meet' && pg.sub !== 'meet') { sfx(SUSMAP.theme === 'forest' ? 'bell' : 'alarm'); closeTask(); SU.oth = {}; SU.bodies = []; SU.fx = []; }
   if (g.meet && pg.meet && g.meet.sub === 'vote' && pg.meet.sub === 'talk') sfx('turn');
   if (g.meet && pg.meet && g.meet.voted.length > pg.meet.voted.length && g.meet.sub === 'vote') sfx('card');
   if (g.sub === 'eject' && pg.sub !== 'eject') sfx(g.eject && g.eject.id ? 'catch' : 'nope');
@@ -633,3 +657,208 @@ function openTask(id) {
   }
 }
 function shuffle2(a) { for (let i = a.length - 1; i > 0; i--) { const j = Math.random() * (i + 1) | 0; [a[i], a[j]] = [a[j], a[i]]; } return a; }
+
+// ================= الماب الحالي + ماب الغابة (رعب) =================
+const FTY = { wood: '#4a3220', wood2: '#3f3022', tile: '#323a44', lab: '#2b3631', stone: '#3a3a42', grass: '#1c2a19', dirt: '#3a2c1e', rift: '#2a1212', rock: '#242428', ash: '#221310' };
+function roomCol(q) { return q.f || FTY[q.ty] || '#cfc9bd'; }
+let TREES = [], BUSH = [];
+function susUseMap(key) {
+  SUSMAP = SUSMAPS[key] || SUSMAPS.ship; SU.mapKey = key;
+  const M = SUSMAP;
+  STASK = Object.fromEntries(M.tasks.map(t => [t.id, t]));
+  SR.BTN = M.btnR + 90; SR.VIS = M.vis.crew; SR.IMP = M.vis.imp; SR.DARK = M.vis.dark;
+  WALLS = calcWalls(); PAT = null; TREES = []; BUSH = [];
+  if (M.theme !== 'forest') return;
+  let seed = 7; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+  for (let y = -60; y < M.H + 120; y += 105) for (let x = -60; x < M.W + 120; x += 105) {
+    const tx = x + (rnd() - .5) * 70, ty = y + (rnd() - .5) * 70, r = 48 + rnd() * 36;
+    const k = r * .55; if ([[0, 0], [k, 0], [-k, 0], [0, k], [0, -k]].some(([a, b]) => M.area(tx + a, ty + b))) continue;
+    TREES.push([tx, ty, r, rnd()]);
+  }
+  M.rooms.filter(q => q.out).forEach(q => {
+    for (let i = 0; i < (q.w + q.h) * 2; i += 62) {
+      let x, y; if (i < q.w) { x = q.x + i; y = q.y - 6; } else if (i < q.w + q.h) { x = q.x + q.w + 6; y = q.y + i - q.w; } else if (i < q.w * 2 + q.h) { x = q.x + q.w - (i - q.w - q.h); y = q.y + q.h + 6; } else { x = q.x - 6; y = q.y + q.h - (i - q.w * 2 - q.h); }
+      if (!M.area(x, y)) BUSH.push([x, y, 26 + rnd() * 18, rnd()]);
+    }
+  });
+}
+function fpat(ctx) {
+  const mk = (w, h, fn) => { const c = document.createElement('canvas'); c.width = w; c.height = h; fn(c.getContext('2d')); return ctx.createPattern(c, 'repeat'); };
+  let s = 3; const r = () => (s = (s * 16807) % 2147483647) / 2147483647;
+  return {
+    wood: mk(120, 36, x => { x.fillStyle = 'rgba(0,0,0,.35)'; x.fillRect(0, 34, 120, 2); x.fillRect(70, 0, 2, 36); x.fillStyle = 'rgba(255,220,180,.05)'; x.fillRect(0, 4, 120, 3); }),
+    wood2: mk(90, 30, x => { x.fillStyle = 'rgba(0,0,0,.35)'; x.fillRect(0, 28, 90, 2); x.fillRect(40, 0, 2, 30); }),
+    tile: mk(70, 70, x => { x.strokeStyle = 'rgba(0,0,0,.4)'; x.lineWidth = 2; x.strokeRect(0, 0, 70, 70); x.beginPath(); x.moveTo(10, 60); x.lineTo(28, 40); x.lineTo(34, 48); x.stroke(); }),
+    lab: mk(80, 80, x => { x.strokeStyle = 'rgba(0,0,0,.45)'; x.lineWidth = 2; x.strokeRect(0, 0, 80, 80); x.fillStyle = 'rgba(120,255,160,.04)'; x.fillRect(4, 4, 72, 72); x.strokeStyle = 'rgba(0,0,0,.5)'; x.beginPath(); x.moveTo(50, 0); x.lineTo(40, 30); x.lineTo(62, 46); x.stroke(); }),
+    stone: mk(90, 60, x => { x.strokeStyle = 'rgba(0,0,0,.45)'; x.lineWidth = 3; x.strokeRect(0, 0, 90, 30); x.strokeRect(-45, 30, 90, 30); x.strokeRect(45, 30, 90, 30); }),
+    grass: mk(64, 64, x => { x.strokeStyle = 'rgba(60,90,50,.55)'; x.lineWidth = 2; for (let i = 0; i < 14; i++) { const a = r() * 64, b = r() * 64; x.beginPath(); x.moveTo(a, b); x.lineTo(a + (r() - .5) * 6, b - 7); x.stroke(); } }),
+    dirt: mk(64, 64, x => { x.fillStyle = 'rgba(0,0,0,.25)'; for (let i = 0; i < 18; i++) { x.beginPath(); x.arc(r() * 64, r() * 64, 1 + r() * 2.5, 0, 7); x.fill(); } x.fillStyle = 'rgba(255,230,200,.05)'; for (let i = 0; i < 6; i++) x.fillRect(r() * 64, r() * 64, 3, 2); }),
+    rift: mk(64, 64, x => { x.strokeStyle = 'rgba(160,20,20,.4)'; x.lineWidth = 2; for (let i = 0; i < 6; i++) { const a = r() * 64, b = r() * 64; x.beginPath(); x.moveTo(a, b); x.lineTo(a + 8, b - 9); x.stroke(); } }),
+    rock: mk(70, 70, x => { x.fillStyle = 'rgba(0,0,0,.3)'; for (let i = 0; i < 7; i++) { x.beginPath(); x.ellipse(r() * 70, r() * 70, 6 + r() * 8, 4 + r() * 5, r() * 3, 0, 7); x.fill(); } }),
+    ash: mk(90, 90, x => { x.strokeStyle = 'rgba(255,90,20,.35)'; x.lineWidth = 2.5; x.beginPath(); x.moveTo(5, 20); x.lineTo(30, 35); x.lineTo(28, 60); x.lineTo(55, 80); x.moveTo(30, 35); x.lineTo(70, 25); x.lineTo(88, 40); x.stroke(); x.fillStyle = 'rgba(0,0,0,.3)'; for (let i = 0; i < 10; i++) { x.beginPath(); x.arc(r() * 90, r() * 90, 2 + r() * 3, 0, 7); x.fill(); } }),
+    trail: mk(70, 70, x => { x.fillStyle = '#2c2116'; x.fillRect(0, 0, 70, 70); x.fillStyle = 'rgba(0,0,0,.3)'; for (let i = 0; i < 16; i++) { x.beginPath(); x.arc(r() * 70, r() * 70, 1 + r() * 3, 0, 7); x.fill(); } x.fillStyle = 'rgba(80,60,40,.5)'; for (let i = 0; i < 5; i++) { x.beginPath(); x.ellipse(r() * 70, r() * 70, 5, 3, r() * 3, 0, 7); x.fill(); } })
+  };
+}
+function forestGround(ctx, inView, t) {
+  const M = SUSMAP; if (!SU.FP) SU.FP = {}; if (SU.FP.ctx !== ctx) SU.FP = { ctx, p: fpat(ctx) }; const P = SU.FP.p;
+  shipPath(ctx, 16); ctx.fillStyle = '#0d0905'; ctx.fill();
+  M.halls.forEach(q => { if (!inView(q.x, q.y, q.w, q.h)) return; ctx.fillStyle = P.trail; ctx.fillRect(q.x, q.y, q.w, q.h); });
+  M.rooms.forEach(q => { if (!inView(q.x, q.y, q.w, q.h)) return; ctx.fillStyle = roomCol(q); ctx.fillRect(q.x, q.y, q.w, q.h); if (P[q.ty]) { ctx.fillStyle = P[q.ty]; ctx.fillRect(q.x, q.y, q.w, q.h); } });
+  // توهج النار والشق
+  M.rooms.forEach(q => {
+    if (!inView(q.x, q.y, q.w, q.h)) return;
+    if (q.ty === 'ash') { const p = .5 + .5 * Math.sin(t / 400); const g = ctx.createRadialGradient(q.x + q.w / 2, q.y + q.h / 2, 50, q.x + q.w / 2, q.y + q.h / 2, q.w * .7); g.addColorStop(0, `rgba(255,80,20,${.18 + .08 * p})`); g.addColorStop(1, 'rgba(255,40,0,0)'); ctx.fillStyle = g; ctx.fillRect(q.x, q.y, q.w, q.h); }
+    if (q.ty === 'rift') { const p = .5 + .5 * Math.sin(t / 260); const g = ctx.createRadialGradient(1700, 1380, 30, 1700, 1380, 420); g.addColorStop(0, `rgba(220,20,20,${.35 + .15 * p})`); g.addColorStop(1, 'rgba(120,0,0,0)'); ctx.fillStyle = g; ctx.fillRect(q.x, q.y, q.w, q.h); }
+  });
+  WALLS.forEach(w => { if (!inView(w.x, w.y, w.w, 50)) return; ctx.fillStyle = shade(w.f, .55); ctx.fillRect(w.x, w.y, w.w, 46); ctx.fillStyle = shade(w.f, .4); ctx.fillRect(w.x, w.y + 40, w.w, 6); ctx.fillStyle = 'rgba(0,0,0,.35)'; for (let x = w.x + 20; x < w.x + w.w; x += 60) ctx.fillRect(x, w.y, 4, 46); });
+  // شجيرات على أطراف الأماكن المفتوحة
+  BUSH.forEach(([x, y, r, k]) => { if (!inView(x - r, y - r, r * 2, r * 2)) return; ctx.fillStyle = '#0b1609'; ctx.beginPath(); ctx.arc(x, y, r, 0, 7); ctx.fill(); ctx.fillStyle = '#132512'; ctx.beginPath(); ctx.arc(x - r * .25, y - r * .3, r * .6, 0, 7); ctx.fill(); });
+  // الأشجار
+  TREES.forEach(([x, y, r, k]) => {
+    if (!inView(x - r, y - r, r * 2, r * 2)) return;
+    const sw = Math.sin(t / 1400 + k * 9) * 3;
+    ctx.fillStyle = 'rgba(0,0,0,.45)'; ctx.beginPath(); ctx.arc(x + 10, y + 14, r, 0, 7); ctx.fill();
+    ctx.fillStyle = '#0a1409'; ctx.beginPath(); ctx.arc(x + sw, y, r, 0, 7); ctx.fill();
+    ctx.fillStyle = '#10200e'; ctx.beginPath(); ctx.arc(x + sw - r * .2, y - r * .2, r * .7, 0, 7); ctx.fill();
+    ctx.fillStyle = '#16290f'; ctx.beginPath(); ctx.arc(x + sw - r * .35, y - r * .35, r * .35, 0, 7); ctx.fill();
+  });
+  ctx.textAlign = 'center'; ctx.textBaseline = 'top'; ctx.font = '400 44px Lalezar, Tajawal, sans-serif'; ctx.fillStyle = 'rgba(200,40,30,.32)';
+  M.rooms.forEach(q => { if (inView(q.x, q.y, q.w, q.h)) ctx.fillText(q.name, q.x + q.w / 2, q.y + (q.out ? 18 : 58)); });
+}
+// رماد يطير + ضباب يمشي + جمر قرب النار
+function forestAir(ctx, inView, t, cx, cy, vw, vh) {
+  const x0 = cx - vw / 2, y0 = cy - vh / 2;
+  for (let i = 0; i < 70; i++) {
+    const sp = 12 + (i % 5) * 6, x = x0 + (((i * 197.3 + t * .012 * sp) % vw) + vw) % vw, y = y0 + (((i * 131.7 - t * .008 * sp) % vh) + vh) % vh;
+    const fire = Math.hypot(x - 2800, y - 2700) < 650;
+    ctx.globalAlpha = .25 + .35 * Math.abs(Math.sin(t / 700 + i));
+    ctx.fillStyle = fire ? '#ff7a2a' : '#c9c4b8'; ctx.fillRect(x, y, fire ? 4 : 3, fire ? 4 : 3);
+  }
+  for (let i = 0; i < 6; i++) {
+    const x = x0 + (((i * 523 + t * .02) % (vw + 800)) + vw + 800) % (vw + 800) - 400, y = y0 + (i * 0.17 + .05) * vh;
+    const g = ctx.createRadialGradient(x, y, 0, x, y, 380); g.addColorStop(0, 'rgba(160,170,160,.07)'); g.addColorStop(1, 'rgba(160,170,160,0)');
+    ctx.globalAlpha = 1; ctx.fillStyle = g; ctx.fillRect(x - 380, y - 380, 760, 760);
+  }
+  ctx.globalAlpha = 1;
+}
+// أثاث الغابة
+const FOBS = {
+  campfire(ctx, o, t) { ctx.fillStyle = '#2a1d12'; ctx.beginPath(); ctx.arc(o.x, o.y, o.r, 0, 7); ctx.fill(); ctx.strokeStyle = '#000'; ctx.lineWidth = 4; ctx.stroke(); for (let i = 0; i < 10; i++) { const a = i / 10 * 6.28; ctx.fillStyle = '#55524c'; ctx.beginPath(); ctx.arc(o.x + Math.cos(a) * (o.r - 8), o.y + Math.sin(a) * (o.r - 8), 11, 0, 7); ctx.fill(); ctx.stroke(); } const g = ctx.createRadialGradient(o.x, o.y, 5, o.x, o.y, 220); g.addColorStop(0, 'rgba(255,150,50,.35)'); g.addColorStop(1, 'rgba(255,120,30,0)'); ctx.fillStyle = g; ctx.beginPath(); ctx.arc(o.x, o.y, 220, 0, 7); ctx.fill(); flame(ctx, o.x, o.y + 10, 36, t); ctx.fillStyle = '#b08a2a'; ctx.strokeStyle = '#000'; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(o.x - 12, o.y - o.r - 30); ctx.lineTo(o.x + 12, o.y - o.r - 30); ctx.lineTo(o.x + 16, o.y - o.r - 6); ctx.lineTo(o.x - 16, o.y - o.r - 6); ctx.closePath(); ctx.fill(); ctx.stroke(); },
+  bed2: (c, o, t, d, box) => { box('#5a4a3a', 6); c.fillStyle = '#7a2020'; c.fillRect(o.x + 50, o.y + 10, o.w - 60, o.h - 20); c.fillStyle = '#c9bfa8'; c.fillRect(o.x + 8, o.y + 14, 34, o.h - 28); },
+  table2: (c, o, t, d, box) => { box('#5b3d24', 6); c.fillStyle = `rgba(255,190,90,${.5 + .3 * Math.sin(t / 150)})`; c.beginPath(); c.arc(o.x + 40, o.y + 40, 9, 0, 7); c.fill(); },
+  hearth: (c, o, t, d, box) => { box('#3a3a42', 4); c.fillStyle = '#100'; c.fillRect(o.x + 20, o.y + 20, o.w - 40, o.h - 20); flame(c, o.x + o.w / 2, o.y + o.h - 6, 18, t); },
+  shelf: (c, o, t, d, box) => { box('#4a3220', 4); ['#6b2020', '#2a4a2a', '#3a3a6a', '#6a5a2a'].forEach((f, i) => { c.fillStyle = f; c.fillRect(o.x + 10 + i * 30, o.y + 10, 20, o.h - 20); }); },
+  well: (c, o, t, d) => { d(o.r, '#55555e'); c.fillStyle = '#020403'; c.beginPath(); c.arc(o.x, o.y, o.r * .65, 0, 7); c.fill(); c.fillStyle = `rgba(200,30,30,${.25 + .25 * Math.sin(t / 500)})`; c.beginPath(); c.arc(o.x - 8, o.y + 4, 4, 0, 7); c.arc(o.x + 8, o.y + 4, 4, 0, 7); c.fill(); },
+  tree: (c, o, t) => { const sw = Math.sin(t / 1300 + o.x) * 3; c.fillStyle = 'rgba(0,0,0,.4)'; c.beginPath(); c.arc(o.x + 8, o.y + 10, o.r + 10, 0, 7); c.fill(); c.fillStyle = '#3a2614'; c.beginPath(); c.arc(o.x, o.y, o.r * .45, 0, 7); c.fill(); c.fillStyle = '#0d1b0c'; c.beginPath(); c.arc(o.x + sw, o.y - 8, o.r + 14, 0, 7); c.fill(); c.fillStyle = '#152a12'; c.beginPath(); c.arc(o.x + sw - 10, o.y - 18, o.r * .75, 0, 7); c.fill(); },
+  mast: (c, o, t) => { c.strokeStyle = '#6a6a72'; c.lineWidth = 5; c.strokeRect(o.x, o.y, o.w, o.h); c.beginPath(); c.moveTo(o.x, o.y); c.lineTo(o.x + o.w, o.y + o.h); c.moveTo(o.x + o.w, o.y); c.lineTo(o.x, o.y + o.h); c.stroke(); c.fillStyle = Math.floor(t / 600) % 2 ? '#ff2a1a' : '#400'; c.beginPath(); c.arc(o.x + o.w / 2, o.y + o.h / 2, 12, 0, 7); c.fill(); },
+  gen2: (c, o, t, d, box) => { box('#4a4a3a', 6); c.fillStyle = '#ffc928'; c.font = '400 34px Lalezar'; c.textAlign = 'center'; c.textBaseline = 'middle'; c.globalAlpha = .4 + .6 * Math.abs(Math.sin(t / 120)); c.fillText('⚡', o.x + o.w / 2, o.y + o.h / 2); c.globalAlpha = 1; },
+  monitors: (c, o, t, d, box) => { box('#1e2228', 4); for (let i = 0; i < 3; i++) { c.fillStyle = `rgba(120,255,160,${.35 + .3 * Math.sin(t / 200 + i)})`; c.fillRect(o.x + 10 + i * 50, o.y + 10, 40, o.h - 20); } },
+  labtable: (c, o, t, d, box) => { box('#3a4642', 6); c.fillStyle = `rgba(120,255,160,${.3 + .2 * Math.sin(t / 300 + o.x)})`; c.beginPath(); c.arc(o.x + 40, o.y + o.h / 2, 14, 0, 7); c.fill(); c.fillStyle = '#7a1d18'; c.fillRect(o.x + o.w - 70, o.y + 20, 40, 8); },
+  tank: (c, o, t, d) => { d(o.r, '#203a30'); c.fillStyle = `rgba(80,220,140,${.35 + .2 * Math.sin(t / 400)})`; c.beginPath(); c.arc(o.x, o.y, o.r * .8, 0, 7); c.fill(); c.fillStyle = 'rgba(0,0,0,.65)'; c.beginPath(); c.ellipse(o.x + Math.sin(t / 900) * 8, o.y + Math.cos(t / 700) * 6, 14, 22, Math.sin(t / 1000), 0, 7); c.fill(); for (let i = 0; i < 3; i++) { c.fillStyle = 'rgba(200,255,220,.6)'; c.beginPath(); c.arc(o.x - 15 + i * 15, o.y + o.r * .6 - ((t / 20 + i * 30) % (o.r * 1.4)), 3, 0, 7); c.fill(); } },
+  pod: (c, o, t, d) => { d(o.r, '#2a302e'); c.strokeStyle = '#7a1d18'; c.lineWidth = 4; c.beginPath(); c.moveTo(o.x - 20, o.y - 10); c.lineTo(o.x, o.y + 6); c.lineTo(o.x + 18, o.y - 14); c.stroke(); },
+  tomb: (c, o) => { c.fillStyle = 'rgba(0,0,0,.5)'; c.fillRect(o.x + 6, o.y + 10, o.w, o.h); c.fillStyle = '#55555e'; c.strokeStyle = '#000'; c.lineWidth = 4; c.beginPath(); c.moveTo(o.x, o.y + o.h); c.lineTo(o.x, o.y + 18); c.arc(o.x + o.w / 2, o.y + 18, o.w / 2, Math.PI, 0); c.lineTo(o.x + o.w, o.y + o.h); c.closePath(); c.fill(); c.stroke(); c.strokeStyle = '#2a2a30'; c.beginPath(); c.moveTo(o.x + o.w / 2, o.y + 22); c.lineTo(o.x + o.w / 2, o.y + 48); c.moveTo(o.x + 14, o.y + 32); c.lineTo(o.x + o.w - 14, o.y + 32); c.stroke(); },
+  deadtree: (c, o, t) => { c.strokeStyle = '#1a120a'; c.lineCap = 'round'; c.lineWidth = 12; c.beginPath(); c.arc(o.x, o.y, o.r * .5, 0, 7); c.stroke(); c.lineWidth = 6; for (let i = 0; i < 6; i++) { const a = i * 1.05 + Math.sin(t / 2000) * .05; c.beginPath(); c.moveTo(o.x, o.y); c.lineTo(o.x + Math.cos(a) * o.r * 1.6, o.y + Math.sin(a) * o.r * 1.6); c.stroke(); } },
+  rift(c, o, t) { const p = .5 + .5 * Math.sin(t / 220); c.save(); c.translate(o.x, o.y); c.fillStyle = `rgba(255,30,20,${.25 + .2 * p})`; c.beginPath(); c.ellipse(0, 0, o.r + 30 + p * 10, o.r * .5 + 16, -.5, 0, 7); c.fill(); c.fillStyle = '#000'; c.strokeStyle = `rgba(255,${60 + p * 80 | 0},40,1)`; c.lineWidth = 6; c.beginPath(); c.moveTo(-o.r - 10, 10); c.quadraticCurveTo(-o.r * .3, -o.r * .5, 0, -6); c.quadraticCurveTo(o.r * .4, o.r * .4, o.r + 10, -14); c.quadraticCurveTo(o.r * .3, o.r * .2, 0, 14); c.quadraticCurveTo(-o.r * .4, 0, -o.r - 10, 10); c.fill(); c.stroke(); c.strokeStyle = 'rgba(200,20,20,.6)'; c.lineWidth = 3; for (let i = 0; i < 7; i++) { const a = i * .9 + t / 3000; c.beginPath(); c.moveTo(0, 0); c.quadraticCurveTo(Math.cos(a) * 60, Math.sin(a) * 50, Math.cos(a + .4) * (110 + 20 * Math.sin(t / 300 + i)), Math.sin(a + .4) * (80 + 15 * Math.sin(t / 300 + i))); c.stroke(); } c.restore(); },
+  tent: (c, o, t) => { c.fillStyle = 'rgba(0,0,0,.45)'; c.fillRect(o.x + 8, o.y + 10, o.w, o.h); c.fillStyle = '#3d4a2a'; c.strokeStyle = '#000'; c.lineWidth = 4; c.beginPath(); c.moveTo(o.x, o.y + o.h); c.lineTo(o.x + o.w / 2, o.y); c.lineTo(o.x + o.w, o.y + o.h); c.closePath(); c.fill(); c.stroke(); c.fillStyle = '#0a0a06'; c.beginPath(); c.moveTo(o.x + o.w / 2 - 20, o.y + o.h); c.lineTo(o.x + o.w / 2, o.y + 40); c.lineTo(o.x + o.w / 2 + 20, o.y + o.h); c.fill(); c.strokeStyle = '#7a1d18'; c.lineWidth = 5; c.beginPath(); c.moveTo(o.x + 30, o.y + o.h - 30); c.lineTo(o.x + 60, o.y + o.h - 60); c.stroke(); },
+  van: (c, o, t, d, box) => { box('#4a4a52', 18); c.fillStyle = '#1a2a3a'; c.fillRect(o.x + 14, o.y + 14, 50, o.h - 28); c.fillStyle = Math.sin(t / 90) > .6 ? '#ffd27a' : '#3a3020'; c.beginPath(); c.arc(o.x + 8, o.y + 20, 7, 0, 7); c.arc(o.x + 8, o.y + o.h - 20, 7, 0, 7); c.fill(); },
+  water(c, o, t) { c.fillStyle = '#0a1418'; c.strokeStyle = '#000'; c.lineWidth = 6; c.beginPath(); c.arc(o.x, o.y, o.r, 0, 7); c.fill(); c.stroke(); c.strokeStyle = 'rgba(120,160,170,.25)'; c.lineWidth = 2; for (let i = 0; i < 4; i++) { const rr = ((t / 40 + i * 40) % 140); c.globalAlpha = 1 - rr / 140; c.beginPath(); c.arc(o.x - 30, o.y + 10, rr, 0, 7); c.stroke(); } c.globalAlpha = 1; const hand = (Math.sin(t / 2500) + 1) / 2; if (hand > .85) { c.fillStyle = '#9aa092'; c.beginPath(); c.ellipse(o.x + 50, o.y - 30, 8, 18 * (hand - .85) / .15, 0, 0, 7); c.fill(); } },
+  dock: (c, o, t, d, box) => { box('#4a3220', 2); c.fillStyle = 'rgba(0,0,0,.4)'; for (let x = o.x + 20; x < o.x + o.w; x += 26) c.fillRect(x, o.y, 3, o.h); },
+  boat: (c, o, t, d) => { c.save(); c.translate(o.x, o.y); c.rotate(Math.sin(t / 900) * .08); c.fillStyle = '#5b3d24'; c.strokeStyle = '#000'; c.lineWidth = 4; c.beginPath(); c.ellipse(0, 0, o.r * 1.3, o.r * .6, 0, 0, 7); c.fill(); c.stroke(); c.restore(); },
+  rock: (c, o, t, d) => { d(o.r, '#3a3a40'); c.fillStyle = 'rgba(255,255,255,.06)'; c.beginPath(); c.arc(o.x - o.r * .3, o.y - o.r * .3, o.r * .4, 0, 7); c.fill(); },
+  desk2: (c, o, t, d, box) => { box('#5a4028', 4); c.fillStyle = '#c9bfa8'; c.fillRect(o.x + 20, o.y + 14, 30, 22); c.fillStyle = '#7a1d18'; c.font = '400 18px Lalezar'; c.fillText('?', o.x + 80, o.y + 40); },
+  burn(c, o, t) { c.fillStyle = '#120a06'; c.beginPath(); c.arc(o.x, o.y, o.r, 0, 7); c.fill(); c.strokeStyle = '#000'; c.lineWidth = 4; c.stroke(); c.strokeStyle = '#2a1408'; c.lineWidth = 8; c.lineCap = 'round'; for (let i = 0; i < 5; i++) { const a = i * 1.25; c.beginPath(); c.moveTo(o.x, o.y); c.lineTo(o.x + Math.cos(a) * o.r * 1.5, o.y + Math.sin(a) * o.r * 1.5); c.stroke(); } flame(c, o.x, o.y, 30, t + o.x); },
+  lava(c, o, t) { const p = .5 + .5 * Math.sin(t / 300); const g = c.createRadialGradient(o.x, o.y, 5, o.x, o.y, o.r + 50); g.addColorStop(0, `rgba(255,${180 + p * 50 | 0},60,1)`); g.addColorStop(.6, 'rgba(230,60,10,.9)'); g.addColorStop(1, 'rgba(120,20,0,0)'); c.fillStyle = g; c.beginPath(); c.arc(o.x, o.y, o.r + 50, 0, 7); c.fill(); c.strokeStyle = '#2a0a00'; c.lineWidth = 6; c.beginPath(); c.arc(o.x, o.y, o.r, 0, 7); c.stroke(); for (let i = 0; i < 3; i++) { const k = ((t / 600 + i / 3) % 1); c.fillStyle = `rgba(255,220,120,${1 - k})`; c.beginPath(); c.arc(o.x - 30 + i * 30, o.y - k * 20, 6 * (1 - k) + 2, 0, 7); c.fill(); } },
+  wreck: (c, o, t, d, box) => { box('#2a2622', 14); c.fillStyle = '#100c0a'; c.fillRect(o.x + 20, o.y + 18, o.w - 40, o.h - 36); flame(c, o.x + o.w * .7, o.y + o.h * .5, 16, t); },
+  pew: (c, o, t, d, box) => box('#3e2a18', 4),
+  altar: (c, o, t, d, box) => { box('#3a3a42', 4); c.fillStyle = '#6b1010'; c.fillRect(o.x + 10, o.y + 10, o.w - 20, 14); [30, 75, 120].forEach(x => { c.fillStyle = '#d8d0b8'; c.fillRect(o.x + x - 4, o.y + 30, 8, 22); flame(c, o.x + x, o.y + 30, 5, t + x * 9); }); },
+  candles: (c, o, t) => { for (let i = 0; i < 5; i++) { const a = i * 1.26, x = o.x + Math.cos(a) * 18, y = o.y + Math.sin(a) * 18; c.fillStyle = '#d8d0b8'; c.fillRect(x - 3, y - 10, 6, 14); flame(c, x, y - 10, 4, t + i * 300); } }
+};
+function flame(c, x, y, s, t) {
+  const f = (k, col, sc) => { const w = s * sc, h = s * 1.9 * sc * (1 + .12 * Math.sin(t / 60 + k)); c.fillStyle = col; c.beginPath(); c.moveTo(x - w, y); c.quadraticCurveTo(x - w * .9, y - h * .55, x + Math.sin(t / 110 + k) * w * .35, y - h); c.quadraticCurveTo(x + w * .9, y - h * .55, x + w, y); c.quadraticCurveTo(x, y + w * .5, x - w, y); c.fill(); };
+  f(0, 'rgba(255,80,20,.9)', 1); f(2, 'rgba(255,170,40,.95)', .7); f(4, 'rgba(255,240,170,.95)', .38);
+}
+
+// ---------- شخصيات الغابة: عباءة بقبعة وعيون تلمع وفانوس ----------
+function drawHood(ctx, x, y, c, dir, phase, ghost, t) {
+  const f = SCOL[c] || SCOL[0], dk = shade(f, .42), bob = ghost ? Math.sin(t / 300) * 4 : phase ? Math.abs(Math.sin(phase)) * 3 : 0, sw = phase ? Math.sin(phase) * 3 : 0;
+  ctx.save(); ctx.translate(x, y - bob); ctx.scale(1.15, 1.15);
+  if (ghost) ctx.globalAlpha = .4;
+  ctx.fillStyle = 'rgba(0,0,0,.45)'; ctx.beginPath(); ctx.ellipse(0, 26 + bob, 22, 6, 0, 0, 7); ctx.fill();
+  ctx.beginPath(); ctx.moveTo(0, -36); ctx.bezierCurveTo(17, -36, 22, -18, 21, -4); ctx.lineTo(25 + sw, 22);
+  for (let i = 0; i < 5; i++) ctx.lineTo(25 + sw - (i + 1) * 10, 22 + (i % 2 ? -1 : 6));
+  ctx.lineTo(-21, -4); ctx.bezierCurveTo(-22, -18, -17, -36, 0, -36); ctx.closePath();
+  ctx.fillStyle = dk; ctx.fill(); ctx.strokeStyle = '#030303'; ctx.lineWidth = 3.5; ctx.stroke();
+  ctx.strokeStyle = shade(f, .75); ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(-14, 2); ctx.quadraticCurveTo(0, 8, 14, 2); ctx.stroke();
+  ctx.fillStyle = '#020202'; ctx.beginPath(); ctx.ellipse(dir * 2, -15, 11.5, 13, 0, 0, 7); ctx.fill(); ctx.strokeStyle = f; ctx.lineWidth = 2.5; ctx.stroke();
+  const blink = (t / 1000 + c * .37) % 5 < .12;
+  if (!blink) { ctx.shadowColor = f; ctx.shadowBlur = 12; ctx.fillStyle = shade(f, 1.5); [-4, 5].forEach(ex => { ctx.beginPath(); ctx.ellipse(dir * 3 + ex, -16, 2.6, 1.9, 0, 0, 7); ctx.fill(); }); ctx.shadowBlur = 0; }
+  if (!ghost) {
+    const lx = dir * 22, ly = 4 + (phase ? Math.sin(phase) * 2 : Math.sin(t / 500) * 1.5);
+    ctx.strokeStyle = '#111'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(dir * 15, -2); ctx.lineTo(lx, ly - 8); ctx.stroke();
+    const g = ctx.createRadialGradient(lx, ly, 1, lx, ly, 26); g.addColorStop(0, 'rgba(255,200,100,.55)'); g.addColorStop(1, 'rgba(255,170,60,0)'); ctx.fillStyle = g; ctx.beginPath(); ctx.arc(lx, ly, 26, 0, 7); ctx.fill();
+    ctx.fillStyle = '#ffd27a'; ctx.strokeStyle = '#2a1a08'; ctx.lineWidth = 2; rrect(ctx, lx - 5, ly - 8, 10, 14, 3); ctx.fill(); ctx.stroke();
+  }
+  ctx.restore();
+}
+function drawHoodBody(ctx, x, y, c) {
+  const f = SCOL[c] || SCOL[0];
+  ctx.save(); ctx.translate(x, y + 8); ctx.scale(1.15, 1.15);
+  ctx.fillStyle = 'rgba(130,0,0,.65)'; ctx.beginPath(); ctx.ellipse(6, 8, 40, 14, .2, 0, 7); ctx.fill();
+  ctx.fillStyle = shade(f, .4); ctx.strokeStyle = '#000'; ctx.lineWidth = 3.5; ctx.beginPath(); ctx.moveTo(-28, 4); ctx.quadraticCurveTo(-10, -18, 18, -8); ctx.lineTo(30, 6); ctx.lineTo(18, 12); ctx.lineTo(6, 6); ctx.lineTo(-6, 14); ctx.closePath(); ctx.fill(); ctx.stroke();
+  ctx.fillStyle = '#3a2a10'; ctx.save(); ctx.translate(30, 18); ctx.rotate(1.2); ctx.fillRect(-5, -7, 10, 14); ctx.restore();
+  ctx.restore();
+}
+function hoodSvg(c, dead) {
+  const f = SCOL[c] || SCOL[0], dk = shade(f, .42), lt = shade(f, 1.5);
+  return `<svg viewBox="0 0 60 66" class="sguy${dead ? ' dead' : ''}"><path d="M30 3C47 3 52 21 51 35L55 61L45 57L35 63L25 57L15 63L5 59L9 35C8 21 13 3 30 3Z" fill="${dk}" stroke="#030303" stroke-width="3.5"/>
+  <ellipse cx="30" cy="25" rx="13" ry="15" fill="#020202" stroke="${f}" stroke-width="2.5"/>
+  ${dead ? '<path d="M22 21l5 5m0-5l-5 5M33 21l5 5m0-5l-5 5" stroke="#9a1010" stroke-width="2.5"/>' : `<ellipse cx="25" cy="24" rx="3" ry="2.2" fill="${lt}" style="filter:drop-shadow(0 0 3px ${f})"/><ellipse cx="35" cy="24" rx="3" ry="2.2" fill="${lt}" style="filter:drop-shadow(0 0 3px ${f})"/>`}</svg>`;
+}
+// وجه الفجعة (رسمة خاصة فينا)
+function faceSvg() {
+  return `<svg viewBox="0 0 200 240"><defs><radialGradient id="sfg" cx="50%" cy="42%"><stop offset="0" stop-color="#d9dccf"/><stop offset=".7" stop-color="#7d8270"/><stop offset="1" stop-color="#2a2c24"/></radialGradient></defs>
+  <path d="M100 6C162 6 190 62 182 122C175 182 140 234 100 234C60 234 25 182 18 122C10 62 38 6 100 6Z" fill="url(#sfg)" stroke="#000" stroke-width="6"/>
+  <path d="M60 30L72 58L64 74M150 40L136 70M40 150L58 140M168 150L148 138M100 10L96 34" stroke="#3a3a30" stroke-width="3" fill="none"/>
+  <ellipse cx="66" cy="104" rx="26" ry="33" fill="#000"/><ellipse cx="134" cy="104" rx="26" ry="33" fill="#000"/>
+  <circle cx="70" cy="110" r="5" fill="#ff2a1a"/><circle cx="130" cy="110" r="5" fill="#ff2a1a"/>
+  <path d="M42 162Q100 236 158 162Q100 192 42 162Z" fill="#000" stroke="#300" stroke-width="3"/>
+  <path d="M52 168L60 184L68 172L76 190L84 176L92 194L100 178L108 194L116 176L124 190L132 172L140 184L148 168" fill="none" stroke="#e8e2cc" stroke-width="4" stroke-linejoin="round"/>
+  <path d="M60 196L68 184L76 200L84 188L92 204L100 190L108 204L116 188L124 200L132 184L140 196" fill="none" stroke="#e8e2cc" stroke-width="3" stroke-linejoin="round"/>
+  <path d="M66 140C60 150 58 160 62 168M134 140C140 150 142 160 138 168" stroke="#5a1010" stroke-width="3" fill="none"/></svg>`;
+}
+
+// ---------- فجعات الغابة العشوائية ----------
+function scaresTick(t) {
+  if (!SU.nextScare) SU.nextScare = t + 30000;
+  if (t > SU.nextFlash) { SU.flash = t; SU.nextFlash = t + 20000 + Math.random() * 30000; setTimeout(() => sfx('thunder'), 250); }
+  if (t < SU.nextScare || SU.task || SU.cams) return;
+  SU.nextScare = t + 35000 + Math.random() * 45000;
+  const r = Math.random();
+  if (r < .38) { SU.eyes = { t0: t, a: Math.random() * 6.28, n: 1 + (Math.random() * 3 | 0) }; sfx('whisper'); }
+  else if (r < .62) { SU.blackout = t + 170; setTimeout(() => { SU.blackout = performance.now() + 120; sfx('static'); }, 360); sfx('static'); }
+  else if (r < .86) { SU.shadow = { t0: t, d: Math.random() < .5 ? 1 : -1, y: .3 + Math.random() * .4 }; sfx('whoosh'); }
+  else { const w = $('#susW'); if (w) { const d = document.createElement('div'); d.className = 'sscare quick'; d.innerHTML = `<div class="sface">${faceSvg()}</div>`; w.appendChild(d); setTimeout(() => d.remove(), 420); sfx('scream'); } }
+}
+function scaresDraw(ctx, W, H, t, radPx) {
+  const e = SU.eyes;
+  if (e && t - e.t0 < 2600) {
+    const k = t - e.t0, al = Math.min(1, k / 400, (2600 - k) / 500);
+    for (let i = 0; i < e.n; i++) {
+      const a = e.a + i * .5, d = radPx * (1.02 + i * .12), x = W / 2 + Math.cos(a) * d, y = H / 2 + Math.sin(a) * d;
+      if ((k / 1000 + i) % 1.3 < .08) continue;
+      ctx.save(); ctx.globalAlpha = al; ctx.shadowColor = '#ff2a1a'; ctx.shadowBlur = 14; ctx.fillStyle = '#ff3b2a';
+      ctx.beginPath(); ctx.ellipse(x - 9, y, 4, 2.4, -.2, 0, 7); ctx.ellipse(x + 9, y, 4, 2.4, .2, 0, 7); ctx.fill(); ctx.restore();
+    }
+  }
+  const s = SU.shadow;
+  if (s && t - s.t0 < 800) {
+    const k = (t - s.t0) / 800, x = s.d > 0 ? -120 + k * (W + 240) : W + 120 - k * (W + 240), y = H * s.y;
+    ctx.save(); ctx.translate(x, y); ctx.scale(s.d, 1); ctx.fillStyle = 'rgba(0,0,0,.92)';
+    ctx.beginPath(); ctx.ellipse(0, -70, 16, 20, 0, 0, 7); ctx.fill();
+    ctx.beginPath(); ctx.moveTo(-14, -52); ctx.lineTo(14, -52); ctx.lineTo(22, 30); ctx.lineTo(10, 80); ctx.lineTo(0, 30); ctx.lineTo(-10, 80); ctx.lineTo(-22, 30); ctx.closePath(); ctx.fill();
+    ctx.lineWidth = 6; ctx.strokeStyle = 'rgba(0,0,0,.92)'; ctx.lineCap = 'round'; ctx.beginPath(); ctx.moveTo(10, -44); ctx.lineTo(60, 10 + Math.sin(t / 40) * 10); ctx.moveTo(-10, -44); ctx.lineTo(-50, 20); ctx.stroke();
+    ctx.restore();
+  }
+}
+setInterval(() => { const g = sg(); if (g && SUSMAP.theme === 'forest' && g.sabo && g.sabo.k === 'lights' && S.phase === 'play' && g.sub === 'play') sfx('heart'); }, 900);
+susUseMap('ship');

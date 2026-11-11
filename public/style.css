@@ -922,3 +922,23 @@ body.ingame2 main:has(.g2body.sus){max-width:none;padding-bottom:0}
 .room.dark .tablename b{color:#f3ead8}
 .room.dark .card.back{--c:#2a1f3d}.room.dark .card.back .mid::before{background:#ef6fae}
 .room.flipg #discard,.room.flipg #hand,.room.flipg .felt{transform-style:preserve-3d}
+/* ماب الغابة (رعب) */
+.susw.forest{background:#050805;border-color:#000}
+.susw.forest .smeetbox{background:#17110d;color:#efe6d2;border-color:#000;box-shadow:6px 6px 0 #5a0d0d}
+.susw.forest .svote{background:#241a13;color:#efe6d2;border-color:#000}
+.susw.forest .svote.pick{background:#7a1d18;color:#fff}.susw.forest .svote.mine{background:#1d3a22}.susw.forest .svote.vtop{background:#4a1010}
+.susw.forest .sfull{background:radial-gradient(circle,#2a0d0d,#050303)}
+.susw.forest .ssplash{background:repeating-conic-gradient(from 0deg,#3a0606 0 15deg,#120202 15deg 30deg)}
+.susw.forest .sintro.crew h2{color:#ffcf7a}
+.susw.forest .sprog,.susw.forest .stasks,.susw.forest .sbanner{background:#17110d;color:#efe6d2;border-color:#000;box-shadow:3px 3px 0 #5a0d0d}
+.susw.forest .shush{background:#050303}
+.susw.forest .seject{background:#050303 radial-gradient(circle,#1a0a0a,#050303)}
+.susw.forest .seject::before{background-image:radial-gradient(rgba(200,190,170,.6) 1.5px,transparent 1.5px);background-size:70px 70px}
+.sscare{position:absolute;inset:0;z-index:12;background:#000;display:grid;place-items:center;overflow:hidden;pointer-events:none;animation:sScareBg 1.7s steps(1) both}
+.sscare .sface{width:min(92vw,560px);animation:sFace 1.7s cubic-bezier(.2,1.6,.4,1) both}
+.sscare .sface svg{width:100%;height:auto;filter:drop-shadow(0 0 40px rgba(255,0,0,.6))}
+@keyframes sFace{0%{transform:scale(.2) rotate(-8deg);opacity:0}8%{transform:scale(1.25) rotate(3deg);opacity:1}12%{transform:scale(1.15) translate(-12px,8px) rotate(-4deg)}16%{transform:scale(1.3) translate(10px,-6px) rotate(5deg)}20%{transform:scale(1.2) translate(-8px,-4px)}30%{transform:scale(1.45) translate(6px,6px)}40%{transform:scale(1.4) translate(-6px,4px);filter:none}48%{filter:invert(1) hue-rotate(180deg)}52%{filter:none}80%{transform:scale(1.7);opacity:1}100%{transform:scale(2.6);opacity:0}}
+@keyframes sScareBg{0%{background:#000}10%{background:#3a0000}14%{background:#000}22%{background:#5a0000}26%{background:#000}100%{background:#000}}
+.sscare.quick{animation:none;background:transparent}
+.sscare.quick .sface{animation:sQuick .42s steps(3) both}
+@keyframes sQuick{0%{transform:scale(1.4);opacity:1}50%{transform:scale(1.5) translate(8px,-6px);opacity:.9}100%{transform:scale(1.6);opacity:0}}

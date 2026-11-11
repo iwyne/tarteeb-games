@@ -24,12 +24,30 @@ const sfx = (() => {
     const g = c.createGain(); g.gain.value = vol;
     s.connect(flt).connect(g).connect(c.destination); s.start(c.currentTime + t0);
   }
+  // ضجيج بفلتر متحرك (للصرخة والرعد والهمس)
+  function nz(t0, d, o = {}) {
+    const c = ac(); if (!c) return;
+    const len = Math.floor(c.sampleRate * d), buf = c.createBuffer(1, len, c.sampleRate), data = buf.getChannelData(0);
+    for (let i = 0; i < len; i++) data[i] = Math.random() * 2 - 1;
+    const s = c.createBufferSource(); s.buffer = buf;
+    const flt = c.createBiquadFilter(); flt.type = o.type || 'bandpass'; flt.Q.value = o.q || 1;
+    const t = c.currentTime + t0; flt.frequency.setValueAtTime(o.f || 1000, t); if (o.f2) flt.frequency.exponentialRampToValueAtTime(o.f2, t + d);
+    const g = c.createGain(); g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(o.vol || .3, t + (o.a || .01)); g.gain.exponentialRampToValueAtTime(.0001, t + d);
+    s.connect(flt).connect(g).connect(c.destination); s.start(t); s.stop(t + d + .05);
+  }
   const clip = src => { let a; return () => { try { if (!a) { a = new Audio(src); a.preload = 'auto'; } a.currentTime = 0; const pr = a.play(); if (pr && pr.catch) pr.catch(() => {}); } catch {} }; };
   const bank = {
     bang: () => { noise(0, .35, 260, .95); tone(90, 0, .35, 'sawtooth', .35, 28); tone(1200, 0, .06, 'square', .12, 200); },
     alarm: () => { for (let i = 0; i < 3; i++) { tone(620, i * .34, .17, 'sawtooth', .1, 880); tone(880, i * .34 + .17, .17, 'sawtooth', .1, 620); } },
     alarm2: () => { tone(440, 0, .22, 'square', .07, 330); tone(440, .26, .22, 'square', .07, 330); },
     kill: () => { noise(0, .18, 3000, .5); tone(500, 0, .2, 'sawtooth', .12, 90); },
+    scream: () => { nz(0, 1.5, { f: 2200, f2: 600, q: 4, vol: .7 }); nz(0, 1.2, { f: 900, f2: 300, q: 2, vol: .4 }); tone(980, 0, 1.3, 'sawtooth', .2, 260); tone(1460, 0, .9, 'square', .08, 520); tone(70, 0, .6, 'sine', .5, 30); },
+    whisper: () => { for (let i = 0; i < 4; i++) nz(i * .32, .55, { f: 2600 + Math.random() * 2400, q: 7, vol: .14, a: .15 }); },
+    thunder: () => { nz(0, 2.4, { type: 'lowpass', f: 600, f2: 60, vol: .8, a: .04 }); nz(0, .3, { f: 2500, vol: .35 }); },
+    heart: () => { tone(62, 0, .16, 'sine', .55, 40); tone(56, .22, .2, 'sine', .45, 36); },
+    static: () => nz(0, .28, { type: 'highpass', f: 2500, vol: .28 }),
+    whoosh: () => nz(0, .7, { f: 300, f2: 2600, q: 2, vol: .35, a: .2 }),
+    bell: () => [0, .45, .9].forEach(t => { tone(660, t, 1.1, 'sine', .22); tone(990, t, .8, 'sine', .1); tone(1320, t, .5, 'triangle', .06); }),
     gclick: () => { tone(1700, 0, .03, 'square', .16); tone(900, .05, .04, 'square', .1); },
     unoCall: clip('sounds/uno.mp3'),
     unoWin: clip('sounds/win.mp3'),

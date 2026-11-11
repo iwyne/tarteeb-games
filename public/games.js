@@ -376,13 +376,14 @@ function renderLobbySet(isHost) {
   const sig = JSON.stringify([isHost, S.game, o, S.players.length >= S.max]);
   box.hidden = false;
   if (sig === lsSig) return; lsSig = sig;
-  const sum = [o.lock ? '🔒 مقفلة بدون متفرجين' : '', o.hasPass ? '🔑 بكلمة سر' : '', S.game === 'uno' && o.stack ? 'تراكم +٢/+٤' : '', S.game === 'uno' && o.turn !== 15 ? `مهلة الدور ${o.turn} ث` : '', S.game === 'sus' ? `${o.imps || 1} ${(o.imps || 1) > 1 ? 'مندسين' : 'مندس'}` : '', S.game === 'sus' && o.doctor ? 'طور الدكتور 🩺' : '', S.game === 'typing' ? `الهدف ${o.target} نقاط` : '', S.game === 'codes' && o.nwords ? `كلمات مخصصة (${o.nwords})` : ''].filter(Boolean);
+  const sum = [o.lock ? '🔒 مقفلة بدون متفرجين' : '', o.hasPass ? '🔑 بكلمة سر' : '', S.game === 'uno' && o.stack ? 'تراكم +٢/+٤' : '', S.game === 'uno' && o.turn !== 15 ? `مهلة الدور ${o.turn} ث` : '', S.game === 'sus' ? (o.map === 'forest' ? '🌲 الغابة الملعونة' : '🚀 السفينة') : '', S.game === 'sus' ? `${o.imps || 1} ${(o.imps || 1) > 1 ? 'مندسين' : 'مندس'}` : '', S.game === 'sus' && o.doctor ? 'طور الدكتور 🩺' : '', S.game === 'typing' ? `الهدف ${o.target} نقاط` : '', S.game === 'codes' && o.nwords ? `كلمات مخصصة (${o.nwords})` : ''].filter(Boolean);
   if (!isHost) { box.innerHTML = sum.length ? `<div class="lsum">${sum.map(x => `<span>${x}</span>`).join('')}</div>` : ''; box.hidden = !sum.length; return; }
   const gm = Object.keys(GNAME).map(k => `<button type="button" class="gsw${k === S.game ? ' on' : ''}" data-g="${k}">${GNAME[k]}</button>`).join('');
   let extra = '';
   if (S.game === 'uno') extra = `<label class="chk"><input type="checkbox" id="oStack"${o.stack ? ' checked' : ''}> تراكم السحب (+٢ على +٢ و +٤ على +٤)</label>
     <label class="chk">مهلة الدور <select id="oTurn">${[10, 15, 25, 40].map(n => `<option value="${n}"${o.turn === n ? ' selected' : ''}>${n} ثانية</option>`).join('')}</select></label>`;
-  else if (S.game === 'sus') extra = `<label class="chk">عدد المندسين <select id="oImps">${[1, 2, 3].map(n => `<option value="${n}"${o.imps === n ? ' selected' : ''}>${n}</option>`).join('')}</select></label>
+  else if (S.game === 'sus') extra = `<label class="chk">الماب <select id="oMap"><option value="ship"${o.map !== 'forest' ? ' selected' : ''}>🚀 السفينة</option><option value="forest"${o.map === 'forest' ? ' selected' : ''}>🌲 الغابة الملعونة (رعب)</option></select></label>
+    <label class="chk">عدد المندسين <select id="oImps">${[1, 2, 3].map(n => `<option value="${n}"${o.imps === n ? ' selected' : ''}>${n}</option>`).join('')}</select></label>
     <label class="chk"><input type="checkbox" id="oDoc"${o.doctor ? ' checked' : ''}> طور الدكتور 🩺 (يعطي درع لشخص كل جولة)</label><small class="muted">٢ مندسين يحتاج ٦ لاعبين، و٣ يحتاج ٩</small>`;
   else if (S.game === 'typing') extra = `<label class="chk">الهدف <select id="oTarget">${[3, 5, 8, 12].map(n => `<option value="${n}"${o.target === n ? ' selected' : ''}>${n} نقاط</option>`).join('')}</select></label>`;
   else if (S.game === 'codes') extra = `<details class="wdet"><summary>كلمات مخصصة ${o.nwords ? `(مفعّلة: ${o.nwords})` : '(اختياري)'}</summary><textarea id="oWords" rows="4" placeholder="اكتب ٢٥ كلمة أو أكثر، كل كلمة بسطر أو افصلها بفاصلة">${esc(o.wordsText || '')}</textarea><div class="row"><button type="button" id="oWordsSave" class="btn sm">حفظ الكلمات</button><button type="button" id="oWordsClear" class="btn sm">رجّع الكلمات العادية</button></div></details>`;
@@ -395,6 +396,7 @@ function renderLobbySet(isHost) {
   const bind = (id, ev, fn) => { const e = $('#' + id); if (e) e[ev] = fn; };
   bind('oStack', 'onchange', e => send({ t: 'opt', k: 'stack', v: e.target.checked }));
   bind('oTurn', 'onchange', e => send({ t: 'opt', k: 'turn', v: +e.target.value }));
+  bind('oMap', 'onchange', e => send({ t: 'opt', k: 'map', v: e.target.value }));
   bind('oImps', 'onchange', e => send({ t: 'opt', k: 'imps', v: +e.target.value }));
   bind('oDoc', 'onchange', e => send({ t: 'opt', k: 'doctor', v: e.target.checked }));
   bind('oTarget', 'onchange', e => send({ t: 'opt', k: 'target', v: +e.target.value }));
