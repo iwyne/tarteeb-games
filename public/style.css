@@ -942,3 +942,100 @@ body.ingame2 main:has(.g2body.sus){max-width:none;padding-bottom:0}
 .sscare.quick{animation:none;background:transparent}
 .sscare.quick .sface{animation:sQuick .42s steps(3) both}
 @keyframes sQuick{0%{transform:scale(1.4);opacity:1}50%{transform:scale(1.5) translate(8px,-6px);opacity:.9}100%{transform:scale(1.6);opacity:0}}
+/* ===== أنميشنات القتل ===== */
+.skilled .ka{margin-bottom:0}
+.ka{position:relative;width:420px;max-width:94vw;height:270px;margin:0 auto 6px;animation:kaShake .5s var(--sd) both}
+.ka .sguy{width:100%}
+.ka .kk,.ka .kv{position:absolute;bottom:28px;width:118px}
+.ka .kk{left:24px;z-index:2}.ka .kv{right:34px}
+.ka .kva{position:relative}.ka .kvd{position:absolute;inset:0;opacity:0;animation:kaShow .25s var(--dd) both}
+.ka .kva{animation:kaHide .01s var(--dd) both}
+.ka .kp{position:absolute;line-height:1;pointer-events:none;z-index:3}
+.ka .kword{position:absolute;top:-14px;left:0;right:0;text-align:center;font:400 clamp(2.4rem,11vw,4.2rem) Lalezar,sans-serif;color:#ffc928;-webkit-text-stroke:3px #16130f;paint-order:stroke fill;opacity:0;z-index:5;animation:kaWord 1.4s var(--wd) cubic-bezier(.2,1.6,.4,1) both;white-space:nowrap}
+.ka .kfx{position:absolute;inset:-80vh -80vw;background:#fff;opacity:0;z-index:4;pointer-events:none;animation:kaFlash .35s var(--sd) both}
+.kdrops{position:absolute;inset:0;z-index:4}
+.kdrops i{position:absolute;left:var(--x);top:var(--y);width:var(--s);height:var(--s);border-radius:50%;background:#c0121a;border:1.5px solid #5a0508;opacity:0;animation:kaDrop 1s var(--d) cubic-bezier(.2,.6,.4,1) both}
+.kpool{position:absolute;right:10px;bottom:16px;width:180px;height:34px;border-radius:50%;background:#8a0f14;transform:scale(0);animation:kaPool 1.4s var(--pd) ease-out both;z-index:0}
+@keyframes kaShake{0%,100%{transform:none}15%{transform:translate(-14px,8px) rotate(-1.5deg)}30%{transform:translate(14px,-10px) rotate(1.5deg)}45%{transform:translate(-10px,6px)}60%{transform:translate(8px,-5px)}80%{transform:translate(-4px,2px)}}
+@keyframes kaFlash{0%{opacity:0}1%{opacity:.95}100%{opacity:0}}
+@keyframes kaWord{0%{opacity:0;transform:scale(3.2) rotate(-12deg)}18%{opacity:1;transform:scale(1) rotate(-5deg)}80%{opacity:1;transform:scale(1.12) rotate(3deg)}100%{opacity:0;transform:scale(1.4) rotate(6deg)}}
+@keyframes kaHide{to{opacity:0}}@keyframes kaShow{to{opacity:1}}
+@keyframes kaDrop{0%{opacity:0;transform:translate(0,0) scale(.3)}1%{opacity:1;transform:translate(0,0) scale(.3)}55%{opacity:1;transform:translate(var(--dx),var(--dy)) scale(1)}100%{opacity:.85;transform:translate(calc(var(--dx) * 1.25),calc(var(--dy) + 110px)) scale(.7)}}
+@keyframes kaPool{to{transform:scale(1)}}
+.kdead{animation:sIn .5s 2.7s both!important}.kdead2{animation:sFade .5s 3.1s both!important}
+/* كف */
+.ka-slap{--sd:.75s;--wd:.7s;--dd:1.95s;--pd:9s}
+.ka-slap .kk{animation:kSlapK 1.2s ease-in-out both}
+@keyframes kSlapK{0%{transform:none}35%{transform:translateX(-30px) rotate(-14deg)}55%{transform:translateX(130px) rotate(12deg)}75%{transform:translateX(118px)}100%{transform:translateX(70px)}}
+.ka-slap .hand{font-size:96px;left:150px;bottom:106px;transform-origin:20% 90%;opacity:0;animation:kSlapH .9s .35s cubic-bezier(.5,-.4,.3,1.6) both}
+@keyframes kSlapH{0%{opacity:0;transform:rotate(-120deg) scale(.4)}40%{opacity:1;transform:rotate(-95deg) scale(1.25)}70%{opacity:1;transform:rotate(45deg) scale(1.6)}100%{opacity:0;transform:rotate(65deg) scale(1.3)}}
+.ka-slap .pow{width:180px;right:30px;bottom:66px;opacity:0;animation:kPow .7s .72s cubic-bezier(.2,1.8,.4,1) both}
+@keyframes kPow{0%{opacity:0;transform:scale(.2) rotate(-25deg)}30%{opacity:1;transform:scale(1.25)}100%{opacity:0;transform:scale(1.7) rotate(18deg)}}
+.ka-slap .kv{animation:kSlapV 1.25s .75s cubic-bezier(.2,.7,.4,1) both}
+@keyframes kSlapV{0%{transform:none}45%{transform:translate(130px,-170px) rotate(720deg) scale(.65)}75%{transform:translate(40px,-30px) rotate(1000deg) scale(.9)}88%{transform:translate(24px,-12px) rotate(1060deg)}100%{transform:translate(20px,0) rotate(1080deg)}}
+.ka-slap .stars{font-size:28px;right:50px;bottom:170px;opacity:0;animation:kStars 1.6s 1.95s ease-in-out both}
+@keyframes kStars{0%{opacity:0;transform:translateY(10px)}20%{opacity:1}50%{transform:translateY(-6px) rotate(-8deg)}100%{opacity:1;transform:translateY(0) rotate(8deg)}}
+.ka-slap .tooth{font-size:30px;right:80px;bottom:120px;opacity:0;animation:kTooth 1s .78s cubic-bezier(.2,.6,.4,1) both}
+@keyframes kTooth{0%{opacity:1;transform:none}60%{opacity:1;transform:translate(150px,-120px) rotate(400deg)}100%{opacity:0;transform:translate(190px,40px) rotate(700deg)}}
+/* خنق */
+.ka-choke{--sd:.6s;--wd:.75s;--dd:2.15s;--pd:2.1s}
+.ka-choke .kk{animation:kChokeK .6s ease-out both}
+@keyframes kChokeK{to{transform:translateX(150px)}}
+.ka-choke .hands{font-size:66px;right:60px;bottom:116px;opacity:0;animation:kHands 1.6s .5s both}
+@keyframes kHands{0%{opacity:0;transform:scale(1.7)}10%{opacity:1;transform:scale(.9)}20%,40%,60%,80%{transform:scale(.78) translateX(-4px)}30%,50%,70%,90%{transform:scale(.84) translateX(4px)}100%{opacity:0;transform:scale(.8)}}
+.ka-choke .kv{animation:kChokeV 1.75s .5s both}
+@keyframes kChokeV{0%{transform:none;filter:none}10%{transform:translateY(-34px)}20%{transform:translate(-5px,-40px)}30%{transform:translate(5px,-36px)}40%{transform:translate(-6px,-42px);filter:hue-rotate(80deg) saturate(1.4)}50%{transform:translate(6px,-38px)}60%{transform:translate(-7px,-44px)}70%{transform:translate(7px,-40px);filter:hue-rotate(170deg) saturate(1.8) brightness(.85)}80%{transform:translate(-3px,-42px)}88%{transform:translateY(-40px) rotate(-6deg);filter:hue-rotate(200deg) saturate(1.6) brightness(.75)}100%{transform:translateY(8px) rotate(88deg);filter:hue-rotate(200deg) saturate(1.5) brightness(.7)}}
+.ka-choke .bub{font-size:38px;right:10px;bottom:176px;opacity:0;animation:kBub 1.3s .9s both}.ka-choke .bub.b2{right:120px;animation-delay:1.3s}
+@keyframes kBub{0%{opacity:0;transform:translateY(0) scale(.4)}30%{opacity:1;transform:scale(1.1)}100%{opacity:0;transform:translateY(-70px) scale(1.3)}}
+/* طعن */
+.ka-stab{--sd:.45s;--wd:.5s;--dd:1.95s;--pd:1.35s}
+.ka-stab .kk{animation:kStabK 1.7s both}
+@keyframes kStabK{0%{transform:none}15%{transform:translateX(150px)}24%{transform:translateX(128px)}34%{transform:translateX(162px)}44%{transform:translateX(132px)}55%{transform:translateX(168px)}100%{transform:translateX(150px)}}
+.ka-stab .knife{font-size:76px;right:116px;bottom:78px;opacity:0;animation:kKnife 1.45s .3s both}
+@keyframes kKnife{0%{opacity:0;transform:translateX(-50px) rotate(-40deg)}10%{opacity:1;transform:translateX(34px) rotate(-40deg) scale(1.1)}22%{transform:translateX(-14px) rotate(-25deg)}34%{transform:translateX(40px) rotate(-50deg) scale(1.15)}46%{transform:translateX(-12px) rotate(-25deg)}58%{transform:translateX(46px) rotate(-58deg) scale(1.25)}85%{opacity:1}100%{opacity:0;transform:translateX(46px) rotate(-58deg)}}
+.ka-stab .kv{animation:kStabV 1.95s .3s both}
+@keyframes kStabV{0%{transform:none}11%{transform:translateX(16px) rotate(7deg)}19%{transform:none}33%{transform:translateX(20px) rotate(10deg)}41%{transform:none}57%{transform:translateX(26px) rotate(14deg)}75%{transform:translateX(12px) rotate(22deg)}100%{transform:translate(30px,10px) rotate(90deg)}}
+.ka-stab .kfx{background:#d0101a;animation:kaFlash3 1s .45s both}
+@keyframes kaFlash3{0%{opacity:0}1%{opacity:.6}8%{opacity:0}34%{opacity:.6}42%{opacity:0}66%{opacity:.75}76%{opacity:0}100%{opacity:0}}
+/* سحق */
+.ka-smash{--sd:.85s;--wd:.88s;--dd:.9s;--pd:.95s}
+.ka-smash .kk{animation:kSmashK 1.1s both}
+@keyframes kSmashK{0%{transform:none}40%{transform:translate(60px,-70px) rotate(-8deg)}70%{transform:translate(96px,0)}100%{transform:translate(86px,0)}}
+.ka-smash .hammer{font-size:160px;right:0;bottom:140px;transform-origin:80% 85%;opacity:0;animation:kHammer 1.15s .2s cubic-bezier(.6,-.3,.6,1.4) both}
+@keyframes kHammer{0%{opacity:0;transform:translateY(-130px) rotate(-60deg)}40%{opacity:1;transform:translateY(-150px) rotate(-85deg)}58%{transform:translateY(50px) rotate(35deg)}74%{opacity:1;transform:translateY(38px) rotate(28deg)}100%{opacity:0;transform:translateY(-70px) rotate(-20deg)}}
+.ka-smash .kv{transform-origin:50% 100%;animation:kSmashV .55s .85s cubic-bezier(.2,1.6,.4,1) both}
+@keyframes kSmashV{0%{transform:none}30%{transform:scale(2,.07)}100%{transform:scale(1.65,.16)}}
+.ka-smash .crack{right:-10px;bottom:10px;width:230px;opacity:0;animation:kaShow .05s .86s both}
+.ka-smash .dust{font-size:48px;right:-20px;bottom:24px;letter-spacing:90px;opacity:0;animation:kDust 1.1s .86s both}
+@keyframes kDust{0%{opacity:0;transform:scale(.4)}25%{opacity:1;transform:scale(1.1)}100%{opacity:0;transform:scale(1.6) translateY(-30px)}}
+/* صعق */
+.ka-zap{--sd:.4s;--wd:.5s;--dd:1.85s;--pd:9s}
+.ka-zap .kk{animation:kZapK .5s ease-out both}
+@keyframes kZapK{to{transform:translateX(60px)}}
+.ka-zap .bolt{font-size:92px;opacity:0;animation:kBolt .16s .4s steps(2) 9 both}
+.ka-zap .b1{right:60px;bottom:150px}.ka-zap .b2{right:0;bottom:110px;animation-delay:.48s}.ka-zap .b3{right:130px;bottom:120px;animation-delay:.56s}
+@keyframes kBolt{0%{opacity:0}1%{opacity:1;transform:rotate(-10deg) scale(1.2)}100%{opacity:0;transform:rotate(12deg) scale(.9)}}
+.ka-zap .kv{animation:kZapV 1.45s .4s steps(14) both}
+@keyframes kZapV{0%{transform:none}10%{transform:translate(-6px,-4px)}20%{transform:translate(6px,3px)}30%{transform:translate(-7px,2px)}40%{transform:translate(7px,-5px)}50%{transform:translate(-6px,4px)}60%{transform:translate(6px,-3px)}70%{transform:translate(-5px,2px)}80%{transform:translate(5px,-2px)}90%{transform:translate(-3px,1px)}100%{transform:translateY(6px) rotate(10deg);filter:brightness(.18) sepia(1)}}
+.ka-zap .kvd{filter:brightness(.18) sepia(1)}
+.ka-zap .skel{right:34px;bottom:28px;width:118px;opacity:0;animation:kSkel 1.25s .45s steps(1) both;z-index:4}
+@keyframes kSkel{0%{opacity:0}1%,20%,40%,60%,80%{opacity:1}10%,30%,50%,70%,90%,100%{opacity:0}}
+.ka-zap .kfx{background:#a9dcff;animation:kaFlicker 1.25s .4s steps(1) both}
+@keyframes kaFlicker{0%{opacity:0}1%,20%,40%,60%{opacity:.8}10%,30%,50%,70%,100%{opacity:0}}
+.ka-zap .smoke{font-size:42px;right:70px;bottom:110px;opacity:0;animation:kBub 1.8s 1.85s both}
+/* رفسة */
+.ka-kick{--sd:.6s;--wd:.65s;--dd:99s;--pd:9s}
+.ka-kick .kk{animation:kKickK 1.1s both}
+@keyframes kKickK{0%{transform:none}35%{transform:translateX(-20px) rotate(10deg)}55%{transform:translateX(140px) rotate(-22deg)}70%{transform:translateX(150px) rotate(-28deg)}100%{transform:translateX(120px)}}
+.ka-kick .foot{font-size:76px;right:118px;bottom:46px;opacity:0;animation:kFoot .6s .32s both}
+@keyframes kFoot{0%{opacity:0;transform:translateX(-50px) rotate(-30deg)}50%{opacity:1;transform:translateX(34px) rotate(12deg) scale(1.35)}100%{opacity:0;transform:translateX(44px)}}
+.ka-kick .kv{animation:kKickV 1.35s .6s cubic-bezier(.2,.6,.3,1) both}
+@keyframes kKickV{0%{transform:none}100%{transform:translate(170px,-240px) rotate(1440deg) scale(.03)}}
+.ka-kick .twinkle{font-size:44px;right:-24px;top:4px;opacity:0;animation:kTw 1.1s 1.9s both}
+@keyframes kTw{0%{opacity:0;transform:scale(0)}40%{opacity:1;transform:scale(1.5) rotate(45deg)}100%{opacity:0;transform:scale(.6) rotate(90deg)}}
+/* القاتل يشوف نسخة صغيرة */
+.skpip{position:absolute;left:12px;top:84px;z-index:9;width:250px;background:rgba(10,8,20,.88);border:3px solid #e8362d;border-radius:16px;box-shadow:4px 4px 0 #16130f;padding:6px 4px 4px;text-align:center;color:#ffc928;font:400 1.2rem Lalezar,sans-serif;pointer-events:none;overflow:hidden;animation:kPip 2.9s ease both}
+@keyframes kPip{0%{opacity:0;transform:scale(.5) rotate(-6deg)}8%{opacity:1;transform:scale(1.05)}12%{transform:scale(1)}88%{opacity:1}100%{opacity:0;transform:translateY(-20px)}}
+.skpipin{height:160px;overflow:visible;direction:ltr;text-align:left}
+.skpip .ka{transform-origin:0 0;scale:.58;margin:0}
+@media(max-width:640px){.skpip{top:auto;bottom:250px;left:8px;width:210px}.skpipin{height:132px}.skpip .ka{scale:.48}}

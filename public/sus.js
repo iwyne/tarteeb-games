@@ -48,16 +48,18 @@ function drawGuy(ctx, x, y, c, dir, phase, ghost, t) {
   [-6, 7].forEach(ex => { ctx.beginPath(); ctx.ellipse(ex + dir * 3, -3, 5, blink ? 1 : 6.5, 0, 0, 7); ctx.fillStyle = '#fff'; ctx.fill(); ctx.stroke(); if (!blink) { ctx.beginPath(); ctx.arc(ex + dir * 5, -2, 2.6, 0, 7); ctx.fillStyle = '#16130f'; ctx.fill(); } });
   ctx.restore();
 }
-function drawBody(ctx, x, y, c) {
-  if (SUSMAP.theme === 'forest') return drawHoodBody(ctx, x, y, c);
-  const f = SCOL[c] || SCOL[0];
-  ctx.save(); ctx.translate(x, y + 6); ctx.rotate(-.25); ctx.scale(1.15, 1.15);
+function drawBody(ctx, x, y, c, k = 2, t = 0) {
+  bodyFx(ctx, x, y, k, t, true);
+  if (SUSMAP.theme === 'forest') { drawHoodBody(ctx, x, y, c, k); return bodyFx(ctx, x, y, k, t, false); }
+  const f = k === 4 ? '#2a2622' : k === 1 ? shade(SCOL[c] || SCOL[0], .75) : SCOL[c] || SCOL[0];
+  ctx.save(); ctx.translate(x, y + 6); ctx.rotate(-.25); ctx.scale(k === 3 ? 1.7 : 1.15, k === 3 ? .45 : 1.15);
   ctx.lineWidth = 4; ctx.strokeStyle = '#16130f';
   ctx.fillStyle = 'rgba(160,20,20,.4)'; ctx.beginPath(); ctx.ellipse(8, 12, 34, 10, 0, 0, 7); ctx.fill();
   ctx.beginPath(); ctx.ellipse(0, 4, 25, 13, 0, 0, 7); ctx.fillStyle = f; ctx.fill(); ctx.stroke();
   ctx.lineWidth = 3; ctx.lineCap = 'round';
   [-9, 5].forEach(ex => { ctx.beginPath(); ctx.moveTo(ex - 4, -3); ctx.lineTo(ex + 4, 5); ctx.moveTo(ex + 4, -3); ctx.lineTo(ex - 4, 5); ctx.stroke(); });
   ctx.restore();
+  bodyFx(ctx, x, y, k, t, false);
 }
 
 // ---------- الشبكة ----------
@@ -66,11 +68,11 @@ function puff(x, y, col = '#9aa0ab', n = 10) { const t = performance.now(); for 
 function susNet(m) {
   if (m.t === 'snap') {
     if (SU.me && m.ev === 'vent') { puff(SU.me.x, SU.me.y); puff(m.x, m.y); sfx('draw'); }
-    if (m.ev === 'kill') { killFlash(); }
     SU.me = { x: m.x, y: m.y, dir: SU.me ? SU.me.dir : 1, ph: 0 }; SU.lastX = m.x; SU.lastY = m.y; return;
   }
   if (m.t === 'sus') {
-    if (m.ev === 'killed') { SU.killedFx = Date.now(); SU.killer = m.by; closeTask(); closeCams(); sfx(SUSMAP.theme === 'forest' ? 'scream' : 'bang'); renderSusOverlays(); }
+    if (m.ev === 'killed') { SU.killedFx = Date.now(); SU.killer = m.by; SU.killKind = m.kind || 'stab'; closeTask(); closeCams(); if (SUSMAP.theme === 'forest') { sfx('scream'); setTimeout(() => killSounds(SU.killKind), 1700); } else killSounds(SU.killKind); renderSusOverlays(); }
+    else if (m.ev === 'kill') { killFlash(); killPip(m.kind, scol(S.me), m.vc); }
     else if (m.ev === 'blocked') { sPop('🛡️ عليه درع! ما قدرت تقتله', 'red'); sfx('nope'); }
     else if (m.ev === 'saved') { sPop(m.id === S.me ? '🛡️ أحد حاول يقتلك… والدرع حماك!' : `🩺 درعك أنقذ ${sname(m.id)}!`, 'green'); sfx('win'); }
     else if (m.ev === 'shielded') { sPop('🛡️ الدكتور عطاك درع لين الاجتماع الجاي', 'blue'); sfx('pop'); }
@@ -88,7 +90,7 @@ function susNet(m) {
     } else { o.tx = x; o.ty = y; o.gh = gh; }
   });
   Object.keys(SU.oth).forEach(id => { if (!seen[id]) delete SU.oth[id]; });
-  m.b.forEach(([id, x, y]) => { if (!SU.seenBodies.has(id)) { SU.seenBodies.add(id); puff(x, y, '#c0392b', 14); } });
+  m.b.forEach(([id, x, y, k]) => { if (!SU.seenBodies.has(id)) { SU.seenBodies.add(id); puff(x, y, '#c0392b', 14); } });
   SU.bodies = m.b;
 }
 function killFlash() { const w = $('#susW'); if (!w) return; const d = document.createElement('div'); d.className = 'sslash'; w.appendChild(d); setTimeout(() => d.remove(), 700); sfx('kill'); }
@@ -194,7 +196,7 @@ function drawWorld(ctx, W, H, cx, cy, sc, t, who) {
   // علامات مهامي
   if (me && !me.imp) me.tasks.forEach(x => { if (x.done) return; const tk = STASK[x.id]; mark(ctx, tk.x, tk.y - 52 + Math.sin(t / 220) * 6, '#ffc928', '!'); });
   // الجثث
-  SU.bodies.forEach(([id, x, y]) => { if (who(x, y)) drawBody(ctx, x, y, scol(id)); });
+  SU.bodies.forEach(([id, x, y, k]) => { if (who(x, y)) drawBody(ctx, x, y, scol(id), k, t); });
   // الأثاث واللاعبين بالترتيب (اللي تحت يغطي اللي فوقه)
   const list = M.obs.filter(o => inView(o.t === 'c' ? o.x - o.r : o.x, o.t === 'c' ? o.y - o.r : o.y, o.t === 'c' ? o.r * 2 : o.w, o.t === 'c' ? o.r * 2 : o.h)).map(o => ({ o, y: o.t === 'c' ? o.y : o.y + o.h * .55 }));
   Object.entries(SU.oth).forEach(([id, o]) => { if (who(o.x, o.y, o.gh)) list.push({ p: { id, ...o }, y: o.y }); });
@@ -512,9 +514,9 @@ function renderSusOverlays() {
   const scareMs = SUSMAP.theme === 'forest' ? 1700 : 0, ka = SU.killedFx ? Date.now() - SU.killedFx : 1e9;
   const sc2 = $('#sScare'); sc2.hidden = !(ka < scareMs);
   if (!sc2.hidden && sc2.dataset.k !== String(SU.killedFx)) { sc2.dataset.k = String(SU.killedFx); sc2.innerHTML = `<div class="sface">${faceSvg()}</div>`; setTimeout(renderSusOverlays, scareMs - ka + 20); }
-  const kd = $('#sKilled'), kOn = SU.killedFx && ka >= scareMs && ka < 2800 + scareMs;
+  const kd = $('#sKilled'), kOn = SU.killedFx && ka >= scareMs && ka < 3800 + scareMs;
   kd.hidden = !kOn;
-  if (kOn && kd.dataset.k !== String(SU.killedFx)) { kd.dataset.k = String(SU.killedFx); kd.innerHTML = `<div class="skill"><div class="kk">${guySvg(SU.killer)}</div><span class="knife">🔪</span><div class="kv">${guySvg(me ? me.c : 0, true)}</div></div><h2>انقتلت!</h2><p>تقدر تكمّل مهامك كشبح 👻</p>`; setTimeout(renderSusOverlays, 2900); }
+  if (kOn && kd.dataset.k !== String(SU.killedFx)) { kd.dataset.k = String(SU.killedFx); kd.innerHTML = killAnim(SU.killKind, SU.killer, me ? me.c : 0) + `<h2 class="kdead">انقتلت!</h2><p class="kdead2">تقدر تكمّل مهامك كشبح 👻</p>`; setTimeout(renderSusOverlays, 3900); }
   else if (SU.killedFx && ka < scareMs) kd.hidden = true;
   // الاجتماع: أول ثانيتين شاشة الإنذار وبعدين التصويت
   const inMeet = g.sub === 'meet' && g.meet;
@@ -800,9 +802,9 @@ function drawHood(ctx, x, y, c, dir, phase, ghost, t) {
   }
   ctx.restore();
 }
-function drawHoodBody(ctx, x, y, c) {
-  const f = SCOL[c] || SCOL[0];
-  ctx.save(); ctx.translate(x, y + 8); ctx.scale(1.15, 1.15);
+function drawHoodBody(ctx, x, y, c, k) {
+  const f = k === 4 ? '#3a3632' : SCOL[c] || SCOL[0];
+  ctx.save(); ctx.translate(x, y + 8); ctx.scale(k === 3 ? 1.7 : 1.15, k === 3 ? .45 : 1.15);
   ctx.fillStyle = 'rgba(130,0,0,.65)'; ctx.beginPath(); ctx.ellipse(6, 8, 40, 14, .2, 0, 7); ctx.fill();
   ctx.fillStyle = shade(f, .4); ctx.strokeStyle = '#000'; ctx.lineWidth = 3.5; ctx.beginPath(); ctx.moveTo(-28, 4); ctx.quadraticCurveTo(-10, -18, 18, -8); ctx.lineTo(30, 6); ctx.lineTo(18, 12); ctx.lineTo(6, 6); ctx.lineTo(-6, 14); ctx.closePath(); ctx.fill(); ctx.stroke();
   ctx.fillStyle = '#3a2a10'; ctx.save(); ctx.translate(30, 18); ctx.rotate(1.2); ctx.fillRect(-5, -7, 10, 14); ctx.restore();
@@ -862,3 +864,51 @@ function scaresDraw(ctx, W, H, t, radPx) {
 }
 setInterval(() => { const g = sg(); if (g && SUSMAP.theme === 'forest' && g.sabo && g.sabo.k === 'lights' && S.phase === 'play' && g.sub === 'play') sfx('heart'); }, 900);
 susUseMap('ship');
+
+// ================= أنواع القتل (كف، خنق، طعن، سحق، صعق، رفسة) =================
+const KILLS = ['slap', 'choke', 'stab', 'smash', 'zap', 'kick'];
+const KWORD = { slap: 'كففففف!', choke: 'خنق!', stab: 'طعن! طعن!', smash: 'سحق!!', zap: 'صعق!!!', kick: 'طااار!' };
+// آثار الجثة على الأرض حسب نوع القتلة
+function bodyFx(ctx, x, y, k, t, under) {
+  ctx.save();
+  if (under) {
+    if (k === 2) { ctx.fillStyle = 'rgba(150,10,15,.75)'; ctx.beginPath(); ctx.ellipse(x + 8, y + 16, 58, 20, .1, 0, 7); ctx.fill(); [[-50, -6, 7], [54, -10, 6], [30, 34, 8], [-36, 30, 5], [70, 22, 4]].forEach(([a, b, r]) => { ctx.beginPath(); ctx.arc(x + a, y + b, r, 0, 7); ctx.fill(); }); }
+    if (k === 3) { ctx.strokeStyle = 'rgba(0,0,0,.55)'; ctx.lineWidth = 4; ctx.beginPath(); for (let i = 0; i < 7; i++) { const a = i / 7 * 6.28; ctx.moveTo(x, y + 10); ctx.lineTo(x + Math.cos(a) * 60, y + 10 + Math.sin(a) * 28); ctx.lineTo(x + Math.cos(a + .2) * 80, y + 10 + Math.sin(a + .2) * 36); } ctx.stroke(); ctx.fillStyle = 'rgba(150,10,15,.6)'; ctx.beginPath(); ctx.ellipse(x - 40, y + 14, 16, 6, 0, 0, 7); ctx.ellipse(x + 44, y + 12, 18, 6, 0, 0, 7); ctx.fill(); }
+    if (k === 4) { const g = ctx.createRadialGradient(x, y + 10, 5, x, y + 10, 70); g.addColorStop(0, 'rgba(0,0,0,.75)'); g.addColorStop(1, 'rgba(0,0,0,0)'); ctx.fillStyle = g; ctx.beginPath(); ctx.ellipse(x, y + 10, 70, 32, 0, 0, 7); ctx.fill(); }
+    if (k === 5) { ctx.strokeStyle = 'rgba(0,0,0,.35)'; ctx.lineWidth = 6; ctx.lineCap = 'round'; [-10, 6].forEach(d => { ctx.beginPath(); ctx.moveTo(x - 90, y + 10 + d); ctx.lineTo(x - 20, y + 12 + d); ctx.stroke(); }); }
+    if (k === 1) { ctx.fillStyle = 'rgba(150,10,15,.35)'; ctx.beginPath(); ctx.ellipse(x + 6, y + 14, 34, 10, 0, 0, 7); ctx.fill(); }
+  } else {
+    if (k === 0) for (let i = 0; i < 3; i++) { const a = t / 300 + i * 2.1; mark2(ctx, x + Math.cos(a) * 30, y - 28 + Math.sin(a) * 9, '#ffc928'); }
+    if (k === 4) for (let i = 0; i < 3; i++) { const p = ((t / 1400 + i / 3) % 1); ctx.globalAlpha = .5 * (1 - p); ctx.fillStyle = '#777'; ctx.beginPath(); ctx.arc(x - 10 + i * 10 + Math.sin(t / 300 + i) * 6, y - 10 - p * 60, 8 + p * 12, 0, 7); ctx.fill(); }
+    if (k === 1) { ctx.fillStyle = 'rgba(120,170,255,.8)'; ctx.font = '700 16px Tajawal'; ctx.textAlign = 'center'; ctx.fillText('x_x', x, y - 22); }
+  }
+  ctx.restore();
+}
+function mark2(ctx, x, y, col) { ctx.fillStyle = col; ctx.strokeStyle = '#16130f'; ctx.lineWidth = 2; ctx.beginPath(); for (let i = 0; i < 10; i++) { const a = i / 10 * 6.28 - 1.57, r = i % 2 ? 4 : 9; ctx.lineTo(x + Math.cos(a) * r, y + Math.sin(a) * r); } ctx.closePath(); ctx.fill(); ctx.stroke(); }
+const POW = '<svg viewBox="0 0 100 100"><path d="M50 2L60 30L90 14L74 42L98 54L68 62L80 92L52 72L36 98L32 66L4 74L24 50L2 30L32 32Z" fill="#ffc928" stroke="#e8362d" stroke-width="5" stroke-linejoin="round"/><text x="50" y="60" text-anchor="middle" font-family="Lalezar" font-size="26" fill="#e8362d">POW</text></svg>';
+const SKEL = '<svg viewBox="0 0 60 64"><circle cx="30" cy="22" r="14" fill="#f4f1e6" stroke="#000" stroke-width="2.5"/><circle cx="24" cy="21" r="4" fill="#000"/><circle cx="36" cy="21" r="4" fill="#000"/><path d="M26 31h8M30 36v22M20 42h20M18 48h24M21 54h18M24 58l-6 6M36 58l6 6" stroke="#f4f1e6" stroke-width="3.5" stroke-linecap="round"/></svg>';
+const CRACK = '<svg viewBox="0 0 220 40"><path d="M110 4L90 18L60 14L30 28L4 24M110 4L130 20L160 16L190 30L216 26M110 4L106 36M90 18L84 36M130 20L140 38" stroke="#16130f" stroke-width="4" fill="none" stroke-linecap="round"/></svg>';
+function kdrops(n, d, x, y, spread = 1) { let h = ''; for (let i = 0; i < n; i++) h += `<i style="--x:${x}px;--y:${y}px;--s:${6 + Math.random() * 10 | 0}px;--d:${d}s;--dx:${(-40 + Math.random() * 180) * spread | 0}px;--dy:${-30 - Math.random() * 120 | 0}px"></i>`; return h; }
+function killAnim(kind, kc, vc) {
+  kind = KWORD[kind] ? kind : 'stab';
+  const P = {
+    slap: `<div class="kp hand">✋</div><div class="kp pow">${POW}</div><div class="kp stars">💫⭐💫</div><div class="kp tooth">🦷</div>`,
+    choke: `<div class="kp hands">🤲</div><div class="kp bub">😵</div><div class="kp bub b2">💨</div>`,
+    stab: `<div class="kp knife">🔪</div><div class="kdrops">${kdrops(10, .45, 290, 140) + kdrops(10, .8, 290, 150) + kdrops(14, 1.12, 290, 145, 1.3)}</div><div class="kpool"></div>`,
+    smash: `<div class="kp hammer">🔨</div><div class="kp crack">${CRACK}</div><div class="kp dust">💨 💨</div><div class="kdrops">${kdrops(14, .86, 300, 220, 1.5)}</div><div class="kpool"></div>`,
+    zap: `<div class="kp bolt b1">⚡</div><div class="kp bolt b2">⚡</div><div class="kp bolt b3">⚡</div><div class="kp skel">${SKEL}</div><div class="kp smoke">💨</div>`,
+    kick: `<div class="kp foot">🦶</div><div class="kp twinkle">✨</div>`
+  }[kind];
+  return `<div class="ka ka-${kind}"><div class="kfx"></div><div class="kword">${KWORD[kind]}</div><div class="kk">${guySvg(kc)}</div><div class="kv"><div class="kva">${guySvg(vc)}</div><div class="kvd">${guySvg(vc, true)}</div></div>${P}</div>`;
+}
+function killPip(kind, kc, vc) {
+  const w = $('#susW'); if (!w) return;
+  const d = document.createElement('div'); d.className = 'skpip'; d.innerHTML = `<div class="skpipin">${killAnim(kind, kc, vc)}</div><b>قتلته! 🔪</b>`;
+  w.appendChild(d); setTimeout(() => d.remove(), 2900);
+  killSounds(kind);
+}
+function killSounds(kind) {
+  const at = (ms, n) => setTimeout(() => sfx(n), ms);
+  ({ slap: () => { at(700, 'slap'); at(850, 'boing'); at(1900, 'thud'); }, choke: () => { at(500, 'choke'); at(1100, 'choke'); at(2100, 'thud'); }, stab: () => { at(450, 'stab'); at(800, 'stab'); at(1120, 'stab'); at(1900, 'thud'); },
+    smash: () => { at(250, 'whoosh'); at(850, 'smash'); }, zap: () => { at(400, 'zap'); at(1900, 'thud'); }, kick: () => { at(600, 'slap'); at(650, 'whoosh'); at(1900, 'ding'); } }[kind] || (() => at(300, 'bang')))();
+}

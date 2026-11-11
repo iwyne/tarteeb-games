@@ -13,6 +13,7 @@ const INTRO = 5500, TALK = 20000, VOTE = 35000, REVEAL = 4000, EJECT = 6500, TAS
 const MIN_T = { wires: 1500, swipe: 700, nums: 2000, hold: 2000, wait: 4500, slider: 1000, simon: 3000, tap: 1500, code: 1800, temp: 1200 };
 const dist = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
 const rnd = n => Math.random() * n | 0;
+const KILLS = ['slap', 'choke', 'stab', 'smash', 'zap', 'kick'];
 const sees = (a, b, rad) => Math.hypot(a.x - b.x, a.y - b.y) <= rad && M.see(a.x, a.y, b.x, b.y);
 const maxImps = n => n >= 9 ? 3 : n >= 6 ? 2 : 1;
 
@@ -118,9 +119,12 @@ module.exports = H => {
       return;
     }
     T.alive = false; T.cur = null; T.cams = false;
-    g.bodies.push({ id: T.id, x: T.x, y: T.y });
-    P.x = T.x; P.y = T.y; P.killAt = now + KILL_CD; snap(r, P.id, 'kill');
-    tell(r, T.id, { t: 'sus', ev: 'killed', by: P.c });
+    // نوع القتلة عشوائي (ما يتكرر ورا بعض)
+    let k; do { k = rnd(KILLS.length); } while (k === g.lastKill && KILLS.length > 1); g.lastKill = k;
+    g.bodies.push({ id: T.id, x: T.x, y: T.y, k });
+    P.x = T.x; P.y = T.y; P.killAt = now + KILL_CD; snap(r, P.id);
+    tell(r, P.id, { t: 'sus', ev: 'kill', kind: KILLS[k], vc: T.c });
+    tell(r, T.id, { t: 'sus', ev: 'killed', by: P.c, kind: KILLS[k] });
     plist(g).forEach(B => { if (B.bot && B.alive && !B.imp && sees(B, P, VIS.crew)) B.bot.sus = P.id; });
     checkWin(r);
   }
@@ -244,7 +248,7 @@ module.exports = H => {
         if (!P.alive && !all) return;
         if (P.id === q.id || vis(P)) a.push([P.id, P.x | 0, P.y | 0, P.alive ? 0 : 1]);
       });
-      g.bodies.forEach(B => { if (vis(B)) b.push([B.id, B.x | 0, B.y | 0]); });
+      g.bodies.forEach(B => { if (vis(B)) b.push([B.id, B.x | 0, B.y | 0, B.k || 0]); });
       const s = JSON.stringify({ t: 'pos', a, b });
       if (s !== q._pos) { q._pos = s; H.sendTo(q, JSON.parse(s)); }
     });
