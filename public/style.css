@@ -154,7 +154,7 @@ body.ingame main{width:100%;max-width:none;padding:0}
 #deck.can .card{animation:nudge 1s infinite alternate}
 @keyframes nudge{to{transform:translateY(-7px)}}
 #discard .card{box-shadow:0 0 0 3px var(--ink),0 0 0 11px var(--glow,#888),0 0 0 14px var(--ink);transition:box-shadow .3s}
-.turn{position:absolute;left:50%;top:calc(50% + 92px);transform:translateX(-50%);font:400 1.5rem Lalezar,Tajawal,sans-serif;background:var(--surf);border:3px solid var(--ink);box-shadow:3px 3px 0 var(--ink);padding:0 20px;border-radius:99px;white-space:nowrap;z-index:2}
+.turn:not(.seat){position:absolute;left:50%;top:calc(50% + 92px);transform:translateX(-50%);font:400 1.5rem Lalezar,Tajawal,sans-serif;background:var(--surf);border:3px solid var(--ink);box-shadow:3px 3px 0 var(--ink);padding:0 20px;border-radius:99px;white-space:nowrap;z-index:2}
 .turn:empty{display:none}
 .turn.mine{background:var(--yellow);animation:breathe 1s infinite alternate}
 @keyframes breathe{to{transform:translateX(-50%) scale(1.07)}}
@@ -311,7 +311,7 @@ body.activity .quit-game{display:none}
 }
 @media(max-width:760px){
   .centerpile{top:55%;transform:translate(-50%,-50%) scale(.85)}
-  .turn{top:calc(55% + 100px)}
+  .turn:not(.seat){top:calc(55% + 100px)}
   .log{top:calc(55% + 148px)}
 }
 
@@ -801,3 +801,12 @@ body.ingame2 main:has(.g2body.sus){max-width:none;padding-bottom:0}
 .svote.mine{background:#c9f0d6}
 .smeetfoot{display:flex;gap:8px;justify-content:center;align-items:center;flex-wrap:wrap;margin-top:12px;min-height:40px}
 @media(max-width:640px){.sbtns{bottom:72px;grid-template-columns:repeat(3,56px);gap:6px}.sbtn{width:56px;height:56px;font-size:1.25rem}.sbanner{bottom:206px;font-size:.8rem}.ssabomenu{bottom:200px}.susw{height:calc(100dvh - 72px);border-radius:14px}}
+
+/* أونو فليب بشاشة الأونو */
+.card.pink{--c:#ef6fae;--d:#c23f80}.card.teal{--c:#18a7a0;--d:#0d7671}.card.orange{--c:#f28a1c;--d:#bd5f05}.card.purple{--c:#7b3fc7;--d:#55269a}
+.room.dark .card.wild .mid::before{background:conic-gradient(#ef6fae 0 25%,#7b3fc7 0 50%,#18a7a0 0 75%,#f28a1c 0)}
+.seat .backs i.mc.pink{--c:#ef6fae}.seat .backs i.mc.teal{--c:#18a7a0}.seat .backs i.mc.orange{--c:#f28a1c}.seat .backs i.mc.purple{--c:#7b3fc7}
+.room.dark .felt{background:#2a1f3d}.room.dark .felt::before{border-color:rgba(255,255,255,.25)}
+.room.dark .tablename b{color:#f3ead8}
+.room.dark .card.back{--c:#2a1f3d}.room.dark .card.back .mid::before{background:#ef6fae}
+.room.flipg #discard,.room.flipg #hand,.room.flipg .felt{transform-style:preserve-3d}

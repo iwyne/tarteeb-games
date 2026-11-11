@@ -6,9 +6,9 @@ const DISCORD_URL = 'https://discord.gg/xxVUG2ZdFP';
 
 const $ = s => document.querySelector(s);
 const $$ = s => [...document.querySelectorAll(s)];
-const HEX = { red: '#e8362d', yellow: '#ffc928', green: '#1fa35c', blue: '#2a5bd7' };
-const SYM = { skip: '⊘', reverse: '⇄', draw2: '+2', wild: '', wild4: '+4' };
-const CORDER = { red: 0, yellow: 1, green: 2, blue: 3, wild: 4 };
+const HEX = { red: '#e8362d', yellow: '#ffc928', green: '#1fa35c', blue: '#2a5bd7', pink: '#ef6fae', teal: '#18a7a0', orange: '#f28a1c', purple: '#7b3fc7' };
+const SYM = { skip: '⊘', reverse: '⇄', draw2: '+2', wild: '', wild4: '+4', draw1: '+1', draw5: '+5', skipall: '⊗', flip: '⟳', wd2: '+2', wdc: '+🎨' };
+const CORDER = { red: 0, yellow: 1, green: 2, blue: 3, pink: 0, teal: 1, orange: 2, purple: 3, wild: 4 };
 
 const store = {
   get(k) { try { return JSON.parse(localStorage.getItem(k)); } catch { return null; } },
@@ -70,7 +70,7 @@ function on(m) {
   } else if (m.t === 'react') {
     showReact(m.from, m.e);
   } else if (m.t === 'state') {
-    m.t0 = Date.now(); prevS = S; S = m; render(); notifyTurn();
+    m.t0 = Date.now(); flipAdapt(m); prevS = S; S = m; render(); notifyTurn();
   }
 }
 function reset() { session = {}; store.set('tarteeb-session', {}); S = null; prevS = null; render(); }
@@ -167,11 +167,24 @@ function backEl() {
   el.innerHTML = '<span class="mid"><span>UNO</span></span>';
   return el;
 }
-const vrank = v => /^\d$/.test(v) ? +v : 10 + ['skip', 'reverse', 'draw2', 'wild', 'wild4'].indexOf(v);
+const vrank = v => /^\d$/.test(v) ? +v : 10 + ['draw1', 'draw5', 'skip', 'skipall', 'reverse', 'flip', 'draw2', 'wild', 'wd2', 'wild4', 'wdc'].indexOf(v);
+// أونو فليب تنعرض بنفس شاشة الأونو: نحوّل حالتها لنفس شكل حالة الأونو
+function flipAdapt(s) {
+  const g = s && s.game === 'flip' && s.g; if (!g) return;
+  const cv = c => ({ id: c.id, color: c.c, v: c.v });
+  s.turn = g.turn; s.hand = g.hand.map(cv); s.top = cv(g.top); s.color = g.color; s.deck = g.deckN; s.dir = g.dir;
+  s.ok = g.sub === 'play' ? g.hand.filter(c => c.ok).map(c => c.id) : [];
+  s.pending = null; s.owed = 0; s.catch = g.catchable; s.mates = g.backs || null;
+  s.players.forEach(p => { p.u = !!g.called[p.id]; });
+}
+const MODALC = { L: [['red', 'أحمر', '#e8362d'], ['yellow', 'أصفر', '#ffc928'], ['green', 'أخضر', '#1fa35c'], ['blue', 'أزرق', '#2a5bd7']], D: [['pink', 'وردي', '#ef6fae'], ['teal', 'تركوازي', '#18a7a0'], ['orange', 'برتقالي', '#f28a1c'], ['purple', 'بنفسجي', '#7b3fc7']] };
+function modalColors(side) {
+  $$('#colorModal [data-c]').forEach((b, i) => { const [c, n, h] = MODALC[side][i]; b.dataset.c = c; b.textContent = n; b.style.cssText = `--b:${h}` + (c === 'yellow' ? ';color:#16130f' : ''); });
+}
 
 // ---------- اللعبة ----------
 function playCard(c) {
-  if (c.color === 'wild') { wildId = c.id; $('#colorModal').hidden = false; }
+  if (c.color === 'wild') { wildId = c.id; modalColors(S.game === 'flip' && S.g.side === 'D' ? 'D' : 'L'); $('#colorModal').hidden = false; }
   else send({ t: 'play', id: c.id });
 }
 $$('#colorModal [data-c]').forEach(b => b.onclick = () => {
@@ -184,10 +197,15 @@ $('#deck').onclick = () => { if (S.turn === S.me && S.phase === 'play' && S.pend
 $('#unoBtn').onclick = () => send({ t: 'uno' });
 $('#pass').onclick = () => send({ t: 'pass' });
 $('#catch').onclick = () => send({ t: 'catch' });
+$('#fcY').onclick = () => send({ t: 'chal', yes: true });
+$('#fcN').onclick = () => send({ t: 'chal', yes: false });
 
 const PAL = ['#e8362d', '#2a5bd7', '#1fa35c', '#ffc928'], TC = ['#e8362d', '#2a5bd7'];
 function renderGame() {
-  const playing = S.phase === 'play', mine = playing && S.turn === S.me;
+  const FL = S.game === 'flip' ? S.g : null, chal = !!(FL && FL.sub === 'chal' && FL.chal && S.phase === 'play');
+  const playing = S.phase === 'play' && !chal, mine = playing && S.turn === S.me;
+  $('.room').classList.toggle('flipg', !!FL); $('.room').classList.toggle('dark', !!FL && FL.side === 'D');
+  $('.tablename small').textContent = FL ? (FL.side === 'D' ? 'الوجه الغامق 🌙' : 'الوجه الفاتح ☀️') : 'ألعاب';
   const i = S.players.findIndex(p => p.id === S.me), n = S.players.length, spec = !!S.spec, m = spec ? n : n - 1;
   const myTm = spec ? null : S.players[i].tm;
   const amHost = !spec && S.players.some(p => p.h && p.id === S.me);
@@ -219,7 +237,10 @@ function renderGame() {
   $('#deck').classList.toggle('must', must);
   const t = $('#turn');
   t.className = 'turn' + (mine ? ' mine' : '') + (must ? ' warn' : '');
-  t.innerHTML = !playing ? '' : must ? 'ما عندك ورقة تنفع، اسحب من الكومة! <span class="cd"></span>'
+  const vic = chal && FL.chal.victim === S.me;
+  $('#fcY').hidden = $('#fcN').hidden = !vic;
+  if (chal) { t.className = 'turn' + (vic ? ' mine' : ''); }
+  t.innerHTML = chal ? (vic ? `${esc(S.players.find(p => p.id === FL.chal.by)?.name || '')} لعب ${FL.chal.kind === 'wd2' ? '+٢ ملوّن' : 'ملوّن سحب لون'}: تقبل أو تتحدّاه؟ <span class="cd"></span>` : `${esc(S.players.find(p => p.id === FL.chal.victim)?.name || '')} يقرر: يقبل أو يتحدّى… <span class="cd"></span>`) : !playing ? '' : must ? 'ما عندك ورقة تنفع، اسحب من الكومة! <span class="cd"></span>'
     : mine ? (S.pending !== null ? 'العب الورقة اللي سحبتها أو مرّر' : S.owed > 0 ? `رد بـ +${S.top && S.top.v === 'wild4' ? '٤' : '٢'} أو اسحب ${S.owed}!` : 'دورك!') + ' <span class="cd"></span>'
     : `دور ${esc(S.players.find(p => p.id === S.turn)?.name || '')}${S.owed > 0 ? ` — عليه يسحب ${S.owed}` : ''} <span class="cd"></span>`;
   tick();
@@ -268,7 +289,7 @@ function renderGame() {
       $('#winner').textContent = spec ? 'فاز فريق ' + ['أ', 'ب'][S.winTeam] : S.winTeam === myTm ? 'فاز فريقك! 🎉' : 'فاز الفريق الخصم';
       wt.hidden = false; wt.textContent = 'الفائزين: ' + S.players.filter(p => p.tm === S.winTeam).map(p => p.name).join(' و ');
     } else {
-      wt.hidden = true;
+      wt.hidden = !FL; if (FL) wt.textContent = 'مجموع نقاط أوراق الباقين: ' + FL.total;
       $('#winner').textContent = !spec && S.winner === me.name && S.hand.length === 0 ? 'فزت! 🎉' : `فاز ${S.winner}`;
     }
     $('#board').innerHTML = [...S.players].sort((a, b) => b.w - a.w).map(p => `<li${p.id === S.me ? ' class="me"' : ''}><span>${esc(p.name)}</span><b>🏆 ${p.w}</b></li>`).join('');
@@ -328,7 +349,8 @@ function fx() {
     const src = p.turn === s.me ? { x: innerWidth / 2, y: innerHeight - 100 } : (seatPos(p.turn) || deck);
     disc.animate([{ translate: `${src.x - dc.x}px ${src.y - dc.y}px`, rotate: '-30deg', scale: .7 }, { translate: '0 0', rotate: '0deg', scale: 1 }], { duration: 400, easing: EASE });
     sfx('card');
-    if (s.top.v === 'draw2' || s.top.v === 'wild4') setTimeout(() => sfx('penalty'), 260);
+    if (['draw2', 'wild4', 'draw1', 'draw5', 'wd2', 'wdc'].includes(s.top.v)) setTimeout(() => sfx('penalty'), 260);
+    if (s.game === 'flip' && s.g && p.g && s.g.flips > p.g.flips) { setTimeout(() => sfx('catch'), 150); [$('#discard'), $('#hand'), $('.felt')].forEach(e => e.animate([{ transform: 'rotateY(90deg)' }, { transform: 'rotateY(0)' }], { duration: 520, easing: EASE })); }
   }
 
   // سحب الخصوم: ظهر ورقة يطير من الكومة لمقعدهم
@@ -361,7 +383,7 @@ function fx() {
 }
 
 function render() {
-  const ph = !S ? (IN_DISCORD ? 'connecting' : 'home') : S.phase === 'lobby' ? 'lobby' : S.game === 'uno' ? 'game' : 'game2';
+  const ph = !S ? (IN_DISCORD ? 'connecting' : 'home') : S.phase === 'lobby' ? 'lobby' : S.game === 'uno' || S.game === 'flip' ? 'game' : 'game2';
   ['home', 'connecting', 'lobby', 'game', 'game2'].forEach(id => $('#' + id).hidden = id !== ph);
   document.body.classList.toggle('ingame', ph === 'game');
   document.body.classList.toggle('ingame2', ph === 'game2');

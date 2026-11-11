@@ -169,7 +169,9 @@ module.exports = H => {
         chal: g.chal ? { by: g.chal.by, victim: g.chal.victim, kind: g.chal.kind, color: g.chal.color } : null,
         canUno: !p.spec && r.phase === 'play' && (p.hand || []).length <= 2 && !g.called[p.id],
         catchable: g.catchable && g.catchable !== p.id ? g.catchable : null,
-        called: g.called, points: over ? g.points : null, total: over ? g.total : 0, winId: g.winId, flips: g.flips
+        called: g.called, points: over ? g.points : null,
+        // مثل الورق الحقيقي: تشوف الوجه الثاني من أوراق الباقين
+        backs: Object.fromEntries(r.players.filter(q => q !== p).map(q => [q.id, (q.hand || []).map(c => { const o = c[g.side === 'L' ? 'D' : 'L']; return { color: o.c, v: o.v }; })])), total: over ? g.total : 0, winId: g.winId, flips: g.flips
       };
     },
     leave(r, p) {
