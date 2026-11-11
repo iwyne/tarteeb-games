@@ -65,6 +65,8 @@ function on(m) {
     else if (S && m.from !== S.me) { unread++; badge(); sfx('pop'); }
   } else if (m.t === 'stroke' || m.t === 'strokes') {
     if (typeof drawNet === 'function') drawNet(m);
+  } else if (m.t === 'pos' || m.t === 'snap' || m.t === 'sus') {
+    if (typeof susNet === 'function') susNet(m);
   } else if (m.t === 'react') {
     showReact(m.from, m.e);
   } else if (m.t === 'state') {
@@ -409,6 +411,7 @@ function isMyTurn(s) {
   if (s.game === 'liars') return g.sub === 'play' && g.turn === s.me;
   if (s.game === 'outside') return (g.sub === 'ask' && g.asker === s.me) || (g.sub === 'qa' && g.target === s.me);
   if (s.game === 'flip') return g.turn === s.me;
+  if (s.game === 'sus') return g.sub === 'meet' && !!g.meet && g.meet.sub === 'vote' && !!g.me && g.me.alive && !g.meet.mine;
   if (s.game === 'codes') return g.turn === tm;
   if (s.game === 'jackaroo') return g.turn === g.seat;
   if (s.game === 'draw') return g.sub === 'choose' && g.drawer === s.me;

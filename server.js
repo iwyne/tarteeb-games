@@ -75,6 +75,7 @@ function cname(c) {
 const H = {
   log: (r, s) => log(r, s), shuffle, rate: (p, k, ms) => rate(p, k, ms),
   win: (r, ps) => ps.forEach(p => { p.wins = (p.wins || 0) + 1; }),
+  alive: r => rooms.get(r.code) === r,
   err: (p, msg) => send(p.ws, { t: 'err', msg }), sendTo: (p, o) => p.online && send(p.ws, o), push: r => after(r),
   cast: (r, o, except) => everyone(r).forEach(q => q !== except && q.online && send(q.ws, o)),
   setTimer(r, ms, fn) {
@@ -85,8 +86,8 @@ const H = {
   }
 };
 const GAMES = { uno: { min: 2, max: 8 } };
-for (const k of ['codes', 'hive', 'liars', 'outside', 'typing', 'jackaroo', 'draw', 'flip']) GAMES[k] = require('./games/' + k)(H);
-const META = { uno: { bots: true }, codes: { teams: true }, hive: { teams: true, bots: true }, liars: { bots: true }, outside: { bots: true }, typing: { bots: true }, jackaroo: { teams: true, bots: true }, draw: {}, flip: { bots: true } };
+for (const k of ['codes', 'hive', 'liars', 'outside', 'typing', 'jackaroo', 'draw', 'flip', 'sus']) GAMES[k] = require('./games/' + k)(H);
+const META = { uno: { bots: true }, codes: { teams: true }, hive: { teams: true, bots: true }, liars: { bots: true }, outside: { bots: true }, typing: { bots: true }, jackaroo: { teams: true, bots: true }, draw: {}, flip: { bots: true }, sus: { bots: true } };
 const AVATARS = ['😎', '🦁', '🐪', '🦅', '🐺', '🦊', '🐯', '🐼', '🦄', '🐸', '👑', '🔥', '⚡', '🌙', '🎩', '🤠'];
 const cleanAv = a => AVATARS.includes(a) ? a : '';
 const optsView = (r, p) => ({ stack: !!r.opts.stack, turn: r.opts.turn || 15, lock: !!r.opts.lock, hasPass: !!r.opts.pass, pass: r.host === p.id ? (r.opts.pass || '') : null, target: r.opts.target || 5, nwords: r.opts.words ? r.opts.words.length : 0, wordsText: r.host === p.id ? (r.opts.wordsText || '') : '' });
@@ -520,7 +521,7 @@ wss.on('connection', (ws, req) => {
     const c = ws.ctx; if (!c) return;
     const { r, p } = c;
     if (p.spec && !['chat', 'emoji', 'leave'].includes(m.t)) return; // المتفرّج يشوف ويسولف بس
-    if (r.game !== 'uno' && !['start', 'teams', 'shuffle', 'again', 'leave', 'kick', 'chat', 'emoji', 'setgame', 'opt', 'addbot'].includes(m.t)) { if (GAMES[r.game].act(r, p, m) === 'quiet') return; return after(r); }
+    if (r.game !== 'uno' && !['start', 'teams', 'shuffle', 'again', 'leave', 'kick', 'chat', 'emoji', 'setgame', 'opt', 'addbot', 'tolobby'].includes(m.t)) { if (GAMES[r.game].act(r, p, m) === 'quiet') return; return after(r); }
     switch (m.t) {
       case 'start': if (r.host === p.id && r.phase === 'lobby' && r.players.length >= GAMES[r.game].min) startGame(r); break;
       case 'play': play(r, p, m.id, m.color); break;
@@ -531,6 +532,10 @@ wss.on('connection', (ws, req) => {
         const text = String(m.text || '').trim().slice(0, 120);
         if (text && rate(p, 'c', 500)) {
           const msg = { from: p.id, name: p.name, text };
+          // المندس: الأحياء يسولفون وقت الاجتماع بس، والأموات يسولفون بينهم
+          const sg = r.game === 'sus' && r.phase === 'play' && r.g && r.g.P[p.id];
+          if (sg && !sg.alive) { msg.ghost = 1; everyone(r).forEach(q => { const Q = r.g.P[q.id]; if (q.online && (!Q || !Q.alive)) send(q.ws, { t: 'chat', ...msg }); }); return; }
+          if (sg && !['meet', 'eject'].includes(r.g.sub)) { send(ws, { t: 'err', msg: 'السوالف وقت الاجتماع بس 🤫' }); return; }
           r.chat.push(msg); if (r.chat.length > 30) r.chat.shift();
           cast(r, { t: 'chat', ...msg });
         }

@@ -710,3 +710,94 @@ html[dir=ltr] .cbar .tc{padding-inline:12px}
 .gunbox.live .guntxt{background:var(--paper);border:3px solid var(--ink);border-radius:99px;padding:2px 16px;box-shadow:3px 3px 0 var(--ink)}
 .gunbox .gunwrap{width:min(38vw,150px)}
 .gunbox.live .gunwrap{width:min(42vw,185px)}
+
+/* ===== المندس ===== */
+body.ingame2 main:has(.g2body.sus){max-width:none;padding-bottom:0}
+.g2body.sus{display:block}
+.susw{position:relative;height:calc(100dvh - 78px);min-height:420px;border:4px solid var(--ink);border-radius:18px;overflow:hidden;box-shadow:6px 6px 0 var(--ink);background:#1a1630;user-select:none;-webkit-user-select:none}
+#sCv{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:none;cursor:crosshair}
+.shud{position:absolute;top:10px;right:10px;display:grid;gap:8px;width:min(250px,58%);z-index:2}
+.sprog{background:var(--surf);color:var(--ink);border:3px solid var(--ink);border-radius:12px;box-shadow:3px 3px 0 var(--ink);padding:4px 10px 6px;font-size:.8rem;font-weight:800}
+.sbarO{height:12px;border:2px solid var(--ink);border-radius:99px;background:#e9e2d2;overflow:hidden;margin-top:2px}
+.sbarO i{display:block;height:100%;width:0;background:var(--green);transition:width .4s}
+.stasks{background:var(--surf);color:var(--ink);border:3px solid var(--ink);border-radius:12px;box-shadow:3px 3px 0 var(--ink);padding:4px 10px;font-size:.85rem;max-height:40vh;overflow:auto}
+.stasks summary{font:400 1rem Lalezar,Tajawal,sans-serif;cursor:pointer}
+.st{padding:2px 0;line-height:1.35}.st small{opacity:.6}.st.done{text-decoration:line-through;opacity:.5;color:var(--green)}
+.st.fake{opacity:.65}.sfake{margin:2px 0 4px;line-height:1.4}.sfake b{color:var(--red)}
+.sbanner{position:absolute;left:12px;right:12px;bottom:168px;margin:auto;width:fit-content;max-width:calc(100% - 24px);text-align:center;background:var(--surf);color:var(--ink);border:3px solid var(--ink);border-radius:14px;box-shadow:4px 4px 0 var(--ink);padding:6px 14px;font-weight:800;font-size:.9rem;z-index:2;pointer-events:none}
+.sbanner.lights,.sbanner.reactor{background:var(--red);color:#fff;animation:sBlink .6s infinite alternate}
+.sbanner.ghost{background:#d9d6ef}
+@keyframes sBlink{to{transform:scale(1.04)}}
+.sbtns{position:absolute;right:12px;bottom:12px;display:grid;grid-template-columns:repeat(3,64px);gap:8px;direction:ltr;z-index:3}
+.sbtn{position:relative;width:64px;height:64px;border:3px solid var(--ink);border-radius:16px;background:var(--surf);color:var(--ink);box-shadow:3px 3px 0 var(--ink);display:grid;place-items:center;align-content:center;font-size:1.45rem;line-height:1;cursor:pointer;padding:0;touch-action:manipulation}
+.sbtn b{font:700 .66rem Tajawal,sans-serif;margin-top:3px;white-space:nowrap}
+.sbtn i{position:absolute;inset:0;display:grid;place-items:center;font:400 1.9rem Lalezar,sans-serif;font-style:normal;color:#fff;-webkit-text-stroke:2px var(--ink);paint-order:stroke fill;pointer-events:none}
+.sbtn.red{background:#ffb4ab}.sbtn.yel{background:var(--yellow)}
+.sbtn:not(:disabled):active{transform:translate(3px,3px);box-shadow:none}
+.sbtn:disabled{opacity:.42;filter:grayscale(.7);cursor:default}
+.sbtn#sMapB{grid-column:1}
+.ssabomenu{position:absolute;right:12px;bottom:160px;display:grid;gap:8px;z-index:4;background:var(--surf);border:3px solid var(--ink);border-radius:14px;box-shadow:4px 4px 0 var(--ink);padding:10px}
+.ssabomenu button{font:700 1rem Tajawal,sans-serif;border:3px solid var(--ink);border-radius:10px;background:#ffd9d4;padding:8px 14px;cursor:pointer}
+.sjoy{position:absolute;width:120px;height:120px;margin:-60px 0 0 -60px;border:3px dashed rgba(243,234,216,.7);border-radius:50%;pointer-events:none;display:grid;place-items:center;z-index:2}
+.sjoy i{width:46px;height:46px;border-radius:50%;background:var(--yellow);border:3px solid var(--ink);box-shadow:2px 2px 0 var(--ink)}
+.smapbox{position:absolute;inset:0;background:rgba(10,8,20,.88);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;z-index:5;cursor:pointer;color:#f3ead8}
+.smapbox canvas{width:94%;height:84%}
+.stask{position:absolute;inset:0;background:rgba(10,8,20,.62);display:grid;place-items:center;z-index:6;padding:12px}
+.staskbox{position:relative;background:var(--surf);color:var(--ink);border:4px solid var(--ink);border-radius:18px;box-shadow:6px 6px 0 var(--ink);padding:14px 16px 16px;width:min(360px,100%);text-align:center}
+.staskbox h3{margin:0 0 10px;font:400 1.4rem Lalezar,Tajawal,sans-serif}
+.sx{position:absolute;top:8px;left:8px;width:34px;height:34px;border:3px solid var(--ink);border-radius:10px;background:var(--surf);cursor:pointer;font-weight:900}
+.stb{position:relative;display:grid;gap:10px;justify-items:center}
+.stb.wires{width:300px;max-width:100%;height:250px;margin:auto;display:block}
+.stb.wires svg{position:absolute;top:0;left:0;width:300px;height:220px}
+.wcol{position:absolute;top:0;display:grid;grid-template-rows:repeat(4,40px);row-gap:15px;padding-top:7px}
+.wcol.l{right:0}.wcol.r{left:0}
+.wcol button{width:44px;height:40px;border:3px solid var(--ink);border-radius:8px;cursor:pointer;box-shadow:2px 2px 0 var(--ink)}
+.wcol button.on{outline:4px solid var(--ink);outline-offset:2px}.wcol button.ok{opacity:.6}
+.stb.wires p{position:absolute;bottom:0;left:0;right:0;margin:0;font-size:.8rem}
+.ngrid{display:grid;grid-template-columns:repeat(4,58px);gap:8px;direction:ltr}
+.ngrid button{height:58px;border:3px solid var(--ink);border-radius:12px;background:#dbe6f7;font:400 1.6rem Lalezar,sans-serif;cursor:pointer;box-shadow:2px 2px 0 var(--ink)}
+.ngrid button.ok{background:var(--green);color:#fff}
+.strack{position:relative;width:100%;height:74px;border:3px solid var(--ink);border-radius:14px;background:repeating-linear-gradient(90deg,#e9e2d2 0 14px,#f6f0e2 14px 28px)}
+.scard{position:absolute;right:4px;top:4px;width:84px;height:60px;border:3px solid var(--ink);border-radius:10px;background:var(--yellow);display:grid;place-items:center;font-size:1.8rem;cursor:grab;touch-action:none}
+.sgauge{width:64px;height:160px;border:4px solid var(--ink);border-radius:14px;background:#e9e2d2;display:flex;align-items:flex-end;overflow:hidden}
+.sgauge i{display:block;width:100%;height:0;background:linear-gradient(#ffc928,#ff8a1f)}
+.shold{touch-action:none;user-select:none}
+.swait{width:100%;height:26px;border:3px solid var(--ink);border-radius:99px;background:#e9e2d2;overflow:hidden}
+.swait i{display:block;height:100%;width:0;background:var(--blue)}
+.sok{position:absolute;inset:-6px;display:grid;place-items:center;font:400 5rem Lalezar,sans-serif;color:var(--green);-webkit-text-stroke:3px var(--ink);background:rgba(255,255,255,.7);border-radius:12px;animation:pop .3s}
+.sfull{position:absolute;inset:0;z-index:7;display:grid;place-items:center;align-content:center;gap:6px;text-align:center;color:#f3ead8;background:radial-gradient(circle,#2a2550,#0d0b18);padding:20px}
+.sfull h2{font:400 clamp(1.8rem,7vw,3rem) Lalezar,Tajawal,sans-serif;margin:0;-webkit-text-stroke:2px var(--ink);paint-order:stroke fill}
+.sfull p{margin:0;font-size:1.05rem}
+.sintro{display:grid;justify-items:center;gap:6px;animation:sIn .6s cubic-bezier(.2,.8,.25,1)}
+.sintro .sguy{width:120px}
+.sintro.imp h2{color:#ff5a4d}.sintro.crew h2{color:#5fd0ff}
+@keyframes sIn{from{transform:scale(.4);opacity:0}}
+.sguy{display:block;width:46px;height:auto;overflow:visible}
+.skilled{background:radial-gradient(circle,#6b1010,#1a0606)}
+.skill{display:flex;align-items:center;gap:10px;font-size:2.4rem;animation:sIn .4s}
+.skill .sguy{width:90px}.skill .sguy.dead{transform:rotate(80deg) translateY(10px)}
+.skilled h2{color:#ff6b5e}
+.seject{overflow:hidden}
+.sfloat{position:absolute;top:22%;left:0;animation:sDrift 6s linear both}
+.sfloat .sguy{width:80px;animation:sSpin 3s linear infinite}
+@keyframes sDrift{from{transform:translateX(110vw)}to{transform:translateX(-140px)}}
+@keyframes sSpin{to{transform:rotate(-360deg)}}
+.seject h2{margin-top:70px;max-width:560px}
+.stally{display:grid;gap:4px;margin-top:10px;background:rgba(255,255,255,.08);border-radius:12px;padding:8px 14px;font-size:.92rem}
+.sdot{display:inline-block;width:14px;height:14px;border-radius:50%;border:2px solid #f3ead8;margin:0 2px;vertical-align:middle}
+.smeet{position:absolute;inset:0;z-index:6;background:rgba(10,8,20,.75);display:grid;place-items:center;padding:10px}
+.smeetbox{background:var(--surf);color:var(--ink);border:4px solid var(--ink);border-radius:18px;box-shadow:6px 6px 0 var(--ink);padding:12px 14px;width:min(680px,100%);max-height:100%;overflow:auto;text-align:center;animation:sIn .35s}
+.smeetbox h2{margin:0;font:400 clamp(1.2rem,4.5vw,1.7rem) Lalezar,Tajawal,sans-serif}
+.stimer{margin:2px 0 8px}.stimer b{font:400 1.3rem Lalezar,sans-serif;color:var(--red)}
+.svotes{display:grid;grid-template-columns:repeat(auto-fill,minmax(122px,1fr));gap:8px}
+.svote{position:relative;display:flex;align-items:center;gap:6px;border:3px solid var(--ink);border-radius:12px;background:#f6f0e2;padding:6px 8px;cursor:pointer;text-align:start;font:700 .88rem Tajawal,sans-serif;color:var(--ink);min-height:58px}
+.svote .sguy{width:36px;flex:none}
+.svote b{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.svote b.simp{color:var(--red)}
+.svote i{position:absolute;bottom:-9px;left:6px;font-style:normal;font-size:.7rem;background:var(--green);color:#fff;border:2px solid var(--ink);border-radius:99px;padding:0 6px}
+.svote em{position:absolute;top:-10px;left:6px;font-style:normal}
+.svote.dead{opacity:.45;text-decoration:line-through;cursor:default}
+.svote:disabled{cursor:default}
+.svote.pick{background:var(--yellow);box-shadow:0 0 0 3px var(--ink)}
+.svote.mine{background:#c9f0d6}
+.smeetfoot{display:flex;gap:8px;justify-content:center;align-items:center;flex-wrap:wrap;margin-top:12px;min-height:40px}
+@media(max-width:640px){.sbtns{bottom:72px;grid-template-columns:repeat(3,56px);gap:6px}.sbtn{width:56px;height:56px;font-size:1.25rem}.sbanner{bottom:206px;font-size:.8rem}.ssabomenu{bottom:200px}.susw{height:calc(100dvh - 72px);border-radius:14px}}

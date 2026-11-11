@@ -1,8 +1,9 @@
 // واجهات الألعاب الثانية: كلمة السر، خلية الحروف، الكذابين الترتيب
-const GNAME = { uno: 'أونو', codes: 'كلمة السر', hive: 'خلية الحروف', liars: 'الكذابين الترتيب', outside: 'برا السالفة', typing: 'سبّاق الكتابة', jackaroo: 'جاكارو', draw: 'رسم وخمّن', flip: 'أونو فليب' };
-const GINFO = { flip: 'من ٢ إلى ٨ لاعبين', uno: 'من ٢ إلى ٨ لاعبين', codes: 'من ٤ إلى ١٠ لاعبين، فريقين', hive: 'من ٢ إلى ١٠ لاعبين، فريقين', liars: 'من ٢ إلى ٨ لاعبين', outside: 'من ٣ إلى ١٠ لاعبين', typing: 'من ٢ إلى ١٠ لاعبين', jackaroo: '٤ لاعبين بالضبط، فريقين (شريكك قبالتك)', draw: 'من ٢ إلى ١٠ لاعبين' };
-const BOTGAMES = ['uno', 'hive', 'liars', 'jackaroo', 'outside', 'typing', 'flip'];
+const GNAME = { uno: 'أونو', codes: 'كلمة السر', hive: 'خلية الحروف', liars: 'الكذابين الترتيب', outside: 'برا السالفة', typing: 'سبّاق الكتابة', jackaroo: 'جاكارو', draw: 'رسم وخمّن', flip: 'أونو فليب', sus: 'المندس' };
+const GINFO = { sus: 'من ٤ إلى ١٠ لاعبين (والبوتات تكمّل العدد)', flip: 'من ٢ إلى ٨ لاعبين', uno: 'من ٢ إلى ٨ لاعبين', codes: 'من ٤ إلى ١٠ لاعبين، فريقين', hive: 'من ٢ إلى ١٠ لاعبين، فريقين', liars: 'من ٢ إلى ٨ لاعبين', outside: 'من ٣ إلى ١٠ لاعبين', typing: 'من ٢ إلى ١٠ لاعبين', jackaroo: '٤ لاعبين بالضبط، فريقين (شريكك قبالتك)', draw: 'من ٢ إلى ١٠ لاعبين' };
+const BOTGAMES = ['uno', 'hive', 'liars', 'jackaroo', 'outside', 'typing', 'flip', 'sus'];
 const GHELP = {
+  sus: 'أنتم طاقم سفينة، وبينكم مندس (أو اثنين لو كنتم ٧ وفوق). امشِ بالأسهم/WASD أو اسحب على الشاشة. الطاقم يخلّصون مهامهم (العلامات الصفراء)، والمندس يقتل ويخرّب ويتنقّل بالفتحات. لو لقيت جثة بلّغ، أو اضغط زر الطوارئ بالكافتيريا. وقت الاجتماع تتناقشون وتصوّتون مين تطردون. الطاقم يفوز لو خلّصوا المهام أو طردوا المندسين، والمندس يفوز لو صار عدده نفس الطاقم أو انفجر المفاعل.',
   flip: 'أونو بوجهين: فاتح (أحمر/أصفر/أخضر/أزرق) وغامق (وردي/تركوازي/برتقالي/بنفسجي). ورقة «فليب» تقلب كل اللعبة للوجه الثاني. الفاتح: +١ و+٢ ملوّن، والغامق: +٥ و«منع الكل» (تلعب مرة ثانية) و«ملوّن سحب لون» (الخصم يسحب لين يطلع له اللون). +٢ والسحب لون ما تنلعب إلا لو ما عندك لون الطاولة، ومن بعدك يقدر يتحدّاك. الورقة اللي تسحبها ما تنلعب. لو بقي عندك ورقة اضغط UNO! وإلا يمسكونك ويسحبك ٢.',
   uno: 'تخلّص من أوراقك قبل الكل. العب ورقة نفس اللون أو نفس الرقم/الرمز. لما يبقى عندك ورقة وحدة اضغط UNO! وإلا يمسكونك ويسحبك +٢. مع «تراكم السحب» تقدر ترد +٢ على +٢ و+٤ على +٤.',
   codes: 'فريقين (أ وب). كل فريق له قائد يشوف ألوان الكلمات السرية ويعطي تلميح بكلمة وحدة + رقم. الفريق يخمّن كلماته. أول فريق يكشف كل كلماته يفوز، واللي يضغط على الكلمة القاتلة يخسر فريقه.',
@@ -65,16 +66,18 @@ function renderOther() {
   const body = $('#g2body');
   if (body.dataset.built && body.dataset.built !== S.game) { body.innerHTML = ''; body.dataset.built = ''; }
   body.className = 'g2body ' + S.game;
-  keep(body, () => ({ codes: renderCodes, hive: renderHive, liars: renderLiars, outside: renderOutside, typing: renderTyping, jackaroo: renderJack, draw: renderDraw, flip: renderFlip })[S.game](body, mt));
+  keep(body, () => ({ codes: renderCodes, hive: renderHive, liars: renderLiars, outside: renderOutside, typing: renderTyping, jackaroo: renderJack, draw: renderDraw, flip: renderFlip, sus: renderSus })[S.game](body, mt));
   // نهاية الجولة
   const over = S.phase === 'over';
   $('#over2').hidden = !over;
   if (over) {
     const g = S.g || {}, amSpy = g.role === 'spy';
-    if (S.game === 'outside') $('#winner2').textContent = S.spec ? (g.spyWins ? 'فاز برا السالفة' : 'فاز اللي داخل السالفة') : g.spyWins === amSpy ? 'فزت! 🎉' : (g.spyWins ? 'برا السالفة نجا!' : 'انكشف برا السالفة!');
+    if (S.game === 'sus') $('#winner2').textContent = (g.win === 'crew' ? 'فاز الطاقم 🧑‍🚀' : 'فاز المندسين 😈') + (S.spec || !g.me ? '' : (g.win === 'imp') === !!g.me.imp ? ' — فزت!' : ' — خسرت');
+    else if (S.game === 'outside') $('#winner2').textContent = S.spec ? (g.spyWins ? 'فاز برا السالفة' : 'فاز اللي داخل السالفة') : g.spyWins === amSpy ? 'فزت! 🎉' : (g.spyWins ? 'برا السالفة نجا!' : 'انكشف برا السالفة!');
     else $('#winner2').textContent = S.teams && S.winTeam != null ? (S.spec ? 'فاز ' + S.winner : S.winTeam === mt ? 'فاز فريقك! 🎉' : 'فاز ' + S.winner) : (S.winner === (m && m.name) ? 'فزت! 🎉' : S.winner === 'انتهت اللعبة' || S.winner === 'تعادل' ? S.winner : 'فاز ' + S.winner);
     const wt = $('#winteam2'); wt.hidden = !(S.teams && S.winTeam != null);
-    if (!wt.hidden) wt.textContent = 'الفائزين: ' + S.players.filter(p => p.tm === S.winTeam).map(p => p.name).join(' و ');
+    if (S.game === 'sus') { wt.hidden = false; wt.textContent = (g.why ? g.why + ' — ' : '') + 'المندس' + ((g.imps || []).length > 1 ? 'ين كانوا: ' : ' كان: ') + (g.imps || []).map(nameOf).join(' و '); }
+    else if (!wt.hidden) wt.textContent = 'الفائزين: ' + S.players.filter(p => p.tm === S.winTeam).map(p => p.name).join(' و ');
     $('#board2').innerHTML = [...S.players].sort((a, b) => b.w - a.w).map(p => `<li${p.id === S.me ? ' class="me"' : ''}><span>${esc(p.name)}</span><b>🏆 ${p.w}</b></li>`).join('');
     const host = S.players.find(p => p.h);
     $('#again2').hidden = S.spec || !(host && host.id === S.me);
