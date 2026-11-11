@@ -1,8 +1,9 @@
 // واجهات الألعاب الثانية: كلمة السر، خلية الحروف، الكذابين الترتيب
-const GNAME = { uno: 'أونو', codes: 'كلمة السر', hive: 'خلية الحروف', liars: 'الكذابين الترتيب', outside: 'برا السالفة', typing: 'سبّاق الكتابة', jackaroo: 'جاكارو', draw: 'رسم وخمّن' };
-const GINFO = { uno: 'من ٢ إلى ٨ لاعبين', codes: 'من ٤ إلى ١٠ لاعبين، فريقين', hive: 'من ٢ إلى ١٠ لاعبين، فريقين', liars: 'من ٢ إلى ٦ لاعبين', outside: 'من ٣ إلى ١٠ لاعبين', typing: 'من ٢ إلى ١٠ لاعبين', jackaroo: '٤ لاعبين بالضبط، فريقين (شريكك قبالتك)', draw: 'من ٢ إلى ١٠ لاعبين' };
-const BOTGAMES = ['uno', 'hive', 'liars', 'jackaroo', 'outside', 'typing'];
+const GNAME = { uno: 'أونو', codes: 'كلمة السر', hive: 'خلية الحروف', liars: 'الكذابين الترتيب', outside: 'برا السالفة', typing: 'سبّاق الكتابة', jackaroo: 'جاكارو', draw: 'رسم وخمّن', flip: 'أونو فليب' };
+const GINFO = { flip: 'من ٢ إلى ٨ لاعبين', uno: 'من ٢ إلى ٨ لاعبين', codes: 'من ٤ إلى ١٠ لاعبين، فريقين', hive: 'من ٢ إلى ١٠ لاعبين، فريقين', liars: 'من ٢ إلى ٦ لاعبين', outside: 'من ٣ إلى ١٠ لاعبين', typing: 'من ٢ إلى ١٠ لاعبين', jackaroo: '٤ لاعبين بالضبط، فريقين (شريكك قبالتك)', draw: 'من ٢ إلى ١٠ لاعبين' };
+const BOTGAMES = ['uno', 'hive', 'liars', 'jackaroo', 'outside', 'typing', 'flip'];
 const GHELP = {
+  flip: 'أونو بوجهين: فاتح (أحمر/أصفر/أخضر/أزرق) وغامق (وردي/تركوازي/برتقالي/بنفسجي). ورقة «فليب» تقلب كل اللعبة للوجه الثاني. الفاتح: +١ و+٢ ملوّن، والغامق: +٥ و«منع الكل» (تلعب مرة ثانية) و«ملوّن سحب لون» (الخصم يسحب لين يطلع له اللون). +٢ والسحب لون ما تنلعب إلا لو ما عندك لون الطاولة، ومن بعدك يقدر يتحدّاك. الورقة اللي تسحبها ما تنلعب. لو بقي عندك ورقة اضغط UNO! وإلا يمسكونك ويسحبك ٢.',
   uno: 'تخلّص من أوراقك قبل الكل. العب ورقة نفس اللون أو نفس الرقم/الرمز. لما يبقى عندك ورقة وحدة اضغط UNO! وإلا يمسكونك ويسحبك +٢. مع «تراكم السحب» تقدر ترد +٢ على +٢ و+٤ على +٤.',
   codes: 'فريقين (أ وب). كل فريق له قائد يشوف ألوان الكلمات السرية ويعطي تلميح بكلمة وحدة + رقم. الفريق يخمّن كلماته. أول فريق يكشف كل كلماته يفوز، واللي يضغط على الكلمة القاتلة يخسر فريقه.',
   hive: 'لوحة خلايا حروف. الأحمر يوصّل من فوق لتحت، والأزرق من اليمين لليسار. اختر خلية، جاوب على سؤال يبدأ جوابه بحرف الخلية وتصير لفريقك. لو غلطت الفريق الثاني يسرقها.',
@@ -64,7 +65,7 @@ function renderOther() {
   const body = $('#g2body');
   if (body.dataset.built && body.dataset.built !== S.game) { body.innerHTML = ''; body.dataset.built = ''; }
   body.className = 'g2body ' + S.game;
-  keep(body, () => ({ codes: renderCodes, hive: renderHive, liars: renderLiars, outside: renderOutside, typing: renderTyping, jackaroo: renderJack, draw: renderDraw })[S.game](body, mt));
+  keep(body, () => ({ codes: renderCodes, hive: renderHive, liars: renderLiars, outside: renderOutside, typing: renderTyping, jackaroo: renderJack, draw: renderDraw, flip: renderFlip })[S.game](body, mt));
   // نهاية الجولة
   const over = S.phase === 'over';
   $('#over2').hidden = !over;
@@ -204,6 +205,14 @@ function fx2() {
     if (g.sub === 'choose' && pg.sub !== 'choose' && g.drawer === s.me) sfx('turn');
     if (g.guessed.length > pg.guessed.length && g.turn === pg.turn) sfx('uno');
     if (g.sub === 'reveal' && pg.sub !== 'reveal') sfx('pop');
+  } else if (s.game === 'flip') {
+    if (g.turn === s.me && pg.turn !== s.me && s.phase === 'play') sfx('turn');
+    else if (g.top.id !== pg.top.id) sfx('card');
+    if (g.flips > pg.flips) setTimeout(() => sfx('catch'), 150);
+    if (g.hand.length > pg.hand.length) sfx('draw');
+    const last = s.log[s.log.length - 1];
+    if (last && last !== p.log[p.log.length - 1]) { if (last.includes('أونو!')) { sfx('unoCall'); unoBurst(last.split(':')[0]); } else if (last.includes('مسك')) sfx('penalty'); }
+    if (s.phase === 'over' && p.phase === 'play') setTimeout(() => sfx('unoWin'), 400);
   } else if (s.game === 'outside') {
     if ((g.sub === 'ask' && g.asker === s.me && !(pg.sub === 'ask' && pg.asker === s.me)) || (g.sub === 'qa' && g.target === s.me && pg.target !== s.me)) sfx('turn');
     else if (g.sub === 'qa' && pg.sub !== 'qa') sfx('card');
@@ -518,4 +527,44 @@ function renderJack(body) {
     if (mine.length === 1 && !mine[0].x) { send({ t: 'move', id: jsel, key: mine[0].k }); jsel = null; jm = null; return; }
     jm = key; renderJack(body);
   });
+}
+
+// ================= أونو فليب =================
+const FHEX = { red: '#e8362d', yellow: '#ffc928', green: '#1fa35c', blue: '#2a5bd7', pink: '#ef6fae', teal: '#18a7a0', orange: '#f28a1c', purple: '#7b3fc7', wild: '#16130f' };
+const FAR = { red: 'أحمر', yellow: 'أصفر', green: 'أخضر', blue: 'أزرق', pink: 'وردي', teal: 'تركوازي', orange: 'برتقالي', purple: 'بنفسجي' };
+const FSIDE = { L: ['red', 'yellow', 'green', 'blue'], D: ['pink', 'teal', 'orange', 'purple'] };
+const FSYM = { draw1: '+1', draw5: '+5', reverse: '⇄', skip: '⊘', skipall: '⊗', flip: '⟳', wild: '✦', wd2: '+2', wdc: '🎨' };
+const flipCard = (c, cls = '') => `<div class="fc ${cls}" style="--fc:${FHEX[c.c]}" data-id="${c.id}"><i>${FSYM[c.v] || c.v}</i><b>${FSYM[c.v] || c.v}</b><i class="r">${FSYM[c.v] || c.v}</i></div>`;
+let flipPick = null;
+function renderFlip(body) {
+  const g = S.g, over = S.phase === 'over', dark = g.side === 'D', myTurn = !S.spec && g.turn === S.me && g.sub === 'play' && !over;
+  const vic = g.chal && g.chal.victim === S.me;
+  const rows = S.players.map(p => `<div class="frow${g.turn === p.id && !over ? ' cur' : ''}${g.winId === p.id ? ' win' : ''}" data-id="${p.id}"><span class="fn">${esc(pn(p.id))}</span>${g.called[p.id] && p.n <= 2 ? '<b class="fu">UNO</b>' : ''}<span class="fcnt">${over && g.points ? g.points[p.id] + ' نقطة' : p.n + ' 🂠'}</span>${g.catchable === p.id ? `<button type="button" class="catchb" data-id="${p.id}">امسكه!</button>` : ''}</div>`).join('');
+  let mid = '';
+  if (g.sub === 'chal' && g.chal && !over) {
+    const k = g.chal.kind === 'wd2' ? '+٢ ملوّن' : 'ملوّن سحب لون';
+    mid = vic ? `<div class="fchal"><b>${esc(pn(g.chal.by))}</b> لعب ${k} واختار <b style="color:${FHEX[g.chal.color]}">${FAR[g.chal.color]}</b><div class="muted">لو شكيت إنه عنده لون الطاولة تحدّاه</div><div class="fbtns"><button type="button" class="btn red sm" id="fcY">تحدّى</button><button type="button" class="btn green sm" id="fcN">اقبل</button></div></div>`
+      : `<div class="muted">${esc(pn(g.chal.victim))} يقرر: يقبل ${k} أو يتحدّى…</div>`;
+  } else if (over) mid = `<div class="fchal"><b>${esc(S.winner)}</b> فاز! 🎉<div class="muted">مجموع نقاط أوراق الباقين: ${g.total}</div></div>`;
+  else mid = myTurn ? '<div class="vlabel">دورك — العب ورقة أو اسحب</div>' : `<div class="muted">دور ${esc(pn(g.turn))} <span class="cd2"></span></div>`;
+  const hand = g.hand.map(c => flipCard(c, (c.ok ? 'ok' : myTurn ? 'no' : '') + (flipPick === c.id ? ' pick' : ''))).join('');
+  const cols = flipPick != null ? `<div class="fcols">${FSIDE[g.side].map(c => `<button type="button" class="fcol" data-c="${c}" style="background:${FHEX[c]}">${FAR[c]}</button>`).join('')}</div>` : '';
+  body.innerHTML = `<div class="fwrap${dark ? ' dark' : ''}">
+    <div class="fbar"><span class="fside">${dark ? '🌙 الوجه الغامق' : '☀️ الوجه الفاتح'}</span><span class="fdir">${g.dir === 1 ? '↻' : '↺'}</span><span class="fcolr" style="background:${FHEX[g.color]}">${FAR[g.color] || ''}</span></div>
+    <div class="flist">${rows}</div>
+    <div class="ftable"><div class="fpile${myTurn ? ' can' : ''}" id="fDeck"><div class="fc back"><b>UNO</b></div><small>${g.deckN}</small></div>${flipCard(g.top, 'ftop')}</div>
+    ${mid}${cols}
+    <div class="fhand">${hand}</div>
+    <div class="fact">${g.canUno ? '<button type="button" class="btn yellow" id="fUno">UNO!</button>' : ''}</div>
+    ${logHtml()}</div>`;
+  const fd = $('#fDeck'); if (fd) fd.onclick = () => { if (myTurn) { flipPick = null; send({ t: 'draw' }); } };
+  body.querySelectorAll('.fc.ok').forEach(el => el.onclick = () => {
+    const id = +el.dataset.id, c = g.hand.find(x => x.id === id);
+    if (c.c === 'wild') { flipPick = flipPick === id ? null : id; renderFlip(body); return; }
+    flipPick = null; send({ t: 'play', id }); sfx('pop');
+  });
+  body.querySelectorAll('.fcol').forEach(b => b.onclick = () => { const id = flipPick; flipPick = null; send({ t: 'play', id, color: b.dataset.c }); sfx('pop'); });
+  const u = $('#fUno'); if (u) u.onclick = () => send({ t: 'uno' });
+  body.querySelectorAll('.catchb').forEach(b => b.onclick = () => send({ t: 'catch' }));
+  const y = $('#fcY'), n = $('#fcN'); if (y) y.onclick = () => send({ t: 'chal', yes: true }); if (n) n.onclick = () => send({ t: 'chal', yes: false });
 }

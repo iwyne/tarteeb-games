@@ -198,7 +198,7 @@ function renderGame() {
     const col = S.teams ? TC[p.tm] : PAL[S.players.indexOf(p) % 4];
     return `<div class="seat${p.id === S.turn && playing ? ' turn' : ''}${p.on ? '' : ' off'}" data-id="${p.id}" style="left:${x}%;top:${y}%">
       ${p.id === S.turn && playing ? '<div class="arrow"><b></b>▼</div>' : ''}${amHost ? `<button class="kick" data-id="${p.id}" title="طرد">✕</button>` : ''}<div class="avatar" style="background:${col};color:${col === '#ffc928' ? '#16130f' : '#fff'}">${face(p)}</div>
-      <div class="nm">${esc(p.name)}</div>${p.w ? `<span class="wins">🏆 ${p.w}</span>` : ''}${S.teams ? `<span class="tm${!spec && p.tm === myTm ? ' mate' : ''}">${spec ? 'فريق ' + ['أ', 'ب'][p.tm] : p.tm === myTm ? 'فريقك' : 'خصم'}</span>` : ''}<div class="backs">${'<i></i>'.repeat(Math.min(p.n, 8))}</div><span class="cnt">${p.n}</span></div>`;
+      <div class="nm">${esc(p.name)}</div>${p.w ? `<span class="wins">🏆 ${p.w}</span>` : ''}${S.teams ? `<span class="tm${!spec && p.tm === myTm ? ' mate' : ''}">${spec ? 'فريق ' + ['أ', 'ب'][p.tm] : p.tm === myTm ? 'فريقك' : 'خصم'}</span>` : ''}<div class="backs${S.mates && S.mates[p.id] ? ' open' : ''}">${S.mates && S.mates[p.id] ? [...S.mates[p.id]].sort((x, y) => (x.color > y.color ? 1 : x.color < y.color ? -1 : vrank(x.v) - vrank(y.v))).map(c => `<i class="mc ${c.color}">${/^\d$/.test(c.v) ? c.v : (SYM[c.v] || "★")}</i>`).join('') : '<i></i>'.repeat(Math.min(p.n, 8))}</div><span class="cnt">${p.n}</span></div>`;
   }).join('');
 
   // وسط الطاولة
@@ -407,7 +407,8 @@ function isMyTurn(s) {
   if (s.game === 'uno') return s.turn === s.me;
   if (!g) return false;
   if (s.game === 'liars') return g.sub === 'play' && g.turn === s.me;
-  if (s.game === 'outside') return g.sub === 'clue' && g.turn === s.me;
+  if (s.game === 'outside') return (g.sub === 'ask' && g.asker === s.me) || (g.sub === 'qa' && g.target === s.me);
+  if (s.game === 'flip') return g.turn === s.me;
   if (s.game === 'codes') return g.turn === tm;
   if (s.game === 'jackaroo') return g.turn === g.seat;
   if (s.game === 'draw') return g.sub === 'choose' && g.drawer === s.me;

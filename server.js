@@ -85,8 +85,8 @@ const H = {
   }
 };
 const GAMES = { uno: { min: 2, max: 8 } };
-for (const k of ['codes', 'hive', 'liars', 'outside', 'typing', 'jackaroo', 'draw']) GAMES[k] = require('./games/' + k)(H);
-const META = { uno: { bots: true }, codes: { teams: true }, hive: { teams: true, bots: true }, liars: { bots: true }, outside: { bots: true }, typing: { bots: true }, jackaroo: { teams: true, bots: true }, draw: {} };
+for (const k of ['codes', 'hive', 'liars', 'outside', 'typing', 'jackaroo', 'draw', 'flip']) GAMES[k] = require('./games/' + k)(H);
+const META = { uno: { bots: true }, codes: { teams: true }, hive: { teams: true, bots: true }, liars: { bots: true }, outside: { bots: true }, typing: { bots: true }, jackaroo: { teams: true, bots: true }, draw: {}, flip: { bots: true } };
 const AVATARS = ['😎', '🦁', '🐪', '🦅', '🐺', '🦊', '🐯', '🐼', '🦄', '🐸', '👑', '🔥', '⚡', '🌙', '🎩', '🤠'];
 const cleanAv = a => AVATARS.includes(a) ? a : '';
 const optsView = (r, p) => ({ stack: !!r.opts.stack, turn: r.opts.turn || 15, lock: !!r.opts.lock, hasPass: !!r.opts.pass, pass: r.host === p.id ? (r.opts.pass || '') : null, target: r.opts.target || 5, nwords: r.opts.words ? r.opts.words.length : 0, wordsText: r.host === p.id ? (r.opts.wordsText || '') : '' });
@@ -183,9 +183,9 @@ function draw(r, p) {
   if (r.phase !== 'play' || cur(r) !== p || r.pending !== null) return;
   r.catchable = null;
   if (r.owed > 0) { const k = r.owed; r.owed = 0; drawCards(r, p, k); log(r, `${p.name} سحب ${k} وانمنع`); advance(r, 1); return; }
-  const [c] = drawCards(r, p, 1);
+  drawCards(r, p, 1);
   log(r, `${p.name} سحب ورقة`);
-  if (c && canPlay(r, p, c)) { r.pending = c.id; r.turnSeq++; } else advance(r, 1);
+  advance(r, 1); // قاعدتنا: الورقة المسحوبة ما تنلعب والدور يروح
 }
 function pass(r, p) {
   if (r.phase !== 'play' || cur(r) !== p || r.pending === null) return;
@@ -226,6 +226,7 @@ function view(r, p) {
     turn: c ? c.id : null, deck: r.deck.length, left: r.phase === 'play' ? Math.max(0, r.deadline - Date.now()) : 0,
     ok: mine ? p.hand.filter(x => canPlay(r, p, x)).map(x => x.id) : [],
     pending: mine ? r.pending : null,
+    mates: (r.teams && r.phase === 'play' && !p.spec) ? Object.fromEntries(r.players.filter((q, i) => q !== p && i % 2 === r.players.indexOf(p) % 2).map(q => [q.id, q.hand])) : null,
     catch: r.catchable, log: r.log.slice(-4), winner: r.winner, owed: r.owed, opts: optsView(r, p)
   };
 }
@@ -360,6 +361,25 @@ function botAction(r) {
       return { d: 3000 + rnd(4000), fn() { if (r.g === g && g.sub === 'guess') GAMES.outside.act(r, b, { t: 'guess', text: g.opts[rnd(g.opts.length)] }); } };
     }
     return null;
+  }
+  if (r.game === 'flip') {
+    const g = r.g, F = GAMES.flip;
+    if (g.sub === 'chal') {
+      const b = bots.find(q => q.id === g.chal.victim); if (!b) return null;
+      return { d: 1500 + rnd(2000), fn() { if (r.g === g && g.sub === 'chal') GAMES.flip.act(r, b, { t: 'chal', yes: Math.random() < .2 }); } };
+    }
+    const b = bots.find(q => q === r.players[g.turn]); if (!b) return null;
+    return { d: 1400 + rnd(2200), fn() {
+      if (r.g !== g || g.sub !== 'play' || r.players[g.turn] !== b) return;
+      const ok = b.hand.filter(c => F.playable(g, b, c));
+      if (!ok.length) return GAMES.flip.act(r, b, { t: 'draw' });
+      if (b.hand.length === 2) GAMES.flip.act(r, b, { t: 'uno' });
+      const pri = c => { const v = F.face(g, c).v; return /^\d$/.test(v) ? 1 : v === 'wild' ? 0 : 3; };
+      ok.sort((x, y) => pri(y) - pri(x) + (Math.random() - .5) * 2);
+      const c = ok[0], f = F.face(g, c); let color;
+      if (f.c === 'wild') { const cnt = {}; b.hand.forEach(x => { const xf = F.face(g, x); if (xf.c !== 'wild') cnt[xf.c] = (cnt[xf.c] || 0) + 1; }); color = Object.keys(cnt).sort((p, q) => cnt[q] - cnt[p])[0] || F.SIDES[g.side][rnd(4)]; }
+      GAMES.flip.act(r, b, { t: 'play', id: c.id, color });
+    } };
   }
   if (r.game === 'jackaroo') {
     const g = r.g, p = r.players[g.turn]; if (!p || !p.bot) return null;
