@@ -184,3 +184,5 @@ export function makeChar(look, ghost) {
   return ch;
 }
 export { THREE };
+// تحميل أي موديل glb (للأثاث)
+export const loadGLB = url => new Promise((ok, no) => loader.load(url, ok, undefined, no));

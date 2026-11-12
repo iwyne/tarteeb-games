@@ -1,0 +1,21 @@
+القصر المسكون — مصادر الملفات
+=================================
+
+الشخصيات والحركات
+- Quaternius — Universal Base Characters + Universal Animation Library — CC0
+  https://quaternius.com
+
+الأثاث والخامات (public/haunt/props, public/haunt/tex)
+- Poly Haven — CC0
+  https://polyhaven.com
+
+الأصوات (public/haunt/snd)
+- "Horror Sound Library" by Little Robot Sound Factory — CC-BY 3.0
+  (opengameart.org)
+  www.littlerobotsoundfactory.com
+- "Horror SFX" by TinyWorlds — CC0 (opengameart.org)
+- "Dark Ambiences" by Ogrebane — CC0 (opengameart.org)
+- "Ambient Horror" by techiew — CC0 (opengameart.org)
+- "Horror Hit Soundpack 1" by psychhead_ — CC0 (opengameart.org)
+
+الملفات مضغوطة ومعدّلة (mp3 mono، webp، meshopt) عشان تنحمل بسرعة.
