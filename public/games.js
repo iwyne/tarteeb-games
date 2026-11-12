@@ -1,8 +1,9 @@
 // واجهات الألعاب الثانية: كلمة السر، خلية الحروف، الكذابين الترتيب
-const GNAME = { uno: 'أونو', codes: 'كلمة السر', hive: 'خلية الحروف', liars: 'الكذابين الترتيب', outside: 'برا السالفة', typing: 'سبّاق الكتابة', jackaroo: 'جاكارو', draw: 'رسم وخمّن', flip: 'أونو فليب', sus: 'المندس', haunt: 'البيت المسكون' };
-const GINFO = { haunt: 'من ٢ إلى ١٠ لاعبين (ثري دي، والبوتات تكمّل)', sus: 'من ٤ إلى ١٢ لاعب (والبوتات تكمّل العدد)', flip: 'من ٢ إلى ٨ لاعبين', uno: 'من ٢ إلى ٨ لاعبين', codes: 'من ٤ إلى ١٠ لاعبين، فريقين', hive: 'من ٢ إلى ١٠ لاعبين، فريقين', liars: 'من ٢ إلى ٨ لاعبين', outside: 'من ٣ إلى ١٠ لاعبين', typing: 'من ٢ إلى ١٠ لاعبين', jackaroo: '٤ لاعبين بالضبط، فريقين (شريكك قبالتك)', draw: 'من ٢ إلى ١٠ لاعبين' };
-const BOTGAMES = ['uno', 'hive', 'liars', 'jackaroo', 'outside', 'typing', 'flip', 'sus', 'haunt'];
+const GNAME = { uno: 'أونو', codes: 'كلمة السر', hive: 'خلية الحروف', liars: 'الكذابين الترتيب', outside: 'برا السالفة', typing: 'سبّاق الكتابة', jackaroo: 'جاكارو', draw: 'رسم وخمّن', flip: 'أونو فليب', sus: 'المندس', haunt: 'البيت المسكون', mafia: 'المافيا' };
+const GINFO = { mafia: 'من ٥ إلى ١٦ لاعب (والبوتات تكمّل)', haunt: 'من ٢ إلى ١٠ لاعبين (ثري دي، والبوتات تكمّل)', sus: 'من ٤ إلى ١٢ لاعب (والبوتات تكمّل العدد)', flip: 'من ٢ إلى ٨ لاعبين', uno: 'من ٢ إلى ٨ لاعبين', codes: 'من ٤ إلى ١٠ لاعبين، فريقين', hive: 'من ٢ إلى ١٠ لاعبين، فريقين', liars: 'من ٢ إلى ٨ لاعبين', outside: 'من ٣ إلى ١٠ لاعبين', typing: 'من ٢ إلى ١٠ لاعبين', jackaroo: '٤ لاعبين بالضبط، فريقين (شريكك قبالتك)', draw: 'من ٢ إلى ١٠ لاعبين' };
+const BOTGAMES = ['mafia', 'uno', 'hive', 'liars', 'jackaroo', 'outside', 'typing', 'flip', 'sus', 'haunt'];
 const GHELP = {
+  mafia: 'مدينة فيها مافيا متخفين بين الناس. بالبداية كل واحد يشوف كرت دوره بالسر. بالليل: المافيا يختارون ضحية (ويتكلمون بشات سري)، الطبيب يحمي شخص، المحقق يفتّش على شخص ويعرف هو مافيا ولا لا (الأب الروحي يطلع بريء)، والقناص عنده طلقة وحدة باللعبة. الصبح تطلع جريدة المدينة بأسماء الضحايا. بالنهار تتناقشون بصوت الديسكورد أو بالشات، وبعدها تصوّتون على شخص تطردونه. العمدة يقدر يكشف نفسه وصوته يصير بصوتين، والمهرج يفوز لو المدينة صوّتت عليه. المدينة تفوز لو طلّعت كل المافيا، والمافيا تفوز لو صار عددهم نفس الباقين.',
   haunt: 'لعبة رعب ثري دي بمنظور العين داخل قصر كبير بأربع طوابق (قبو، أرضي، علوي، علّية). واحد منكم شبح (اثنين لو كنتم ٧ أو أكثر) والباقين ناجين معهم كشافات. القصة بمراحل: دوّروا ٣ فيوزات وركّبوها بصندوق الكهرباء في القبو، بعدها المفاتيح تفتح مكتب الجد ثم الغرفة الكبيرة ثم العلّية، جيبوا ٤ قطع ملعونة للمذبح بالعلّية وسوّوا الطقس، وبعدها ينفتح الباب الأمامي وتهربون. الكشاف لو انوجّه على الشبح يحرقه ويجمّده، بس البطارية تخلص. أول مرة يمسكك الشبح تنحبس بقفص القبو وربعك يقدرون يطلّعونك، والمرة الثانية تموت. تقدر تختبي بالدواليب. الشبح يشوف بالظلام، يصرخ عشان يطفّي الكشافات، وينتقل بين المرايا. الكمبيوتر: WASD للمشي، الماوس للف، Shift للركض، F الكشاف، E استخدم، M الخريطة، Q صرخة الشبح. الجوال: يسار الشاشة للمشي (اسحب للآخر عشان تركض)، ويمينها للف. اللعبة تاخذ قريب نص ساعة، والناجين يفوزون لو هرب نصهم أو أكثر.',
   sus: 'أنتم طاقم سفينة وبينكم مندسين (١–٣ حسب اختيار المضيف). امشِ بالأسهم/WASD أو اسحب على الشاشة. ما تشوف إلا اللي قدامك، والغرف الثانية ظلام. الطاقم يخلّصون مهامهم (العلامات الصفراء)، والمندس يقتل ويخرّب ويتنقّل بالفتحات. غرفة المراقبة فيها كاميرات للممرات. لو لقيت جثة بلّغ، أو اضغط زر الطوارئ بالكافتيريا. وبطور الدكتور: الدكتور يعطي درع لشخص واحد كل جولة يحميه من القتل لين الاجتماع الجاي. الطاقم يفوز لو خلّصوا المهام أو طردوا المندسين، والمندس يفوز لو صار عددهم نفس الطاقم أو انفجر المفاعل.',
   flip: 'أونو بوجهين: فاتح (أحمر/أصفر/أخضر/أزرق) وغامق (وردي/تركوازي/برتقالي/بنفسجي). ورقة «فليب» تقلب كل اللعبة للوجه الثاني. الفاتح: +١ و+٢ ملوّن، والغامق: +٥ و«منع الكل» (تلعب مرة ثانية) و«ملوّن سحب لون» (الخصم يسحب لين يطلع له اللون). +٢ والسحب لون ما تنلعب إلا لو ما عندك لون الطاولة، ومن بعدك يقدر يتحدّاك. الورقة اللي تسحبها ما تنلعب. لو بقي عندك ورقة اضغط UNO! وإلا يمسكونك ويسحبك ٢.',
@@ -67,19 +68,21 @@ function renderOther() {
   const body = $('#g2body');
   if (body.dataset.built && body.dataset.built !== S.game) { body.innerHTML = ''; body.dataset.built = ''; }
   body.className = 'g2body ' + S.game;
-  keep(body, () => ({ codes: renderCodes, hive: renderHive, liars: renderLiars, outside: renderOutside, typing: renderTyping, jackaroo: renderJack, draw: renderDraw, flip: renderFlip, sus: renderSus, haunt: renderHaunt })[S.game](body, mt));
+  keep(body, () => ({ codes: renderCodes, hive: renderHive, liars: renderLiars, outside: renderOutside, typing: renderTyping, jackaroo: renderJack, draw: renderDraw, flip: renderFlip, sus: renderSus, haunt: renderHaunt, mafia: renderMafia })[S.game](body, mt));
   // نهاية الجولة
   const over = S.phase === 'over';
   $('#over2').hidden = !over;
   if (over) {
     const g = S.g || {}, amSpy = g.role === 'spy';
     if (S.game === 'haunt') $('#winner2').textContent = (g.win === 'surv' ? 'فاز الناجين 🔦' : 'فاز الشبح 👻') + (S.spec || !g.me ? '' : (g.win === 'ghost') === !!g.me.ghost ? ' — فزت!' : ' — خسرت');
+    else if (S.game === 'mafia') $('#winner2').textContent = (g.win === 't' ? 'فازت المدينة 🏙️' : g.win === 'm' ? 'فازت المافيا 🎩' : 'فاز المهرج 🃏') + (S.spec || !g.me ? '' : (g.win === 'j' ? g.jWin === S.me : g.win === (MROLE[g.me.role] || {}).team) ? ' — فزت!' : ' — خسرت');
     else if (S.game === 'sus') $('#winner2').textContent = (g.win === 'crew' ? 'فاز الطاقم 🧑‍🚀' : 'فاز المندسين 😈') + (S.spec || !g.me ? '' : (g.win === 'imp') === !!g.me.imp ? ' — فزت!' : ' — خسرت');
     else if (S.game === 'outside') $('#winner2').textContent = S.spec ? (g.spyWins ? 'فاز برا السالفة' : 'فاز اللي داخل السالفة') : g.spyWins === amSpy ? 'فزت! 🎉' : (g.spyWins ? 'برا السالفة نجا!' : 'انكشف برا السالفة!');
     else $('#winner2').textContent = S.teams && S.winTeam != null ? (S.spec ? 'فاز ' + S.winner : S.winTeam === mt ? 'فاز فريقك! 🎉' : 'فاز ' + S.winner) : (S.winner === (m && m.name) ? 'فزت! 🎉' : S.winner === 'انتهت اللعبة' || S.winner === 'تعادل' ? S.winner : 'فاز ' + S.winner);
     const wt = $('#winteam2'); wt.hidden = !(S.teams && S.winTeam != null);
     if (S.game === 'sus') { wt.hidden = false; wt.innerHTML = susOverHtml(g); }
     else if (S.game === 'haunt') { wt.hidden = false; wt.innerHTML = hauntOverHtml(g); }
+    else if (S.game === 'mafia') { wt.hidden = false; wt.innerHTML = mafiaOverHtml(g); }
     else if (!wt.hidden) wt.textContent = 'الفائزين: ' + S.players.filter(p => p.tm === S.winTeam).map(p => p.name).join(' و ');
     $('#board2').innerHTML = [...S.players].sort((a, b) => b.w - a.w).map(p => `<li${p.id === S.me ? ' class="me"' : ''}><span>${esc(p.name)}</span><b>🏆 ${p.w}</b></li>`).join('');
     const host = S.players.find(p => p.h);
@@ -268,7 +271,7 @@ function fx2() {
     else if (g.q && !pg.q) sfx('pop');
   }
   if (s.phase === 'over' && p.phase !== 'over' && !s.spec) {
-    const m = me2(), won = s.game === 'outside' ? g.spyWins === (g.role === 'spy') : s.teams && s.winTeam != null ? m.tm === s.winTeam : s.winner === m.name;
+    const m = me2(), won = s.game === 'mafia' ? !!(g.me && (g.win === 'j' ? g.jWin === s.me : g.win === (MROLE[g.me.role] || {}).team)) : s.game === 'outside' ? g.spyWins === (g.role === 'spy') : s.teams && s.winTeam != null ? m.tm === s.winTeam : s.winner === m.name;
     setTimeout(() => { sfx(won ? 'win' : 'lose'); if (won) confetti(); }, 400);
   }
 }
@@ -388,6 +391,11 @@ function renderLobbySet(isHost) {
   else if (S.game === 'sus') extra = `<label class="chk">الماب <select id="oMap"><option value="ship"${o.map !== 'forest' ? ' selected' : ''}>🚀 السفينة</option><option value="forest"${o.map === 'forest' ? ' selected' : ''}>🌲 الغابة الملعونة (رعب)</option></select></label>
     <label class="chk">عدد المندسين <select id="oImps">${[1, 2, 3].map(n => `<option value="${n}"${o.imps === n ? ' selected' : ''}>${n}</option>`).join('')}</select></label>
     <label class="chk"><input type="checkbox" id="oDoc"${o.doctor ? ' checked' : ''}> طور الدكتور 🩺 (يعطي درع لشخص كل جولة)</label><small class="muted">٢ مندسين يحتاج ٦ لاعبين، و٣ يحتاج ٩</small>`;
+  else if (S.game === 'mafia') { const mr = o.mroles || {}, RN = { doc: '🩺 الطبيب', det: '🔍 المحقق', sniper: '🎯 القناص', god: '🎩 الأب الروحي', jester: '🃏 المهرج', mayor: '🎖️ العمدة' };
+    extra = `<label class="chk">عدد المافيا <select id="oMc"><option value="0"${!o.mcount ? ' selected' : ''}>تلقائي</option>${[1, 2, 3, 4].map(n => `<option value="${n}"${o.mcount === n ? ' selected' : ''}>${n}</option>`).join('')}</select></label>
+    <label class="chk">وقت النقاش <select id="oDay">${[60, 90, 120, 180].map(n => `<option value="${n}"${o.dayT === n ? ' selected' : ''}>${n / 60 >= 1 && n % 60 === 0 ? n / 60 + ' دقيقة' : n + ' ثانية'}</option>`).join('')}</select></label>
+    <label class="chk"><input type="checkbox" id="oRev"${o.reveal !== false ? ' checked' : ''}> يبان دور اللي يموت</label>
+    <div class="mfroles">${Object.keys(RN).map(k => `<label class="chk"><input type="checkbox" data-mr="${k}"${mr[k] !== 0 ? ' checked' : ''}> ${RN[k]}</label>`).join('')}</div><small class="muted">الأدوار تدخل لما يكون العدد كافي: الطبيب ٤+، المحقق ٥+، القناص والأب الروحي والمهرج ٧+، العمدة ٨+</small>`; }
   else if (S.game === 'typing') extra = `<label class="chk">الهدف <select id="oTarget">${[3, 5, 8, 12].map(n => `<option value="${n}"${o.target === n ? ' selected' : ''}>${n} نقاط</option>`).join('')}</select></label>`;
   else if (S.game === 'codes') extra = `<details class="wdet"><summary>كلمات مخصصة ${o.nwords ? `(مفعّلة: ${o.nwords})` : '(اختياري)'}</summary><textarea id="oWords" rows="4" placeholder="اكتب ٢٥ كلمة أو أكثر، كل كلمة بسطر أو افصلها بفاصلة">${esc(o.wordsText || '')}</textarea><div class="row"><button type="button" id="oWordsSave" class="btn sm">حفظ الكلمات</button><button type="button" id="oWordsClear" class="btn sm">رجّع الكلمات العادية</button></div></details>`;
   box.innerHTML = `<div class="ls-row"><b>اللعبة</b><div class="chips">${gm}</div></div>
@@ -403,6 +411,10 @@ function renderLobbySet(isHost) {
   bind('oImps', 'onchange', e => send({ t: 'opt', k: 'imps', v: +e.target.value }));
   bind('oDoc', 'onchange', e => send({ t: 'opt', k: 'doctor', v: e.target.checked }));
   bind('oTarget', 'onchange', e => send({ t: 'opt', k: 'target', v: +e.target.value }));
+  bind('oMc', 'onchange', e => send({ t: 'opt', k: 'mcount', v: +e.target.value }));
+  bind('oDay', 'onchange', e => send({ t: 'opt', k: 'dayT', v: +e.target.value }));
+  bind('oRev', 'onchange', e => send({ t: 'opt', k: 'reveal', v: e.target.checked }));
+  box.querySelectorAll('[data-mr]').forEach(c => c.onchange = () => send({ t: 'opt', k: 'mrole', r: c.dataset.mr, v: c.checked }));
   bind('oLock', 'onchange', e => send({ t: 'opt', k: 'lock', v: e.target.checked }));
   bind('oPassSave', 'onclick', () => { send({ t: 'opt', k: 'pass', v: $('#oPass').value }); toast($('#oPass').value.trim() ? 'انحفظت كلمة السر' : 'انشالت كلمة السر'); });
   bind('addBot', 'onclick', () => send({ t: 'addbot' }));
