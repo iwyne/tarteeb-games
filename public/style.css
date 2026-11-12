@@ -1122,3 +1122,47 @@ body.ingame2 main:has(.g2body.haunt){max-width:none;padding-bottom:0}
   .hmapb{width:50px;height:50px}
   .hintro h2{font-size:1.9rem}.hintro{font-size:.9rem}
 }
+
+/* البيت المسكون: اللوبي الثري دي + المقدمة + مصمم الشخصية */
+.hstage{position:relative;height:min(46vh,380px);min-height:240px;border:4px solid var(--ink);border-radius:18px;overflow:hidden;box-shadow:6px 6px 0 var(--ink);background:#0b0f1a;margin:10px 0 14px}
+.hstagebox{position:absolute;inset:0}
+.hstageload{position:absolute;inset:0;display:grid;place-items:center;color:#f3ead8;font:400 1.3rem Lalezar,Tajawal,sans-serif;animation:hBreath 1.2s ease-in-out infinite alternate}
+.hstageload[hidden]{display:none}
+.hcustb{position:absolute;left:50%;bottom:12px;transform:translateX(-50%);z-index:2;background:var(--yellow);font-size:1.05rem;white-space:nowrap}
+.hreplay{position:absolute;top:10px;left:10px;z-index:2;width:42px;height:42px;border:3px solid var(--ink);border-radius:50%;background:var(--surf);box-shadow:2px 2px 0 var(--ink);font-size:1.1rem;cursor:pointer}
+body.hcine-on{overflow:hidden}
+.hcine{position:fixed;inset:0;z-index:200;background:#000;animation:hCineIn .6s}
+.hcine[hidden],.hcust[hidden]{display:none}
+.hcine.out{animation:hCineOut .45s forwards}
+@keyframes hCineIn{from{opacity:0}}@keyframes hCineOut{to{opacity:0}}
+.hcinebox{position:absolute;inset:0}
+.hbars2::before,.hbars2::after{content:"";position:absolute;left:0;right:0;height:9vh;background:#000;z-index:2}
+.hbars2::before{top:0}.hbars2::after{bottom:0}
+.htitle{position:absolute;left:0;right:0;top:20%;z-index:3;text-align:center;pointer-events:none;opacity:0}
+.htitle.on{animation:hTitle 4.6s forwards}
+.htitle b{display:block;font:400 clamp(3rem,13vw,7.5rem) Lalezar,Tajawal,sans-serif;color:#f3ead8;letter-spacing:1px;text-shadow:0 0 30px rgba(255,60,30,.6),5px 5px 0 #000;-webkit-text-stroke:2px #16130f;animation:hFlick 2.2s steps(1) infinite}
+.htitle span{display:block;margin-top:4px;font:700 clamp(1rem,4vw,1.5rem) Tajawal,sans-serif;color:#ff6a4a;letter-spacing:3px}
+@keyframes hTitle{0%{opacity:0;transform:scale(1.6);filter:blur(10px)}12%{opacity:1;transform:scale(1);filter:blur(0)}14%{transform:translate(-6px,3px)}16%{transform:translate(5px,-2px)}18%{transform:none}80%{opacity:1}100%{opacity:0;transform:scale(.96)}}
+@keyframes hFlick{0%,100%{opacity:1}43%{opacity:.35}45%{opacity:1}71%{opacity:.6}72%{opacity:1}}
+.hskip{position:absolute;right:16px;bottom:calc(9vh + 14px);z-index:4;font:700 .95rem Tajawal,sans-serif;background:rgba(243,234,216,.12);color:#f3ead8;border:2px solid rgba(243,234,216,.5);border-radius:99px;padding:6px 16px;cursor:pointer}
+.hfade{position:absolute;inset:0;z-index:5;background:#000;opacity:0;pointer-events:none}
+.hcust{position:fixed;inset:0;z-index:190;background:#0d0b14;display:grid;grid-template-columns:1.1fr 1fr;color:#f3ead8;animation:hCineIn .5s}
+.hcustv{position:relative;min-height:0}
+.hcustbox{position:absolute;inset:0;touch-action:none;cursor:grab}
+.hcusthint{position:absolute;bottom:14px;left:0;right:0;text-align:center;font-weight:700;opacity:.6;pointer-events:none}
+.hcustp{overflow:auto;padding:22px 22px 18px;background:var(--paper,#f3ead8);color:var(--ink);border-inline-start:4px solid var(--ink);display:flex;flex-direction:column;gap:10px}
+.hcustp h2{margin:0;font:400 2rem Lalezar,Tajawal,sans-serif}
+#hCustOpts{display:flex;flex-direction:column;gap:13px}
+.hcrow{display:grid;gap:6px;flex-shrink:0}.hcrow>b{font-size:.9rem;display:block}
+.hcchips{display:flex;flex-wrap:wrap;gap:6px}
+.hcchip{font:700 .9rem Tajawal,sans-serif;border:3px solid var(--ink);border-radius:99px;background:var(--surf);color:var(--ink);padding:4px 13px;cursor:pointer;box-shadow:2px 2px 0 var(--ink)}
+.hcchip.on{background:var(--yellow);transform:translate(1px,1px);box-shadow:1px 1px 0 var(--ink)}
+.hcsw{width:34px;height:34px;border-radius:50%;border:3px solid var(--ink);background:var(--c);cursor:pointer;box-shadow:2px 2px 0 var(--ink)}
+.hcsw.on{outline:3px solid var(--yellow);outline-offset:2px;transform:scale(1.1)}
+.hcustbtns{display:flex;gap:10px;margin-top:auto;padding-top:8px;flex-shrink:0;position:sticky;bottom:0;background:var(--paper,#f3ead8)}.hcustbtns .btn{flex:1}
+@media (max-width:760px){
+  .hcust{grid-template-columns:1fr;grid-template-rows:44vh 1fr}
+  .hcustp{border-inline-start:0;border-top:4px solid var(--ink);padding:14px 14px 12px;gap:8px}
+  .hcustp h2{font-size:1.5rem}
+  .hcsw{width:30px;height:30px}
+}

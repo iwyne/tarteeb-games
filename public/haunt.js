@@ -25,7 +25,7 @@ function hauntNet(m) {
       else Object.assign(o, { tx: x, tz: z, ty: yaw, f });
       if ((f & 2) && !(o && o.f & 2) && !hg().me?.ghost) { if (!HU.lastSeenGhost || performance.now() - HU.lastSeenGhost > 6000) { sfx('whoosh'); hShake(.25); } HU.lastSeenGhost = performance.now(); }
     });
-    Object.keys(HU.oth).forEach(id => { if (!seen[id]) { const o = HU.oth[id]; if (o.mesh) o.mesh.visible = false; o.gone = true; } else HU.oth[id].gone = false; });
+    Object.keys(HU.oth).forEach(id => { const o = HU.oth[id]; if (!seen[id]) { if (o.dieUntil > performance.now()) return; if (o.mesh) o.mesh.visible = false; o.gone = true; } else o.gone = false; });
     if (m.near != null) { HU.near = m.near; HU.bat = m.bat; HU.dark = m.dark; HU.darkAt = performance.now(); }
     if (m.stun != null) { HU.stun = m.stun; HU.scr = m.scr; HU.burn = m.burn; HU.ghAt = performance.now(); }
     return;
@@ -34,6 +34,7 @@ function hauntNet(m) {
   const g = hg(); if (!g) return;
   const me = g.me, mine = id => id === S.me;
   if (m.ev === 'caught') { hJump(m.by); }
+  if ((m.ev === 'got' || m.ev === 'lost') && HU.oth[m.id] && HU.oth[m.id].mesh && HU.oth[m.id].mesh.userData.ch) { const o = HU.oth[m.id]; o.dieUntil = performance.now() + 3200; o.gone = false; o.mesh.visible = true; o.mesh.userData.ch.play('Death01', .1); }
   else if (m.ev === 'got') { hPop(`مسكت ${hname(m.id)}! 👻`, 'red'); sfx('scream'); }
   else if (m.ev === 'lost') { hPop(`👻 الشبح مسك ${hname(m.id)}`, 'red'); if (HU.me && Math.hypot(HU.me.x - m.x, HU.me.z - m.z) < 16) sfx('scream'); else sfx('whisper'); }
   else if (m.ev === 'key') { sfx('ding'); hPop(mine(m.id) ? '🔑 لقيت مفتاح!' : `🔑 ${hname(m.id)} لقى مفتاح`, 'yel'); }
@@ -242,6 +243,49 @@ function hNameTag(text, col) {
   const T = HU.T, c = cvs(256, 64, (x, w, h) => { x.font = '700 30px Tajawal, sans-serif'; x.textAlign = 'center'; x.textBaseline = 'middle'; x.lineWidth = 7; x.strokeStyle = '#16130f'; x.strokeText(text, w / 2, h / 2); x.fillStyle = col; x.fillText(text, w / 2, h / 2); });
   const s = new T.Sprite(new T.SpriteMaterial({ map: tex(c), depthWrite: false, transparent: true })); s.scale.set(1.1, .28, 1); return s;
 }
+// شخصيات Quaternius داخل اللعبة
+function charObj(id, isG) {
+  const T = HU.T, g = new T.Group(), p = S.players.find(q => q.id === id);
+  const ch = HU.HC.makeChar(isG ? null : (p && p.lk) || HU.HC.DEFAULT_LOOK, isG);
+  ch.root.rotation.y = Math.PI; g.add(ch.root);
+  if (isG) {
+    ch.root.scale.set(.95, 1.12, .95);
+    ch.root.traverse(c => { if (c.material) { c.material = c.material; c.material.transparent = true; c.material.opacity = .85; c.material.depthWrite = true; } });
+    const eyes = new T.PointLight(0xff2222, 1.5, 3, 2); eyes.position.set(0, 2.05, -.35); g.add(eyes); g.userData.eyes = eyes;
+  } else {
+    ch.root.scale.setScalar(.92);
+    const hand = ch.bones.hand_r;
+    if (hand) { const fl = new T.Group(); hand.add(fl); cyl(.03, .04, .2, hMat({ color: 0x2a2a2a }), 0, .1, .03, fl, 8); const lens = new T.Mesh(new T.CircleGeometry(.035, 10), new T.MeshBasicMaterial({ color: 0xfff1c8 })); lens.position.set(0, .205, .03); lens.rotation.x = -Math.PI / 2; fl.add(lens); g.userData.lens = lens; }
+    const cone = new T.Mesh(new T.ConeGeometry(1.3, 7, 20, 1, true), new T.MeshBasicMaterial({ color: 0xfff0c8, transparent: true, opacity: .028, blending: T.AdditiveBlending, depthWrite: false, side: T.DoubleSide }));
+    cone.rotation.x = -Math.PI / 2; cone.position.set(.25, 1.25, -3.8); g.add(cone); g.userData.cone = cone;
+    const tag = hNameTag(hname(id), hcol(id)); tag.position.y = 2.05; g.add(tag);
+  }
+  g.userData.ch = ch;
+  return g;
+}
+function charAnim(o, m, isG, dead, t, dt, ex, ez, iAmGhost) {
+  const ch = m.userData.ch, sp = o.spd || 0, u = m.userData;
+  if (isG) {
+    const stun = o.f & 4, near = Math.hypot(o.x - ex, o.z - ez);
+    if (stun) ch.play('Hit_Head', .1);
+    else if (sp > .5) ch.play('Walk_Formal_Loop', .3, Math.min(1.6, sp / 2.4));
+    else ch.play(near < 5 && !iAmGhost ? 'Spell_Simple_Idle_Loop' : 'Idle_Loop', .4);
+    ch.update(dt);
+    if (ch.bones.Head) ch.bones.Head.rotation.z += .35 + Math.sin(t / 900) * .1;
+    m.position.y = .12 + Math.sin(t / 420) * .08 + (Math.random() < .02 ? (Math.random() - .5) * .3 : 0);
+    const op = stun ? .4 + Math.random() * .5 : (o.f & 32 ? .95 : .7 + Math.sin(t / 130) * .1 + (Math.random() < .04 ? -.5 : 0));
+    ch.root.traverse(c => { if (c.material) c.material.opacity = op; });
+    if (u.eyes) u.eyes.intensity = iAmGhost ? 0 : stun ? 0 : 1.5;
+    return;
+  }
+  if (dead) ch.play('Idle_Loop', .3);
+  else if (sp < .4) ch.play(o.f & 1 ? 'Idle_Torch_Loop' : 'Idle_Loop', .25);
+  else if (sp < 5.2) ch.play('Jog_Fwd_Loop', .2, Math.max(.6, sp / 3.8));
+  else ch.play('Sprint_Loop', .2, sp / 6.2);
+  ch.update(dt);
+  const on = !!(o.f & 1) && !dead; if (u.cone) u.cone.visible = on; if (u.lens) u.lens.material.color.set(on ? 0xfff1c8 : 0x333333);
+  if (dead !== u.wasDead) { u.wasDead = dead; ch.root.traverse(c => { if (c.material) { c.material.transparent = dead; c.material.opacity = dead ? .35 : 1; } }); }
+}
 function survivorMesh(col, name) {
   const T = HU.T, g = new T.Group(), body = hMat({ color: col }), skin = hMat({ color: 0xd9b48c }), ink = hMat({ color: 0x16130f });
   const legs = [-1, 1].map(s => { const l = new T.Group(); l.position.set(s * .11, .78, 0); g.add(l); cyl(.075, .07, .7, hMat({ color: 0x2b2b33 }), 0, -.38, 0, l, 8); return l; });
@@ -355,20 +399,13 @@ addEventListener('blur', () => { HU.keys = {}; });
 
 function renderHaunt(body) {
   if (body.dataset.built !== 'haunt' || !$('#hW')) { hauntBuildUI(body); HU.gameKey = null; }
-  if (!HU.T) {
-    if (!HU.loading) { HU.loading = true; import('./vendor/three.module.min.js').then(T => { HU.T = T; HU.loading = false; if (hg()) renderHaunt($('#g2body')); }).catch(() => { HU.loading = false; const l = $('#hLoad'); if (l) l.textContent = 'ما قدرنا نحمّل الثري دي 😢 حدّث الصفحة'; }); }
+  if (!HU.T || !HU.libsDone) {
+    if (!HU.loading) { HU.loading = true; hLibs().then(() => { HU.libsDone = true; HU.loading = false; if (hg()) renderHaunt($('#g2body')); }).catch(() => { HU.loading = false; HU.libs = null; const l = $('#hLoad'); if (l) l.textContent = 'ما قدرنا نحمّل الثري دي 😢 حدّث الصفحة'; }); }
     return;
   }
-  if (!HU.r) {
-    HU.shadows = !isMob();
-    const r = HU.r = new HU.T.WebGLRenderer({ antialias: !isMob(), powerPreference: 'high-performance' });
-    r.setPixelRatio(Math.min(devicePixelRatio || 1, isMob() ? 1.25 : 1.5));
-    r.shadowMap.enabled = HU.shadows; r.shadowMap.type = HU.T.PCFSoftShadowMap;
-    r.toneMapping = HU.T.ACESFilmicToneMapping; r.toneMappingExposure = 1.05;
-    r.domElement.className = 'hcv';
-  }
+  hRenderer(); if (HX.mode) hxStop();
   if (!HU.built) hBuild();
-  const box = $('#hCvBox'); if (HU.r.domElement.parentNode !== box) box.appendChild(HU.r.domElement);
+  const box = $('#hCvBox'); if (HU.r.domElement.parentNode !== box) { box.appendChild(HU.r.domElement); HU.w = 0; }
   $('#hLoad').hidden = true;
   const g = S.g, me = g.me;
   // لعبة جديدة؟ نصفّر كل شي
@@ -496,13 +533,16 @@ function hFrame(t) {
   // اللاعبين الثانين
   let pool = 0; const lit = [];
   Object.entries(HU.oth).forEach(([id, o]) => {
+    if (o.dieUntil > t && o.mesh && o.mesh.userData.ch) { o.mesh.userData.ch.update(dt); return; }
     if (o.gone) return;
     const isG = !!(o.f & 2), dead = !!(o.f & 16);
-    if (!o.mesh || o.isG !== isG) { if (o.mesh) HU.scene.remove(o.mesh); o.mesh = isG ? ghostMesh() : survivorMesh(hcol(id), hname(id)); o.isG = isG; HU.scene.add(o.mesh); }
+    if (!o.mesh || o.isG !== isG) { if (o.mesh) HU.scene.remove(o.mesh); o.mesh = HU.charsOk ? charObj(id, isG) : isG ? ghostMesh() : survivorMesh(hcol(id), hname(id)); o.isG = isG; HU.scene.add(o.mesh); }
     const k = Math.min(1, dt * 12); const dx = o.tx - o.x, dz = o.tz - o.z; o.x += dx * k; o.z += dz * k; o.yaw += angD(o.ty, o.yaw) * k;
     const sp = Math.hypot(dx, dz); o.ph = sp > .02 ? o.ph + dt * 10 : o.ph * .9;
+    o.spd = (o.spd || 0) + ((sp * k / Math.max(dt, .001)) - (o.spd || 0)) * Math.min(1, dt * 6);
     const m = o.mesh; m.visible = !(o.f & 8);
     m.position.set(o.x, 0, o.z); m.rotation.y = o.yaw;
+    if (m.userData.ch) { charAnim(o, m, isG, dead, t, dt, ex, ez, ghost); if (!isG && (o.f & 1) && !dead) lit.push(o); return; }
     if (isG) {
       const u = m.userData, stun = o.f & 4;
       m.position.y = .15 + Math.sin(t / 420) * .1 + (stun ? (Math.random() - .5) * .08 : 0);

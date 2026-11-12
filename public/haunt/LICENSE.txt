@@ -1,0 +1,4 @@
+Characters: "Universal Base Characters" by Quaternius (quaternius.com) — CC0 1.0
+Animations: "Universal Animation Library" by Quaternius — CC0 1.0
+https://creativecommons.org/publicdomain/zero/1.0/
+The files were optimized (meshopt, webp textures, selected animations only).

@@ -5,7 +5,7 @@ const { WebSocketServer } = require('ws');
 
 const PORT = process.env.PORT || 3000;
 const PUB = path.join(__dirname, 'public');
-const MIME = { '.html': 'text/html; charset=utf-8', '.css': 'text/css; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.svg': 'image/svg+xml', '.png': 'image/png', '.ico': 'image/x-icon', '.woff2': 'font/woff2', '.webmanifest': 'application/manifest+json', '.json': 'application/json', '.mp3': 'audio/mpeg', '.mp4': 'video/mp4' };
+const MIME = { '.html': 'text/html; charset=utf-8', '.css': 'text/css; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.svg': 'image/svg+xml', '.png': 'image/png', '.ico': 'image/x-icon', '.woff2': 'font/woff2', '.webmanifest': 'application/manifest+json', '.json': 'application/json', '.mp3': 'audio/mpeg', '.mp4': 'video/mp4', '.glb': 'model/gltf-binary' };
 
 // تبادل كود تسجيل الدخول مع ديسكورد (وضع Activity فقط)
 function tokenRoute(req, res) {
@@ -35,7 +35,7 @@ const server = http.createServer((req, res) => {
     if (e) { res.writeHead(404); return res.end('404'); }
     const ext = path.extname(f);
     if (p === '/index.html') { const o = (req.headers['x-forwarded-proto'] || 'http').split(',')[0] + '://' + req.headers.host; d = Buffer.from(d.toString('utf8').replace('content="icons/og.png"', `content="${o}/icons/og.png"`)); }
-    res.writeHead(200, { 'Content-Type': MIME[ext] || 'application/octet-stream', 'Cache-Control': ['.woff2', '.png', '.ico', '.mp3', '.mp4'].includes(ext) || p.startsWith('/vendor/') ? 'public, max-age=604800' : 'no-cache' });
+    res.writeHead(200, { 'Content-Type': MIME[ext] || 'application/octet-stream', 'Cache-Control': ['.woff2', '.png', '.ico', '.mp3', '.mp4'].includes(ext) || p.startsWith('/vendor/') || p.startsWith('/haunt/') ? 'public, max-age=604800' : 'no-cache' });
     res.end(d);
   });
 });
@@ -90,6 +90,10 @@ for (const k of ['codes', 'hive', 'liars', 'outside', 'typing', 'jackaroo', 'dra
 const META = { uno: { bots: true }, codes: { teams: true }, hive: { teams: true, bots: true }, liars: { bots: true }, outside: { bots: true }, typing: { bots: true }, jackaroo: { teams: true, bots: true }, draw: {}, flip: { bots: true }, sus: { bots: true }, haunt: { bots: true } };
 const AVATARS = ['😎', '🦁', '🐪', '🦅', '🐺', '🦊', '🐯', '🐼', '🦄', '🐸', '👑', '🔥', '⚡', '🌙', '🎩', '🤠'];
 const cleanAv = a => AVATARS.includes(a) ? a : '';
+// شكل الشخصية بالبيت المسكون: جسم، بشرة، شعر، لون الشعر، اللبس، لونين، لحية
+const LOOKMAX = { b: 2, s: 4, h: 6, hc: 8, o: 3, c1: 12, c2: 12, bd: 2 };
+const cleanLook = l => { if (!l || typeof l !== 'object') return null; const o = {}; for (const k in LOOKMAX) { const v = +l[k]; o[k] = Number.isInteger(v) && v >= 0 && v < LOOKMAX[k] ? v : 0; } return o; };
+const randLook = () => { const l = Object.fromEntries(Object.entries(LOOKMAX).map(([k, n]) => [k, Math.random() * n | 0])); l.h = 1 + (Math.random() * 5 | 0); l.hc = Math.random() * 6 | 0; return l; };
 const optsView = (r, p) => ({ stack: !!r.opts.stack, turn: r.opts.turn || 15, lock: !!r.opts.lock, hasPass: !!r.opts.pass, pass: r.host === p.id ? (r.opts.pass || '') : null, target: r.opts.target || 5, imps: r.opts.imps || 1, doctor: !!r.opts.doctor, map: r.opts.map || 'ship', nwords: r.opts.words ? r.opts.words.length : 0, wordsText: r.host === p.id ? (r.opts.wordsText || '') : '' });
 const maxOf = r => GAMES[r.game].max;
 
@@ -211,7 +215,7 @@ function view(r, p) {
   if (r.game !== 'uno') {
     return {
       t: 'state', game: r.game, min: GAMES[r.game].min, max: maxOf(r), code: r.code, phase: r.phase, me: p.id, spec: !!p.spec, specs: r.specs.map(s => ({ id: s.id, name: s.name })),
-      players: r.players.map((q, i) => ({ id: q.id, name: q.name, n: q.hand ? q.hand.length : 0, on: q.online, h: q.id === r.host, tm: r.phase === 'lobby' ? i % 2 : q.team, w: q.wins || 0, av: q.av || '', bot: !!q.bot })),
+      players: r.players.map((q, i) => ({ id: q.id, name: q.name, n: q.hand ? q.hand.length : 0, on: q.online, h: q.id === r.host, tm: r.phase === 'lobby' ? i % 2 : q.team, w: q.wins || 0, av: q.av || '', bot: !!q.bot, lk: q.look || null })),
       opts: optsView(r, p), teams: !!META[r.game].teams, score: r.score, winTeam: r.winTeam, hand: [], top: null, color: null, dir: 1, turn: null, deck: 0,
       left: r.phase === 'play' && r.deadline ? Math.max(0, r.deadline - Date.now()) : 0, ok: [], pending: null, catch: null,
       log: r.log.slice(-4), winner: r.winner, g: r.phase === 'lobby' ? null : GAMES[r.game].view(r, p)
@@ -521,10 +525,11 @@ wss.on('connection', (ws, req) => {
     const c = ws.ctx; if (!c) return;
     const { r, p } = c;
     if (p.spec && !['chat', 'emoji', 'leave'].includes(m.t)) return; // المتفرّج يشوف ويسولف بس
-    if (r.game !== 'uno' && !['start', 'teams', 'shuffle', 'again', 'leave', 'kick', 'chat', 'emoji', 'setgame', 'opt', 'addbot', 'tolobby'].includes(m.t)) { if (GAMES[r.game].act(r, p, m) === 'quiet') return; return after(r); }
+    if (r.game !== 'uno' && !['start', 'teams', 'shuffle', 'again', 'leave', 'kick', 'chat', 'emoji', 'setgame', 'opt', 'addbot', 'tolobby', 'look'].includes(m.t)) { if (GAMES[r.game].act(r, p, m) === 'quiet') return; return after(r); }
     switch (m.t) {
       case 'start': if (r.host === p.id && r.phase === 'lobby' && r.players.length >= GAMES[r.game].min) startGame(r); break;
       case 'play': play(r, p, m.id, m.color); break;
+      case 'look': { const l = cleanLook(m.v); if (l && rate(p, 'lk', 400)) p.look = l; else return; break; }
       case 'emoji':
         if (EMOJIS.includes(m.e) && rate(p, 'e', 700)) cast(r, { t: 'react', from: p.id, e: m.e });
         return;
@@ -570,7 +575,7 @@ wss.on('connection', (ws, req) => {
       }
       case 'addbot':
         if (r.host === p.id && r.phase === 'lobby' && META[r.game].bots && r.players.length < maxOf(r)) {
-          const bp = addPlayer(r, 'بوت ' + (r.players.filter(q => q.bot).length + 1), '🤖'); bp.bot = true;
+          const bp = addPlayer(r, 'بوت ' + (r.players.filter(q => q.bot).length + 1), '🤖'); bp.bot = true; bp.look = randLook();
         }
         break;
       case 'teams':

@@ -393,6 +393,7 @@ function render() {
   if (!S) { $('#chatbox').hidden = true; $('#emojiBar').hidden = true; chatLog = []; unread = 0; badge(); }
   if (ph !== 'game') $('#colorModal').hidden = true;
   if (ph === 'lobby') renderLobby();
+  if (typeof hauntLobby === 'function') hauntLobby(ph);
   if (ph === 'game') renderGame();
   if (ph === 'game2') renderOther();
 }
