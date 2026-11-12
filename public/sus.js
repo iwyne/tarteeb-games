@@ -71,7 +71,7 @@ function susNet(m) {
     SU.me = { x: m.x, y: m.y, dir: SU.me ? SU.me.dir : 1, ph: 0 }; SU.lastX = m.x; SU.lastY = m.y; return;
   }
   if (m.t === 'sus') {
-    if (m.ev === 'killed') { SU.killedFx = Date.now(); SU.killer = m.by; SU.killKind = m.kind || 'stab'; closeTask(); closeCams(); if (SUSMAP.theme === 'forest') { sfx('scream'); setTimeout(() => killSounds(SU.killKind), 1700); } else killSounds(SU.killKind); renderSusOverlays(); }
+    if (m.ev === 'killed') { SU.killedFx = Date.now(); SU.killer = m.by; SU.killKind = m.kind || 'stab'; closeTask(); closeCams(); if (SUSMAP.theme === 'forest') { SU.scareV = pickScare(); SU.scareMs = SU.scareV ? 1250 : 1700; if (!SU.scareV) sfx('scream'); setTimeout(() => killSounds(SU.killKind), SU.scareMs); } else killSounds(SU.killKind); renderSusOverlays(); }
     else if (m.ev === 'kill') { killFlash(); killPip(m.kind, scol(S.me), m.vc); }
     else if (m.ev === 'blocked') { sPop('🛡️ عليه درع! ما قدرت تقتله', 'red'); sfx('nope'); }
     else if (m.ev === 'saved') { sPop(m.id === S.me ? '🛡️ أحد حاول يقتلك… والدرع حماك!' : `🩺 درعك أنقذ ${sname(m.id)}!`, 'green'); sfx('win'); }
@@ -511,9 +511,9 @@ function renderSusOverlays() {
   }
   if (intro.hidden) intro.dataset.k = '';
   // انقتلت
-  const scareMs = SUSMAP.theme === 'forest' ? 1700 : 0, ka = SU.killedFx ? Date.now() - SU.killedFx : 1e9;
+  const scareMs = SUSMAP.theme === 'forest' ? (SU.scareMs || 1700) : 0, ka = SU.killedFx ? Date.now() - SU.killedFx : 1e9;
   const sc2 = $('#sScare'); sc2.hidden = !(ka < scareMs);
-  if (!sc2.hidden && sc2.dataset.k !== String(SU.killedFx)) { sc2.dataset.k = String(SU.killedFx); sc2.innerHTML = `<div class="sface">${faceSvg()}</div>`; setTimeout(renderSusOverlays, scareMs - ka + 20); }
+  if (!sc2.hidden && sc2.dataset.k !== String(SU.killedFx)) { sc2.dataset.k = String(SU.killedFx); sc2.innerHTML = ''; if (SU.scareV) { sc2.className = 'sscare vid'; playScare(sc2, SU.scareV); } else { sc2.className = 'sscare'; sc2.innerHTML = `<div class="sface">${faceSvg()}</div>`; } setTimeout(renderSusOverlays, scareMs - ka + 20); }
   const kd = $('#sKilled'), kOn = SU.killedFx && ka >= scareMs && ka < 3800 + scareMs;
   kd.hidden = !kOn;
   if (kOn && kd.dataset.k !== String(SU.killedFx)) { kd.dataset.k = String(SU.killedFx); kd.innerHTML = killAnim(SU.killKind, SU.killer, me ? me.c : 0) + `<h2 class="kdead">انقتلت!</h2><p class="kdead2">تقدر تكمّل مهامك كشبح 👻</p>`; setTimeout(renderSusOverlays, 3900); }
@@ -839,7 +839,7 @@ function scaresTick(t) {
   if (r < .38) { SU.eyes = { t0: t, a: Math.random() * 6.28, n: 1 + (Math.random() * 3 | 0) }; sfx('whisper'); }
   else if (r < .62) { SU.blackout = t + 170; setTimeout(() => { SU.blackout = performance.now() + 120; sfx('static'); }, 360); sfx('static'); }
   else if (r < .86) { SU.shadow = { t0: t, d: Math.random() < .5 ? 1 : -1, y: .3 + Math.random() * .4 }; sfx('whoosh'); }
-  else { const w = $('#susW'); if (w) { const d = document.createElement('div'); d.className = 'sscare quick'; d.innerHTML = `<div class="sface">${faceSvg()}</div>`; w.appendChild(d); setTimeout(() => d.remove(), 420); sfx('scream'); } }
+  else { const w = $('#susW'), v = pickScare(); if (w) { const d = document.createElement('div'); w.appendChild(d); if (v) { d.className = 'sscare vid'; playScare(d, v); setTimeout(() => d.remove(), 1100); } else { d.className = 'sscare quick'; d.innerHTML = `<div class="sface">${faceSvg()}</div>`; setTimeout(() => d.remove(), 420); sfx('scream'); } } }
 }
 function scaresDraw(ctx, W, H, t, radPx) {
   const e = SU.eyes;
@@ -911,4 +911,14 @@ function killSounds(kind) {
   const at = (ms, n) => setTimeout(() => sfx(n), ms);
   ({ slap: () => { at(700, 'slap'); at(850, 'boing'); at(1900, 'thud'); }, choke: () => { at(500, 'choke'); at(1100, 'choke'); at(2100, 'thud'); }, stab: () => { at(450, 'stab'); at(800, 'stab'); at(1120, 'stab'); at(1900, 'thud'); },
     smash: () => { at(250, 'whoosh'); at(850, 'smash'); }, zap: () => { at(400, 'zap'); at(1900, 'thud'); }, kick: () => { at(600, 'slap'); at(650, 'whoosh'); at(1900, 'ding'); } }[kind] || (() => at(300, 'bang')))();
+}
+
+// ---------- مقاطع الفجعة (فيديو بصوته) ----------
+const SCARE_SRC = ['sounds/scare1.mp4', 'sounds/scare2.mp4'];
+function scareVids() { if (!SU.vids) SU.vids = SCARE_SRC.map(src => { const v = document.createElement('video'); v.src = src; v.preload = 'auto'; v.playsInline = true; v.setAttribute('playsinline', ''); return v; }); return SU.vids; }
+// نختار مقطع (٤ من ٥ مرات) أو الوجه المرسوم
+function pickScare() { const vs = scareVids(); if (Math.random() < .2) return null; SU.lastVid = ((SU.lastVid ?? (Math.random() * vs.length | 0)) + 1) % vs.length; return vs[SU.lastVid]; }
+function playScare(box, v) {
+  box.appendChild(v); v.muted = !sfx.on(); try { v.currentTime = 0; } catch {}
+  const p = v.play(); if (p && p.catch) p.catch(() => { v.muted = true; v.play().catch(() => {}); sfx('scream'); });
 }

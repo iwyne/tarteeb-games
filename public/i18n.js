@@ -26,6 +26,16 @@
     ['🩺 قرّب من أحد واضغط «درع» — يحميه من القتل لين الاجتماع الجاي', '🩺 Get close to someone and press Shield — it protects them until the next meeting'], ['أنت من الطاقم، وتقدر تعطي درع لشخص واحد كل جولة', "You're crew, and you can shield one player each round"], ['حط المؤشر بالمنطقة الخضراء واتركه', 'Drop the slider in the green zone'], ['احفظ الترتيب…', 'Memorize the order…'], ['عيده بنفس الترتيب', 'Repeat it in the same order'], ['اضغطها كلها', 'Tap them all'], ['الرمز:', 'Code:'], ['المطلوب', 'Target'], ['الحين', 'Now'], ['اضغط مطوّل يتغيّر أسرع', 'Hold to change faster'], ['جاهز', 'Ready'],
     ['الماب', 'Map'], ['🚀 السفينة', '🚀 Spaceship'], ['🌲 الغابة الملعونة (رعب)', '🌲 Cursed Forest (horror)'], ['🌲 الغابة الملعونة', '🌲 Cursed Forest'], ['ناجين', 'Survivors'], ['دقّوا الجرس!', 'Ring the bell!'], ['🔦 طفّ الأنوار', '🔦 Lights out'], ['🩸 افتح الشق', '🩸 Open the rift'], ['🔦 الأنوار طافية! روحوا شغّلوا المولّد ببرج الراديو', '🔦 Lights are out! Restart the generator at the radio tower'],
     ['كلمة سر الغرفة:', 'Room password:'], ['تم التطوير من قبل', 'Developed by'],
+    // ===== البيت المسكون =====
+    ['البيت المسكون', 'Haunted House'], ['ثري دي · من 2 إلى 10', '3D · 2 to 10'], ['من 2 إلى 10 لاعبين (ثري دي، والبوتات تكمّل)', '2 to 10 players (3D, bots can fill in)'],
+    ['أنت الشبح 👻', "You're the Ghost 👻"], ['ناجي 🔦', 'Survivor 🔦'], ['مختبي بالدولاب 🤫', 'Hiding in the wardrobe 🤫'], ['هربت 🚪 تتفرّج', 'Escaped 🚪 spectating'], ['مسكك الشبح — صرت روح 👁', 'Caught — you are a spirit now 👁'],
+    ['استخدم', 'Use'], ['الكشاف', 'Flashlight'], ['اركض', 'Run'], ['اصرخ', 'Scream'], ['امسك', 'Grab'], ['افتح', 'Open'], ['تابع', 'Follow'], ['التقط', 'Pick up'], ['بطارية', 'Battery'], ['اختبي', 'Hide'], ['اطلع', 'Get out'],
+    ['التقط المفتاح 🔑', 'Pick up the key 🔑'], ['خذ البطارية 🔋', 'Take the battery 🔋'], ['اختبي بالدولاب 🤫', 'Hide in the wardrobe 🤫'], ['اطلع من الدولاب', 'Get out of the wardrobe'], ['افتح الدولاب', 'Open the wardrobe'],
+    ['الباب مفتوح!', 'Door is open!'], ['جاري فتح باب البيت…', 'Opening the front door…'], ['اضغط على الشاشة عشان تلف بالماوس 🖱️', 'Click the screen to look with the mouse 🖱️'],
+    ['أنت من الناجين', "You're a survivor"], ['أنت الشبح', "You're the Ghost"], ['فاز الناجين 🔦', 'Survivors win 🔦'], ['فاز الشبح 👻', 'The Ghost wins 👻'],
+    ['🚪 الباب الأمامي انفتح! اهربوا للمدخل', '🚪 The front door is open! Run to the entrance'], ['🔑 لقيت مفتاح!', '🔑 You found a key!'], ['🔋 شحنت الكشاف', '🔋 Flashlight recharged'], ['الدولاب فاضي…', 'The wardrobe is empty…'],
+    ['🔥 انحرقت بالكشاف! تجمّدت', '🔥 Burned by a flashlight! Frozen'], ['🔦 حرقت الشبح! اهرب الحين', '🔦 You burned the Ghost! Run!'], ['👻 الشبح صحى…', '👻 The Ghost woke up…'], ['👻 صحيت! روح امسكهم', '👻 You woke up! Go get them'],
+    ['🚪 هربت من البيت!', '🚪 You escaped the house!'], ['مسكك الشبح 👻 صرت روح، تقدر تتفرّج وتتابع', 'The Ghost got you 👻 You are a spirit now, watch and follow'],
     // ===== ورق ورقة ثيمات =====
     ['ورق', 'Paper'], ['ليل', 'Night'], ['بحر', 'Sea'], ['غروب', 'Sunset'], ['نعناع', 'Mint'], ['ليلكي', 'Lilac'], ['ورد', 'Rose'],
     // ===== اللوبي =====
