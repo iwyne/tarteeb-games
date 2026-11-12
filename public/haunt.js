@@ -12,7 +12,7 @@ const angD = (a, b) => { let d = (a - b) % (Math.PI * 2); if (d > Math.PI) d -= 
 const LOCKN = { study: 'مكتب الجد', master: 'الغرفة الكبيرة', attic: 'العلّية' };
 const RELICN = ['دمية مكسورة', 'صورة العائلة', 'الشمعة السودا', 'كتاب الطقوس'];
 const LVN = ['القبو', 'الأرضي', 'العلوي', 'العلّية'];
-const hset = (() => { let s = {}; try { s = JSON.parse(localStorage.getItem('tarteeb-hset')) || {}; } catch {} return Object.assign({ sens: 1, q: isMob() ? 0 : 1 }, s); })();
+const hset = (() => { let s = {}; try { s = JSON.parse(localStorage.getItem('tarteeb-hset')) || {}; } catch {} return Object.assign({ sens: 1, q: isMob() ? 0 : 1, mv: .7 }, s); })();
 const hsave = () => { try { localStorage.setItem('tarteeb-hset', JSON.stringify(hset)); } catch {} };
 const pick = a => a[Math.random() * a.length | 0];
 
@@ -31,16 +31,62 @@ function snd(n, vol = 1, pos, ref = 4) {
     if (!b || !HU.scene) return; const T = HU.T;
     const a = pos ? new T.PositionalAudio(HU.listener) : new T.Audio(HU.listener);
     a.setBuffer(b); a.setVolume(vol);
+    if (HU.busS) { a.gain.disconnect(); a.gain.connect(HU.busS); }
     if (pos) { a.setRefDistance(ref); a.setRolloffFactor(1.6); const o = new T.Object3D(); o.position.copy(pos); o.add(a); HU.scene.add(o); a.onEnded = () => { HU.scene.remove(o); try { a.disconnect(); } catch {} }; }
     try { a.play(); } catch {}
   };
   hsLoad(n).then(go);
 }
+// أصوات القوائم (تخويف خفيف لما تمر على زر أو تضغطه)
+const HUI = {}; let huiAt = 0;
+function hui(n, v = .7) { if (!sfx.on()) return; try { const a = (HUI[n] = HUI[n] || new Audio('haunt/snd/' + n + '.mp3?v=1')).cloneNode(); a.volume = Math.min(1, sfx.vol() * v); const pr = a.play(); if (pr && pr.catch) pr.catch(() => {}); } catch {} }
+const H_UI = '.hauntw button,.hstage button,.hcust button,.hcine button';
+document.addEventListener('pointerover', e => { if (e.pointerType !== 'mouse') return; const b = e.target.closest && e.target.closest(H_UI); if (!b || b.disabled || b === HU.hovB) return; HU.hovB = b; const n = performance.now(); if (n - huiAt > 90) { huiAt = n; hui(Math.random() < .5 ? 'ui_hover' : 'ui_hover2', .45); } });
+document.addEventListener('click', e => { const b = e.target.closest && e.target.closest('.hauntw button,.hstage button'); if (b && !b.disabled) hui(b.classList.contains('red') ? 'ui_click2' : 'ui_click', .6); }, true);
+// موسيقى القوائم (اللوبي والمقدمة ومصمم الشخصية)
+let HMUS = null;
+function hMenuMusic(on) {
+  if (on && sfx.on() && hset.mv > 0) {
+    if (!HMUS) { HMUS = new Audio('haunt/snd/music_menu.mp3?v=1'); HMUS.loop = true; }
+    HMUS.volume = Math.min(1, hset.mv * .55);
+    if (HMUS.paused) { const pr = HMUS.play(); if (pr && pr.catch) pr.catch(() => { HU.musWait = 1; }); }
+  } else if (HMUS && !HMUS.paused) HMUS.pause();
+  HU.musOn = on;
+}
+document.addEventListener('pointerdown', () => { if (HU.musWait && HU.musOn) { HU.musWait = 0; hMenuMusic(true); } });
+// لوحة الصوت: الموسيقى والمؤثرات كل وحدة بروحها
+function hVolApply() {
+  if (HU.busM) HU.busM.gain.value = hset.mv;
+  if (HU.busS) HU.busS.gain.value = sfx.vol();
+  if (HMUS) HMUS.volume = Math.min(1, hset.mv * .55);
+  if (HU.musOn) hMenuMusic(true);
+}
+function hVolPanel(el) {
+  if (!el) return; el.hidden = !el.hidden; if (el.hidden) return;
+  const pc = v => Math.round(v * 100);
+  el.innerHTML = `<label><span>🎵 الموسيقى <i id="hVmT">${pc(hset.mv)}%</i></span><input type="range" min="0" max="1" step=".05" value="${hset.mv}" data-k="mv"></label>
+    <label><span>🔊 المؤثرات <i id="hVsT">${pc(sfx.vol())}%</i></span><input type="range" min="0" max="1" step=".05" value="${sfx.vol()}" data-k="sv"></label>`;
+  el.querySelectorAll('input').forEach(i => i.oninput = () => {
+    const v = +i.value;
+    if (i.dataset.k === 'mv') { hset.mv = v; hsave(); el.querySelector('#hVmT').textContent = pc(v) + '%'; }
+    else { sfx.vol(v); el.querySelector('#hVsT').textContent = pc(v) + '%'; }
+    hVolApply();
+  });
+  el.querySelectorAll('input').forEach(i => i.onchange = () => hui(i.dataset.k === 'mv' ? 'ui_ok' : 'ui_click', .8));
+}
+// دقات القلب: تعلى وتسرع كل ما قرّب الوحش
+function hHeart(k) {
+  if (!HU.listener) return;
+  if (!HU.heart) { if (HU.heartLoading || k <= 0) return; HU.heartLoading = 1; hsLoad('heart_loop').then(b => { if (!b) return; const a = new HU.T.Audio(HU.listener); a.setBuffer(b); a.setLoop(true); a.setVolume(0); if (HU.busS) { a.gain.disconnect(); a.gain.connect(HU.busS); } HU.heart = a; }); return; }
+  const a = HU.heart, on = k > .02 && sfx.on();
+  if (on && !a.isPlaying) a.play(); else if (!on && a.isPlaying) a.pause();
+  if (on) { a.setVolume(Math.min(1.2, k * 1.3)); a.setPlaybackRate(.85 + k * .65); }
+}
 function hsAmb(on) {
   if (!HU.listener) return;
   if (!on || !hsOn()) { HSND.amb.forEach(a => { try { a.stop(); } catch {} }); HSND.amb = []; HSND.ambOn = false; return; }
   if (HSND.ambOn) return; HSND.ambOn = true;
-  [['amb_main', .4], ['amb_2', .22]].forEach(([n, v]) => hsLoad(n).then(b => { if (!b || !HSND.ambOn) return; const a = new HU.T.Audio(HU.listener); a.setBuffer(b); a.setLoop(true); a.setVolume(v); a.play(); HSND.amb.push(a); }));
+  [['amb_main', .4], ['wind', .3], ['voices', .12]].forEach(([n, v]) => hsLoad(n).then(b => { if (!b || !HSND.ambOn) return; const a = new HU.T.Audio(HU.listener); a.setBuffer(b); a.setLoop(true); a.setVolume(v); if (HU.busM) { a.gain.disconnect(); a.gain.connect(HU.busM); } a.play(); HSND.amb.push(a); }));
 }
 
 // ---------- الشبكة ----------
@@ -55,7 +101,7 @@ function hauntNet(m) {
       if (!o || Math.hypot(o.x - x, o.z - z) > 6 || o.lv !== lv) HU.oth[id] = Object.assign(o || {}, { x, z, tx: x, tz: z, yaw, ty: yaw, f, lv });
       else Object.assign(o, { tx: x, tz: z, ty: yaw, f, lv });
       // أول ما يبان لك الشبح: ضربة صوت
-      if ((f & 2) && wasGone && g && g.me && !g.me.ghost && g.sub === 'play') { const n = performance.now(); if (!HU.lastSeenGhost || n - HU.lastSeenGhost > 8000) { snd(pick(['hit_0', 'hit_3', 'hit_6', 'hit_8']), .9); hShake(.25); } HU.lastSeenGhost = n; }
+      if ((f & 2) && wasGone && g && g.me && !g.me.ghost && g.sub === 'play') { const n = performance.now(); if (!HU.lastSeenGhost || n - HU.lastSeenGhost > 8000) { snd('st_' + (Math.random() * 4 | 0), .9); hShake(.25); } HU.lastSeenGhost = n; }
     });
     Object.keys(HU.oth).forEach(id => { const o = HU.oth[id]; if (!seen[id]) { if (o.dieUntil > performance.now()) return; if (o.mesh) o.mesh.visible = false; o.gone = true; } else o.gone = false; });
     if (m.near != null) { HU.near = m.near; HU.bat = m.bat; HU.dark = m.dark || 0; HU.darkAt = performance.now(); } else HU.near = 99;
@@ -69,6 +115,7 @@ function hauntNet(m) {
   if (m.ev === 'caught') {
     const o = HU.oth[m.id];
     if (o && o.mesh && o.mesh.userData.ch) { o.dieUntil = performance.now() + 3000; o.gone = false; o.mesh.visible = true; o.mesh.userData.ch.play('Death01', .1); }
+    const gO = HU.oth[m.by]; if (gO && gO.mesh && gO.mesh.userData.ch) { gO.scratchT = performance.now() + 1300; gO.mesh.userData.ch.play('Zombie_Scratch', .1); }
     if (mine(m.id)) hJump();
     else if (mine(m.by)) { hPop(`مسكت ${hname(m.id)}! 👻`, 'red'); snd(pick(['laugh_0', 'laugh_1', 'laugh_2']), .9); snd('crack_' + (Math.random() * 4 | 0), .8); }
     else { hPop(`👻 الشبح مسك ${hname(m.id)}`, 'red'); snd('scream_' + (Math.random() * 5 | 0), 1, v3(m.lv, m.x, m.z), 6); }
@@ -314,6 +361,7 @@ function hBuild() {
   const ol = Mp.PROPS.find(p => p.m === 'vintage_oil_lamp'); if (ol) { HU.candle.position.set(ol.x, Mp.baseY(ol.lv) + (ol.y || 0) + .5, ol.z); HU.candle.userData.lv = ol.lv; }
   const cam = HU.cam = new T.PerspectiveCamera(72, 1, .05, 70); cam.rotation.order = 'YXZ'; scene.add(cam);
   HU.listener = new T.AudioListener(); cam.add(HU.listener);
+  { const ac = HU.listener.context; HU.busM = ac.createGain(); HU.busS = ac.createGain(); HU.busM.connect(HU.listener.getInput()); HU.busS.connect(HU.listener.getInput()); hVolApply(); }
   const sp = HU.spot = new T.SpotLight(0xfff1d6, 70, 30, .62, .45, 1.4); sp.position.set(.18, -.2, 0); cam.add(sp); sp.target.position.set(.1, -.3, -5); cam.add(sp.target);
   if (HU.shadows) { sp.castShadow = true; sp.shadow.mapSize.set(1024, 1024); sp.shadow.camera.near = .2; sp.shadow.camera.far = 26; sp.shadow.bias = -.0015; sp.shadow.normalBias = .02; }
   HU.glow = new T.PointLight(0xfff1d6, 0, 3.5, 2); cam.add(HU.glow);
@@ -422,12 +470,12 @@ function hNameTag(text, col) {
 }
 function charObj(id, isG) {
   const T = HU.T, g = new T.Group(), p = S.players.find(q => q.id === id);
-  const ch = HU.HC.makeChar(isG ? null : (p && p.lk) || HU.HC.DEFAULT_LOOK, isG);
+  const lk = HU.HC.cleanLook((p && p.lk) || HU.HC.DEFAULT_LOOK);
+  const ch = HU.HC.makeChar(lk, isG);
   ch.root.rotation.y = Math.PI; g.add(ch.root);
   if (isG) {
-    ch.root.scale.set(.95, 1.14, .95);
-    ch.root.traverse(c => { if (c.material) { c.material.transparent = true; c.material.opacity = .85; } });
-    const eyes = new T.PointLight(0xff2222, 1.5, 3, 2); eyes.position.set(0, 2.05, -.35); g.add(eyes); g.userData.eyes = eyes;
+    const ec = HU.HC.MEYES[lk.me][1];
+    const eyes = new T.PointLight(ec === '#000000' ? 0x660000 : ec, 1.2, 3, 2); eyes.position.set(0, 1.9 * ch.root.scale.y, -.35); g.add(eyes); g.userData.eyes = eyes;
   } else {
     ch.root.scale.setScalar(.92);
     const hand = ch.bones.hand_r;
@@ -443,15 +491,17 @@ function charAnim(o, m, isG, dead, t, dt, ex, ez, iAmGhost) {
   const ch = m.userData.ch, sp = o.spd || 0, u = m.userData;
   if (isG) {
     const stun = o.f & 4, near = Math.hypot(o.x - ex, o.z - ez);
-    if (stun) ch.play('Hit_Head', .1);
-    else if (sp > .5) ch.play(sp > 3.6 ? 'Jog_Fwd_Loop' : 'Walk_Formal_Loop', .3, Math.min(1.6, sp / (sp > 3.6 ? 3.8 : 2.4)));
-    else ch.play(near < 5 && !iAmGhost ? 'Spell_Simple_Idle_Loop' : 'Idle_Loop', .4);
+    if (o.scratchT > t) { /* يخمش */ }
+    else if (stun) ch.play('Hit_Knockback', .1);
+    else if (sp > 3.2) ch.play('Sprint_Loop', .25, Math.min(1.5, sp / 5.2));
+    else if (sp > .5) ch.play('Zombie_Walk_Fwd_Loop', .3, Math.min(2.4, .8 + sp / 2.2));
+    else if (near < 3.2 && !iAmGhost && t > (o.scrAt || 0)) { o.scrAt = t + 2600; o.scratchT = t + 1300; ch.play('Zombie_Scratch', .15); }
+    else ch.play('Zombie_Idle_Loop', .4);
     ch.update(dt);
-    if (ch.bones.Head) ch.bones.Head.rotation.z += .35 + Math.sin(t / 900) * .1;
-    m.position.y += .12 + Math.sin(t / 420) * .08 + (Math.random() < .02 ? (Math.random() - .5) * .3 : 0);
-    const op = stun ? .4 + Math.random() * .5 : (o.f & 32 ? .95 : .72 + Math.sin(t / 130) * .1 + (Math.random() < .04 ? -.5 : 0));
-    ch.root.traverse(c => { if (c.material) c.material.opacity = op; });
-    if (u.eyes) u.eyes.intensity = iAmGhost || stun ? 0 : 1.5;
+    // يتقطّع شوي كأنه مو من هالعالم
+    if (Math.random() < .012) { m.position.x += (Math.random() - .5) * .25; m.position.z += (Math.random() - .5) * .25; }
+    const vis = stun ? (Math.random() < .5 ? 1 : 0) : 1; ch.root.visible = !!vis;
+    if (u.eyes) u.eyes.intensity = iAmGhost || stun ? 0 : 1.2 + Math.sin(t / 90) * .3;
     if (!iAmGhost && t > (o.growlAt || 0) && near < 18) { o.growlAt = t + 5000 + Math.random() * 7000; snd(pick(['growl_0', 'growl_1', 'growl_2', 'growl_3', 'moan_0', 'moan_1', 'moan_2', 'moan_3']), .9, m.position.clone().setY(m.position.y + 1.8), 3); }
     return;
   }
@@ -481,6 +531,7 @@ function hauntBuildUI(body) {
     <div class="hrole" id="hRole"></div>
     <button type="button" class="sbtn hmapb" id="hMapB" title="الخريطة (M)">🗺️<b>الخريطة</b></button>
     <button type="button" class="hsetb" id="hSetB" title="الإعدادات">⚙️</button>
+    <button type="button" class="hsetb hvolb" id="hVolB" title="الصوت">🔊</button><div id="hVolP" class="hvolp" hidden></div>
     <div class="hbars" id="hBars"><div class="hbar bat"><span>🔦</span><i id="hBat"></i></div><div class="hbar sta"><span>🏃</span><i id="hSta"></i></div></div>
     <div class="hbtns" id="hBtns">
       <button type="button" class="sbtn big yel" id="hUseB">✋<b>استخدم</b></button>
@@ -504,7 +555,7 @@ function hauntBuildUI(body) {
   </div>`;
   const w = $('#hW');
   w.addEventListener('pointerdown', e => {
-    if (e.target.closest('button,.smapbox,.hset') || !hg()) return;
+    if (e.target.closest('button,.smapbox,.hset,.hvolp') || !hg()) return;
     if (e.pointerType === 'mouse') { if (!document.pointerLockElement && HU.r) { try { HU.r.domElement.requestPointerLock(); } catch {} } else if (hg().me && hg().me.ghost) hCatch(); return; }
     const rc = w.getBoundingClientRect();
     if (e.clientX - rc.left < rc.width * .45 && !HU.joy) { HU.joy = { id: e.pointerId, ox: e.clientX, oy: e.clientY, dx: 0, dy: 0 }; hJoyDraw(); }
@@ -530,6 +581,7 @@ function hauntBuildUI(body) {
   $('#hMapB').onclick = () => hMapToggle();
   $('#hMapBox').onclick = e => { if (e.target.id === 'hMapBox' || e.target.tagName === 'SMALL') hMapToggle(false); };
   $('#hSetB').onclick = () => hSettings();
+  $('#hVolB').onclick = () => hVolPanel($('#hVolP'));
 }
 const hSpirit = () => { const g = hg(); return !g || !g.me || (!g.me.ghost && (!g.me.alive || g.me.escaped)); };
 function hSpiritLv(d) { if (!hSpirit()) return; HU.follow = 0; HU.lv = Math.max(0, Math.min(HMAP.LV - 1, HU.lv + d)); sfx('flick'); }
@@ -618,7 +670,7 @@ function renderHaunt(body) {
     intro.dataset.k = gk;
     const G = g.ghosts.map(hname).join(' و ');
     intro.innerHTML = !me ? `<h2>القصر المسكون 🏚️</h2><p>تتفرّج على اللعبة</p>` : ghost
-      ? `<div class="hbig">👻</div><h2>أنت الشبح</h2><p>القصر بيتك. لا تخليهم يكمّلون الطقس ويهربون.</p><ul><li>تشوف بالظلام، والكشافات تبان لك من بعيد</li><li>الكشاف لو انوجّه عليك <b>يحرقك ويجمّدك</b>، جيهم من وراهم</li><li>😱 الصرخة تطفّي كشافاتهم، و🪞 المرايا تنقلك لمراية ثانية</li><li>أول مسكة تحبسهم بقفص القبو، والثانية تقتلهم</li></ul>`
+      ? `<div class="hbig">👻</div><h2>أنت الشبح</h2><p>القصر بيتك. لا تخليهم يكمّلون الطقس ويهربون.</p><ul><li>تشوف بالظلام، والكشافات تبان لك من بعيد</li><li>الكشاف لو انوجّه عليك <b>يحرقك ويجمّدك</b>، جيهم من وراهم</li><li>😱 الصرخة تطفّي كشافاتهم، و🪞 المرايا تنقلك لمراية ثانية</li><li>أول مسكة تحبسهم بقفص القبو، والثانية تقتلهم</li><li>شكل وحشك تغيّره من «🎭 صمّم شخصيتك» باللوبي</li></ul>`
       : `<div class="hbig">🔦</div><h2>أنت من الناجين</h2><p>الشبح: <b>${esc(G)}</b>. عندكم مهمة طويلة قبل لا تقدرون تهربون:</p><ul><li>⚡ دوّروا ٣ فيوزات وركّبوها بصندوق الكهرباء في القبو</li><li>🔑 المفاتيح تفتح: مكتب الجد ← الغرفة الكبيرة ← العلّية</li><li>🕯️ جيبوا ٤ قطع ملعونة للمذبح بالعلّية وسوّوا الطقس</li><li>🚪 بعدها ينفتح الباب الأمامي. وجّه الكشاف على الشبح عشان تحرقه، واختبي بالدواليب</li></ul>`;
     intro.innerHTML += `<small class="hcred">أصوات: Little Robot Sound Factory (CC-BY 3.0) وغيرهم · أثاث وخامات: Poly Haven · شخصيات: Quaternius</small>`;
     snd(ghost ? 'laugh_1' : 'hit_7', .9);
@@ -634,7 +686,7 @@ function renderHaunt(body) {
 // ---------- الحلقة ----------
 function hFrame(t) {
   const g = hg();
-  if (!g || S.phase === 'lobby' || !$('#hCvBox') || !HU.built) { HU.loop = false; hsAmb(false); try { if (document.pointerLockElement) document.exitPointerLock(); } catch {} return; }
+  if (!g || S.phase === 'lobby' || !$('#hCvBox') || !HU.built) { HU.loop = false; hsAmb(false); hHeart(0); try { if (document.pointerLockElement) document.exitPointerLock(); } catch {} return; }
   requestAnimationFrame(hFrame);
   if (window.__noRender) return;
   const dt = Math.min(.05, (t - HU.lt) / 1000); HU.lt = t;
@@ -760,11 +812,11 @@ function hFrame(t) {
   // المؤثرات: القلب والنفس والحواف الحمرا والفجعات
   const vg = $('#hVig');
   if (alive && !ghost && playing) {
-    if (near < 11 && t > HU.beat) { sfx('heart'); HU.beat = t + 300 + near * 110; }
+    hHeart(near < 11 ? (11 - near) / 11 : 0);
     if (near < 6 && t > (HU.breathAt || 0)) { HU.breathAt = t + 2500 + Math.random() * 2000; snd('breath_' + (3 + Math.random() * 3 | 0), .55); }
     if (vg) vg.style.opacity = near < 11 ? Math.min(1, (11 - near) / 8) : 0;
     if (t > HU.nextScare && !hidden && !trapped) { HU.nextScare = t + 30000 + Math.random() * 30000; hScare(t); }
-  } else if (vg) vg.style.opacity = 0;
+  } else { if (vg) vg.style.opacity = 0; hHeart(0); }
   if (playing && t > (HU.ambAt || 0)) { HU.ambAt = t + 9000 + Math.random() * 9000; const lvA = { 0: ['drop_0', 'drop_2', 'drop_4', 'amb_3', 'drip'], 3: ['amb_crows', 'amb_4'] }[myLv] || ['amb_1', 'amb_5', 'fx_1']; snd(pick(lvA), .35); }
   if (t - (HU.hud || 0) > 120) { HU.hud = t; hHud(g, me, darkLeft); }
   if (HU.mapOn && t - (HU.mapT || 0) > 250) { HU.mapT = t; hDrawMap(); }
@@ -811,7 +863,7 @@ function hHud(g, me, darkLeft) {
   const s = Math.ceil(left / 1000); tm.textContent = `⏳ ${s / 60 | 0}:${String(s % 60).padStart(2, '0')}`; tm.classList.toggle('low', s <= 60 && g.sub === 'play');
   const wk = Math.ceil(((HU.wakeIn || 0) - (now - HU.wakeAt)) / 1000), rl = $('#hRole');
   if (g.sub === 'play' && wk > 0) { rl.textContent = me && me.ghost ? `تصحى بعد ${wk}… 👻` : `الشبح يصحى بعد ${wk}… تفرّقوا!`; rl.classList.add('wake'); HU.waking = true; }
-  else if (HU.waking) { HU.waking = false; rl.classList.remove('wake'); renderHaunt($('#g2body')); if (g.sub === 'play') { snd('laugh_2', 1); hPop(me && me.ghost ? '👻 صحيت! روح امسكهم' : '👻 الشبح صحى…', 'red'); } }
+  else if (HU.waking) { HU.waking = false; rl.classList.remove('wake'); renderHaunt($('#g2body')); if (g.sub === 'play') { snd('rise_0', 1); setTimeout(() => snd('laugh_2', .9), 1800); hPop(me && me.ghost ? '👻 صحيت! روح امسكهم' : '👻 الشبح صحى…', 'red'); } }
   const bat = $('#hBat'), sta = $('#hSta');
   if (bat) { bat.style.width = Math.max(0, HU.bat) + '%'; bat.parentNode.classList.toggle('low', HU.bat < 20); bat.parentNode.classList.toggle('off', !HU.fl || darkLeft > 0); }
   if (sta) { sta.style.width = HU.stam + '%'; sta.parentNode.classList.toggle('low', HU.tired); }
@@ -839,10 +891,10 @@ function hScare(t) {
   if (Math.random() < .3 && HU.near > 14 && HU.me && HU.charsOk) {
     for (let i = 0; i < 20; i++) {
       const a = HU.yaw + (Math.random() - .5) * .9, d = 7 + Math.random() * 6, x = HU.me.x - Math.sin(a) * d, z = HU.me.z - Math.cos(a) * d;
-      if (Mp.walk(HU.lv, x, z) && Mp.see(HU.lv, HU.me.x, HU.me.z, x, z)) { const m = charObj('_fake', true); m.position.set(x, Mp.baseY(HU.lv) + .1, z); m.rotation.y = HU.yaw + Math.PI / 2; m.userData.ch.play('Walk_Formal_Loop', 0); HU.scene.add(m); setTimeout(() => HU.scene.remove(m), 500); snd('fx_2', .7); return; }
+      if (Mp.walk(HU.lv, x, z) && Mp.see(HU.lv, HU.me.x, HU.me.z, x, z)) { const m = charObj('_fake', true); m.position.set(x, Mp.baseY(HU.lv) + .1, z); m.rotation.y = HU.yaw + Math.PI / 2; m.userData.ch.play('Zombie_Walk_Fwd_Loop', 0); HU.scene.add(m); setTimeout(() => HU.scene.remove(m), 500); snd('fx_2', .7); return; }
     }
   }
-  const opts = [() => snd('moan_' + (Math.random() * 5 | 0), .5), () => { sfx('slam'); hShake(.3); }, () => { HU.chandOff = t + 1600; sfx('static'); }, () => sfx('mbox'), () => snd('laugh_0', .35), () => { snd('hit_' + (Math.random() * 6 | 0), .5); hFlash('rgba(0,0,0,.6)'); }, () => { for (let i = 0; i < 4; i++) setTimeout(() => sfx('step2'), i * 420); }];
+  const opts = [() => snd('moan_' + (Math.random() * 5 | 0), .5), () => { sfx('slam'); hShake(.3); }, () => { HU.chandOff = t + 1600; sfx('static'); }, () => sfx('mbox'), () => snd('laugh_0', .35), () => { snd('st_' + (Math.random() * 6 | 0), .6); hFlash('rgba(0,0,0,.6)'); }, () => snd('creak_' + pick([1, 3, 5]), .6), () => snd('rise_1', .5), () => { for (let i = 0; i < 4; i++) setTimeout(() => sfx('step2'), i * 420); }];
   pick(opts)();
 }
 function hWard(i) { const w = HU.ward[i]; if (!w) return; w.open = 1; w.closeAt = performance.now() + 900; }
@@ -854,7 +906,7 @@ function hJump() {
   const v = typeof pickScare === 'function' ? pickScare() : null;
   if (v) { box.classList.add('vid'); playScare(box, v); }
   else box.innerHTML = `<svg viewBox="0 0 200 260" class="hface"><path d="M100 6C40 6 18 70 22 130c4 60 30 120 78 124 48-4 74-64 78-124C182 70 160 6 100 6Z" fill="#dfe4ec"/><ellipse cx="68" cy="108" rx="22" ry="34" fill="#000"/><ellipse cx="132" cy="108" rx="22" ry="34" fill="#000"/><circle cx="70" cy="112" r="4" fill="#ff2a2a"/><circle cx="130" cy="112" r="4" fill="#ff2a2a"/><ellipse cx="100" cy="196" rx="26" ry="46" fill="#000"/></svg>`;
-  snd('hit_8', 1); snd('scream_' + (Math.random() * 5 | 0), 1); snd('crack_1', .8);
+  snd('js_' + (Math.random() * 5 | 0), 1); snd('st_4', .9); snd('crack_1', .7);
   box.hidden = false; hShake(1.5);
   setTimeout(() => { box.hidden = true; box.innerHTML = ''; const g = hg(); if (g && g.me) hPop(g.me.alive ? 'انحبست بالقفص في القبو 🔒' : 'مت 💀 صرت روح، تقدر تتفرّج', 'red', 4500); }, v ? 1900 : 1500);
 }

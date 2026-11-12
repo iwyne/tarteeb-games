@@ -182,6 +182,7 @@ function hxLobbyFrame(t, dt) {
 function hauntLobby(ph) {
   const on = ph === 'lobby' && S && S.game === 'haunt';
   let st = $('#hStage');
+  hMenuMusic(on);
   if (!on) {
     if (st) st.hidden = true;
     if (HX.mode) { hxStop(); ['#hCust', '#hCine'].forEach(q => { const e = $(q); if (e) e.hidden = true; }); document.body.classList.remove('hcine-on'); HX.cineRunning = false; HX.cineDone = true; }
@@ -189,10 +190,11 @@ function hauntLobby(ph) {
   }
   if (!st) {
     st = document.createElement('div'); st.id = 'hStage'; st.className = 'hstage';
-    st.innerHTML = `<div class="hstagebox" id="hStageBox"></div><div class="hstageload" id="hStageLoad">جاري تجهيز البيت…</div><button type="button" class="btn hcustb" id="hCustB">🎭 صمّم شخصيتك</button><button type="button" class="hreplay" id="hReplay" title="شوف المقدمة">🎬</button>`;
+    st.innerHTML = `<div class="hstagebox" id="hStageBox"></div><div class="hstageload" id="hStageLoad">جاري تجهيز البيت…</div><button type="button" class="btn hcustb" id="hCustB">🎭 صمّم شخصيتك</button><button type="button" class="hreplay" id="hReplay" title="شوف المقدمة">🎬</button><button type="button" class="hreplay hvolb" id="hVolL" title="الصوت">🔊</button><div class="hvolp" id="hVolLP" hidden></div>`;
     const l = $('#lobby'); l.insertBefore(st, l.querySelector('.ticket').nextSibling);
     $('#hCustB').onclick = () => hCust();
     $('#hReplay').onclick = () => { hxStop(); hCine(() => hauntLobby('lobby')); };
+    $('#hVolL').onclick = () => hVolPanel($('#hVolLP'));
   }
   st.hidden = false;
   hLibs().then(() => {
@@ -219,7 +221,7 @@ function hCust() {
   let el = $('#hCust');
   if (!el) { el = document.createElement('div'); el.id = 'hCust'; el.className = 'hcust'; document.body.appendChild(el); }
   el.innerHTML = `<div class="hcustv"><div class="hcustbox" id="hCustBox"></div><div class="hcusthint">اسحب عشان تلفّه ↔</div></div>
-    <div class="hcustp"><h2>صمّم شخصيتك</h2><div id="hCustOpts"></div>
+    <div class="hcustp"><h2>صمّم شخصيتك</h2><div class="hctabs"><button type="button" class="hctab on" data-t="s">🔦 الناجي</button><button type="button" class="hctab" data-t="m">👹 الوحش</button></div><div id="hCustOpts"></div>
     <div class="hcustbtns"><button type="button" class="btn" id="hRand">🎲 عشوائي</button><button type="button" class="btn green" id="hDone">✓ تمام</button></div></div>`;
   el.hidden = false; document.body.classList.add('hcine-on');
   if (!HX.cscene) {
@@ -233,38 +235,44 @@ function hCust() {
     HX.dust = new T.Points(new T.BufferGeometry().setAttribute('position', new T.Float32BufferAttribute([...Array(240)].map((_, i) => i % 3 === 1 ? Math.random() * 3 : (Math.random() - .5) * 4), 3)), new T.PointsMaterial({ color: 0xfff1d6, size: .015, transparent: true, opacity: .6 }));
     s.add(HX.dust);
   }
-  HX.rot = .4; HX.cust = null;
+  HX.rot = .4; HX.cust = null; HX.ctab = 's';
+  $$('.hctab').forEach(t => t.onclick = () => { HX.ctab = t.dataset.t; $$('.hctab').forEach(x => x.classList.toggle('on', x === t)); hCustDraw(true); hui('ui_click'); });
   const box = $('#hCustBox');
   box.onpointerdown = e => { HX.drag = e.clientX; box.setPointerCapture(e.pointerId); };
   box.onpointermove = e => { if (HX.drag != null) { HX.rot += (e.clientX - HX.drag) * .012; HX.drag = e.clientX; } };
   box.onpointerup = box.onpointercancel = () => { HX.drag = null; };
-  $('#hRand').onclick = () => { const L = HC.cleanLook({ b: Math.random() * 2 | 0, s: Math.random() * 4 | 0, h: 1 + Math.random() * 5 | 0, hc: Math.random() * 8 | 0, o: Math.random() * 3 | 0, c1: Math.random() * 12 | 0, c2: Math.random() * 12 | 0, bd: Math.random() < .4 ? 1 : 0 }); HX.look = L; hCustDraw(true); sfx('pop'); };
+  $('#hRand').onclick = () => { const r = n => Math.random() * n | 0, L = HX.look; if (HX.ctab === 'm') Object.assign(L, { mf: r(HC.MFORMS.length), ms: r(HC.MSKINS.length), me: r(HC.MEYES.length), mt: r(HC.MTALL.length) }); else Object.assign(L, { b: r(2), s: r(4), h: 1 + r(5), hc: r(8), o: r(HC.OUTFITS.length), c1: r(12), c2: r(12), bd: Math.random() < .4 ? 1 : 0 }); HX.look = HC.cleanLook(L); hCustDraw(true); hui('ui_ok'); };
   $('#hDone').onclick = () => {
-    hxSaveLook(HX.look); send({ t: 'look', v: HX.look }); sfx('win');
-    if (HX.cust) HX.cust.play('Dance_Loop', .2);
+    hxSaveLook(HX.look); send({ t: 'look', v: HX.look }); hui('ui_ok');
+    if (HX.cust) HX.cust.play(HX.cust.ghost ? 'Zombie_Scratch' : 'Dance_Loop', .2);
     setTimeout(() => { el.hidden = true; document.body.classList.remove('hcine-on'); hxStop(); if (HX.cust) { HX.cscene.remove(HX.cust.root); HX.cust = null; } hauntLobby(S && S.phase === 'lobby' ? 'lobby' : ''); }, 900);
   };
   hCustDraw(true);
   hxStart('cust', box);
 }
 function hCustDraw(rebuild) {
-  const HC = HU.HC, L = HX.look, O = HC.OUTFITS[L.o];
+  const HC = HU.HC, L = HX.look, O = HC.OUTFITS[L.o], mon = HX.ctab === 'm';
   const row = (title, key, items, kind) => `<div class="hcrow"><b>${title}</b><div class="hcchips">${items.map((it, i) => kind === 'sw' ? `<button type="button" class="hcsw${L[key] === i ? ' on' : ''}" data-k="${key}" data-v="${i}" style="--c:${it}"></button>` : `<button type="button" class="hcchip${L[key] === i ? ' on' : ''}" data-k="${key}" data-v="${i}">${it}</button>`).join('')}</div></div>`;
-  $('#hCustOpts').innerHTML = row('الجسم', 'b', HC.BODIES) + row('البشرة', 's', HC.SKINS, 'sw') + row('الشعر', 'h', HC.HAIRS.map(h => h.n)) + row('لون الشعر', 'hc', HC.HAIRC, 'sw') + (L.b === 0 ? row('اللحية', 'bd', ['بدون', 'لحية']) : '')
-    + row('اللبس', 'o', HC.OUTFITS.map(o => o.n)) + row(O.long ? 'لون الثوب' : 'لون البلوزة', 'c1', HC.PAL, 'sw') + (O.long ? '' : row('لون البنطلون', 'c2', HC.PAL, 'sw'));
-  $$('#hCustOpts button').forEach(b => b.onclick = () => { HX.look[b.dataset.k] = +b.dataset.v; hCustDraw(true); sfx('gclick'); });
+  $('#hCustOpts').innerHTML = mon
+    ? `<p class="hcnote">لو طلعت أنت الوحش باللعبة، بتطلع بهالشكل</p>` + row('الشكل', 'mf', HC.MFORMS) + row('الجلد', 'ms', HC.MSKINS.map(x => x[1]), 'sw') + row('العيون', 'me', HC.MEYES.map(x => x[0])) + row('الطول', 'mt', HC.MTALL.map(x => x[0]))
+    : row('الجسم', 'b', HC.BODIES) + row('البشرة', 's', HC.SKINS, 'sw') + row('اللبس', 'o', HC.OUTFITS.map(o => o.n))
+      + (O.hood ? '' : row('الشعر', 'h', HC.HAIRS.map(h => h.n))) + row('لون الشعر', 'hc', HC.HAIRC, 'sw') + (L.b === 0 ? row('اللحية', 'bd', ['بدون', 'لحية']) : '')
+      + (O.m ? '' : row(O.long ? 'لون الثوب' : 'لون البلوزة', 'c1', HC.PAL, 'sw') + (O.long ? '' : row('لون البنطلون', 'c2', HC.PAL, 'sw')));
+  $$('#hCustOpts button').forEach(b => b.onclick = () => { HX.look[b.dataset.k] = +b.dataset.v; hCustDraw(true); hui('ui_click'); });
   if (rebuild) {
     if (HX.cust) HX.cscene.remove(HX.cust.root);
-    const ch = HX.cust = HC.makeChar(HX.look); HX.cscene.add(ch.root); ch.root.traverse(o => { if (o.isMesh) o.castShadow = true; });
-    ch.play(['Idle_Loop', 'Idle_Torch_Loop', 'Interact'][Math.random() * 3 | 0], 0);
+    const ch = HX.cust = HC.makeChar(HX.look, mon); HX.cscene.add(ch.root); ch.root.traverse(o => { if (o.isMesh) o.castShadow = true; });
+    if (ch.ready) ch.ready.then(() => ch.root.traverse(o => { if (o.isMesh) o.castShadow = true; }));
+    ch.play(mon ? (Math.random() < .5 ? 'Zombie_Idle_Loop' : 'Zombie_Scratch') : ['Idle_Loop', 'Idle_Torch_Loop', 'Idle_Lantern_Loop'][Math.random() * 3 | 0], 0);
     HX.pop = performance.now();
+    HX.cscene.background.set(mon ? 0x140606 : 0x0d0b14); HX.cscene.fog.color.set(mon ? 0x140606 : 0x0d0b14);
   }
 }
 function hxCustFrame(t, dt) {
   const c = HX.cust; if (!c) return;
   if (HX.drag == null) HX.rot += dt * .25;
   c.root.rotation.y = HX.rot;
-  const k = Math.min(1, (t - HX.pop) / 260); c.root.scale.setScalar(.92 * (1 + Math.sin(k * Math.PI) * .06));
+  const k = Math.min(1, (t - HX.pop) / 260); c.base = c.base || c.root.scale.x; c.root.scale.setScalar(c.base * (c.ghost ? .82 : .92) * (1 + Math.sin(k * Math.PI) * .06));
   c.update(dt);
   const p = HX.dust.geometry.attributes.position; for (let i = 1; i < p.array.length; i += 3) { p.array[i] += dt * .05; if (p.array[i] > 3) p.array[i] = 0; } p.needsUpdate = true;
 }

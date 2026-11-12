@@ -1074,7 +1074,7 @@ body.ingame2 main:has(.g2body.haunt){max-width:none;padding-bottom:0}
 .hobjbar{height:5px;margin-top:4px;border-radius:99px;background:rgba(243,234,216,.2);overflow:hidden}
 .hobjbar i{display:block;height:100%;background:var(--yellow);transition:width .5s}
 .hsetb{position:absolute;top:78px;left:12px;z-index:3;width:42px;height:42px;border:3px solid var(--ink);border-radius:12px;background:var(--surf);box-shadow:3px 3px 0 var(--ink);font-size:1.1rem;cursor:pointer}
-.hset{position:absolute;top:126px;left:12px;z-index:7;display:grid;gap:10px;background:var(--surf);color:var(--ink);border:3px solid var(--ink);border-radius:14px;box-shadow:4px 4px 0 var(--ink);padding:12px 14px;width:min(260px,80vw);font-weight:700}
+.hset{position:absolute;top:174px;left:12px;z-index:7;display:grid;gap:10px;background:var(--surf);color:var(--ink);border:3px solid var(--ink);border-radius:14px;box-shadow:4px 4px 0 var(--ink);padding:12px 14px;width:min(260px,80vw);font-weight:700}
 .hset label{display:grid;gap:4px}.hset small{opacity:.7}
 .htrap{position:absolute;left:50%;bottom:22%;transform:translateX(-50%);z-index:4;text-align:center;background:rgba(22,19,15,.88);color:#f3ead8;border:3px solid var(--red);border-radius:16px;padding:10px 18px;max-width:86%;pointer-events:none}
 .htrap b{color:var(--yellow)}.htrap p{margin:4px 0}.htrap small{color:#ffb4ab}
@@ -1152,7 +1152,7 @@ body.ingame2 main:has(.g2body.haunt){max-width:none;padding-bottom:0}
   .hrole{top:48px;right:8px}
   .hmapb{width:50px;height:50px}
   .hsetb{top:68px;left:10px;width:38px;height:38px}
-  .hset{top:112px}
+  .hset{top:156px}
   .hobj{top:186px;left:10px;transform:none;max-width:58%;font-size:.75rem;padding:3px 8px;text-align:start}
   .hauntw.ghostv .hobj,.hauntw.spirit .hobj{top:116px}
   .hinv{padding:1px 6px;font-size:.85rem}
@@ -1202,3 +1202,82 @@ body.hcine-on{overflow:hidden}
   .hcustp h2{font-size:1.5rem}
   .hcsw{width:30px;height:30px}
 }
+
+/* ===== القصر المسكون: ستايل رعب للقوائم والأزرار ===== */
+.hauntw,.hstage,.hcust,.hcine{--hb:#0d0908;--hb2:#1a110e;--hbone:#e6dcc5;--hblood:#a3140c;--hblood2:#5c0a06;--hrust:#3d1a13;
+  --hscr:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cg stroke='%23e6dcc5' stroke-opacity='.06' stroke-width='1'%3E%3Cpath d='M5 20l40 6M60 4l-8 30M80 70l35-9M12 90l26 18M70 100l9 16'/%3E%3C/g%3E%3C/svg%3E")}
+.hauntw .sbtn,.hauntw .hsetb,.hstage .hreplay,.hauntw .hmaptabs button{background:radial-gradient(circle at 50% 35%,#2a1a15,var(--hb) 70%);color:var(--hbone);border:2px solid var(--hrust);box-shadow:0 0 0 2px #000,inset 0 0 14px rgba(160,10,5,.35),0 4px 10px rgba(0,0,0,.6);text-shadow:0 0 6px rgba(255,40,20,.5)}
+.hauntw .sbtn b{font:400 .72rem Lalezar,Tajawal,sans-serif;letter-spacing:.3px;color:#d8c9ad}
+.hauntw .sbtn i{-webkit-text-stroke:2px #000;color:#ff5a3a}
+.hauntw .sbtn.yel,.hauntw .sbtn.on{background:radial-gradient(circle at 50% 35%,#7a1a10,#2a0805 75%);border-color:var(--hblood);box-shadow:0 0 0 2px #000,0 0 18px rgba(200,20,10,.55),inset 0 0 14px rgba(255,80,40,.3);animation:hPulse 1.4s ease-in-out infinite}
+.hauntw .sbtn.red{background:radial-gradient(circle at 50% 35%,#5a0d08,#1a0403 75%);border-color:#7a120b}
+.hauntw .sbtn.off{background:radial-gradient(circle at 50% 35%,#1b1513,#070505);color:#6a5f55}
+.hauntw .sbtn:not(:disabled):hover,.hstage .hreplay:hover,.hauntw .hsetb:hover{border-color:var(--hblood);animation:hTwitch .28s steps(2) 1}
+.hauntw .sbtn:not(:disabled):active{transform:scale(.93)!important;box-shadow:0 0 0 2px #000,inset 0 0 20px rgba(200,0,0,.6)}
+.hauntw .sbtn:disabled{opacity:.38;filter:grayscale(1)}
+@keyframes hPulse{50%{box-shadow:0 0 0 2px #000,0 0 30px rgba(220,30,10,.8),inset 0 0 18px rgba(255,80,40,.45)}}
+@keyframes hTwitch{0%{transform:translate(1px,-1px) rotate(-2deg)}50%{transform:translate(-1px,1px) rotate(2deg)}100%{transform:none}}
+.hauntw .skillbig.hcatch{background:radial-gradient(circle at 50% 40%,#3a0a07,#120302 72%);border:3px solid var(--hblood);box-shadow:0 0 0 3px #000,0 0 26px rgba(200,10,5,.5),inset 0 0 26px rgba(255,40,20,.35)}
+.hauntw .skillbig.hcatch b{-webkit-text-stroke:0;color:var(--hbone);text-shadow:0 0 8px #f00}
+.hauntw .skillbig.hcatch.on{animation:hPulse .9s ease-in-out infinite}
+.hauntw .htime,.hauntw .hrole,.hauntw .hinv,.hauntw .hbar{background:linear-gradient(180deg,#1d1310,var(--hb));color:var(--hbone);border:2px solid var(--hrust);box-shadow:0 0 0 1px #000,0 4px 12px rgba(0,0,0,.55);font-family:Lalezar,Tajawal,sans-serif;font-weight:400;letter-spacing:.3px}
+.hauntw .htime{color:#ff8a6a;text-shadow:0 0 8px rgba(255,40,20,.5)}
+.hauntw .htime.low{background:linear-gradient(180deg,#5a0a06,#250403);color:#fff}
+.hauntw .hrole.wake{background:linear-gradient(180deg,#6a0c07,#2a0403);border-color:var(--hblood)}
+.hauntw.ghostv .hrole{background:linear-gradient(180deg,#3a0806,#140202);color:#ffb0a0}
+.hauntw .hbar i{border:1px solid #000;background:linear-gradient(90deg,#c9a24a,#f0d27a);box-shadow:0 0 8px rgba(240,200,100,.35)}
+.hauntw .hbar.sta i{background:linear-gradient(90deg,#5d8fa8,#a8d6e8)}
+.hauntw .hbar.low i{background:linear-gradient(90deg,#7a0d08,#e0241a)}
+.hauntw .hobj{background:linear-gradient(180deg,rgba(26,16,13,.94),rgba(10,6,5,.94)) ,var(--hscr);border:1px solid var(--hrust);border-top:3px solid var(--hblood2);font-family:Tajawal,sans-serif;color:#e6dcc5;box-shadow:0 6px 20px rgba(0,0,0,.6)}
+.hauntw .hobj span{color:#ff6a4a;font-family:Lalezar,Tajawal,sans-serif;font-weight:400}
+.hauntw .hobjbar{background:rgba(0,0,0,.6);border:1px solid #2a1612}
+.hauntw .hobjbar i{background:linear-gradient(90deg,#5c0a06,#c41a10)}
+.hauntw .hprompt{background:rgba(10,6,5,.9);color:var(--hbone);border:2px solid var(--hblood);box-shadow:0 0 16px rgba(180,10,5,.5);font-family:Lalezar,Tajawal,sans-serif;font-weight:400;letter-spacing:.3px}
+.hauntw .hpop{background:linear-gradient(180deg,#1d1310,#0c0807);color:var(--hbone);border:1px solid #3a1a14;border-inline-start:5px solid #8a7a60;box-shadow:0 8px 24px rgba(0,0,0,.7);font-family:Lalezar,Tajawal,sans-serif;font-weight:400;letter-spacing:.3px}
+.hauntw .hpop.red{background:linear-gradient(180deg,#3a0806,#140202);border-inline-start-color:#e0241a;color:#ffd0c8}
+.hauntw .hpop.green{border-inline-start-color:#5aa86a}.hauntw .hpop.yel{border-inline-start-color:#e0b040;color:#ffe9b0;background:linear-gradient(180deg,#2a1d0e,#0e0a05)}
+.hauntw .hset,.hvolp{background:linear-gradient(180deg,#1d1310,#0a0706),var(--hscr);color:var(--hbone);border:2px solid var(--hrust);box-shadow:0 0 0 1px #000,0 10px 30px rgba(0,0,0,.7);font-family:Tajawal,sans-serif}
+.hauntw .hset b{font:400 1.2rem Lalezar,Tajawal,sans-serif;color:#ff6a4a}
+.hauntw .hset select{background:#0a0706;color:var(--hbone);border:1px solid var(--hrust);border-radius:6px;padding:3px}
+.hauntw .hset .btn{background:#2a0805;color:var(--hbone);border-color:var(--hblood);box-shadow:none}
+.hvolb{top:126px}
+.hvolp{position:absolute;top:126px;left:60px;z-index:8;display:grid;gap:12px;padding:12px 14px;border-radius:12px;width:min(250px,72vw)}
+.hstage .hvolp{top:60px;left:10px}
+.hvolp label{display:grid;gap:4px;font-weight:700}
+.hvolp label span{display:flex;justify-content:space-between}.hvolp label i{font-style:normal;color:#ff8a6a;direction:ltr}
+.hvolp input[type=range],.hauntw .hset input[type=range]{accent-color:#b3170f;width:100%;direction:ltr}
+.hauntw .hintro{background:radial-gradient(ellipse at 50% 30%,rgba(60,8,5,.55),rgba(3,2,2,.97) 70%),var(--hscr)}
+.hauntw .hintro h2{color:#e6dcc5;-webkit-text-stroke:0;text-shadow:0 0 18px rgba(255,30,10,.75),3px 3px 0 #000;animation:hFlick 2.6s steps(1) infinite}
+.hauntw .hintro ul{background:rgba(10,5,4,.6);border:1px solid #4a1a12;border-inline-start:4px solid var(--hblood)}
+.hauntw .hintro b{color:#ff7a5a}
+.hauntw .htrap{background:rgba(12,4,3,.92);border-color:#7a120b;box-shadow:0 0 30px rgba(160,10,5,.5)}
+.hauntw .hload{background:radial-gradient(ellipse at 50% 50%,#1a0605,#020101 70%);font-family:Lalezar,Tajawal,sans-serif;color:#d8c9ad;text-shadow:0 0 14px rgba(255,30,10,.6)}
+.hauntw .hlbar{border:2px solid #4a1a12;background:#080404}.hauntw .hlbar i{background:linear-gradient(90deg,#5c0a06,#d01c10);box-shadow:0 0 12px rgba(220,30,10,.6)}
+.hauntw .hmapbox{background:rgba(5,3,3,.92)}
+.hauntw .hmaptabs button{border-radius:8px;font-family:Lalezar,Tajawal,sans-serif;font-weight:400;padding:3px 14px}
+.hauntw .hmaptabs button.on{background:radial-gradient(circle at 50% 35%,#7a1a10,#2a0805 75%);border-color:var(--hblood)}
+/* اللوبي */
+.hstage{border:3px solid #2a0e0a;box-shadow:0 0 0 2px #000,0 10px 30px rgba(0,0,0,.5),inset 0 0 60px rgba(120,0,0,.25)}
+.hstage .hcustb{background:radial-gradient(circle at 50% 35%,#7a1a10,#2a0805 75%);color:var(--hbone);border:2px solid var(--hblood);box-shadow:0 0 0 2px #000,0 0 20px rgba(200,20,10,.5);font-family:Lalezar,Tajawal,sans-serif;font-weight:400;letter-spacing:.4px;text-shadow:0 0 8px #f00}
+.hstage .hcustb:hover{animation:hTwitch .28s steps(2) 1}
+.hstage .hstageload{font-family:Lalezar,Tajawal,sans-serif;color:#d8c9ad;text-shadow:0 0 12px rgba(255,30,10,.6)}
+.hstage .hvolb{left:60px;top:10px}
+/* مصمم الشخصية */
+.hcust{background:#0a0606}
+.hcust .hcustp{background:linear-gradient(180deg,#1a110e,#0a0706),var(--hscr);color:var(--hbone);border-inline-start:3px solid #3d1a13;box-shadow:inset 12px 0 30px rgba(0,0,0,.5)}
+.hcust .hcustp h2{color:#e6dcc5;text-shadow:0 0 16px rgba(255,30,10,.6),2px 2px 0 #000}
+.hcust .hcrow>b{color:#c9b89a;font-family:Lalezar,Tajawal,sans-serif;font-weight:400;letter-spacing:.3px}
+.hcust .hcchip{background:#120b09;color:#d8c9ad;border:1px solid #3d1a13;box-shadow:inset 0 0 8px rgba(0,0,0,.6);border-radius:6px;font-family:Tajawal,sans-serif}
+.hcust .hcchip:hover{border-color:#7a120b;color:#fff}
+.hcust .hcchip.on{background:radial-gradient(circle at 50% 30%,#6a140c,#2a0604);color:#fff;border-color:var(--hblood);box-shadow:0 0 12px rgba(200,20,10,.5);transform:none}
+.hcust .hcsw{border:2px solid #000;box-shadow:0 0 0 1px #3d1a13}
+.hcust .hcsw.on{outline:2px solid #d01c10;box-shadow:0 0 12px rgba(220,30,10,.7)}
+.hcust .hcustbtns{background:linear-gradient(180deg,rgba(10,7,6,0),#0a0706 30%)}
+.hcust .hcustbtns .btn{background:#140c0a;color:var(--hbone);border:2px solid #3d1a13;box-shadow:0 0 0 1px #000;font-family:Lalezar,Tajawal,sans-serif;font-weight:400}
+.hcust .hcustbtns .btn.green{background:radial-gradient(circle at 50% 35%,#7a1a10,#2a0805 75%);border-color:var(--hblood);box-shadow:0 0 16px rgba(200,20,10,.45)}
+.hctabs{display:flex;gap:8px;flex-shrink:0}
+.hctab{flex:1;font:400 1.05rem Lalezar,Tajawal,sans-serif;background:#120b09;color:#a89880;border:1px solid #3d1a13;border-bottom:3px solid #3d1a13;border-radius:8px 8px 2px 2px;padding:7px 8px;cursor:pointer}
+.hctab.on{background:linear-gradient(180deg,#4a0c07,#1a0403);color:#fff;border-color:var(--hblood);text-shadow:0 0 8px #f00}
+.hcnote{margin:0;font-size:.85rem;color:#c99a8a;border-inline-start:3px solid var(--hblood);padding-inline-start:8px}
+.hcine .hskip{background:rgba(10,4,3,.6);border:1px solid #6a1a12;font-family:Lalezar,Tajawal,sans-serif;font-weight:400}
+@media (max-width:640px){.hvolb{top:112px}.hvolp{top:112px;left:56px}.hstage .hvolb{left:58px}}
