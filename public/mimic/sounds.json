@@ -1,0 +1,86 @@
+[
+{
+"id": "b1",
+"name": "صفارة طالعة",
+"file": "b1.mp3",
+"dur": 1.4,
+"pack": "basic"
+},
+{
+"id": "b2",
+"name": "صفارة نازلة",
+"file": "b2.mp3",
+"dur": 1.4,
+"pack": "basic"
+},
+{
+"id": "b3",
+"name": "سيارة إسعاف",
+"file": "b3.mp3",
+"dur": 2.28,
+"pack": "basic"
+},
+{
+"id": "b4",
+"name": "موجة",
+"file": "b4.mp3",
+"dur": 2.0,
+"pack": "basic"
+},
+{
+"id": "b5",
+"name": "تا… دا!",
+"file": "b5.mp3",
+"dur": 1.24,
+"pack": "basic"
+},
+{
+"id": "b6",
+"name": "دق دق… دق",
+"file": "b6.mp3",
+"dur": 1.12,
+"pack": "basic"
+},
+{
+"id": "b7",
+"name": "ليزر",
+"file": "b7.mp3",
+"dur": 0.82,
+"pack": "basic"
+},
+{
+"id": "b8",
+"name": "سلم موسيقي",
+"file": "b8.mp3",
+"dur": 1.6,
+"pack": "basic"
+},
+{
+"id": "b9",
+"name": "همم؟",
+"file": "b9.mp3",
+"dur": 0.8,
+"pack": "basic"
+},
+{
+"id": "b10",
+"name": "آآآه طويلة",
+"file": "b10.mp3",
+"dur": 1.8,
+"pack": "basic"
+},
+{
+"id": "b11",
+"name": "نغمة مقلوبة",
+"file": "b11.mp3",
+"dur": 1.2,
+"pack": "basic"
+},
+{
+"id": "b12",
+"name": "قطو",
+"file": "b12.mp3",
+"dur": 0.8,
+"pack": "basic"
+}
+]

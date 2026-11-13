@@ -1,8 +1,9 @@
 // واجهات الألعاب الثانية: كلمة السر، خلية الحروف، الكذابين الترتيب
-const GNAME = { uno: 'أونو', codes: 'كلمة السر', hive: 'خلية الحروف', liars: 'الكذابين الترتيب', outside: 'برا السالفة', typing: 'سبّاق الكتابة', jackaroo: 'جاكارو', draw: 'رسم وخمّن', flip: 'أونو فليب', sus: 'المندس', haunt: 'البيت المسكون', mafia: 'المافيا', phone: 'التلفون الترتيب', fib: 'صدّقني', bomb: 'القنبلة', auction: 'المزاد', feud: 'العائلة الترتيب', flags: 'أعلام ودول' };
-const GINFO = { auction: 'من ٢ إلى ١٠ لاعبين (والبوتات تكمّل)', feud: 'من ٢ إلى ١٢، فريقين (والبوتات تكمّل)', flags: 'من ١ إلى ١٢ لاعب (والبوتات تكمّل)', phone: 'من ٣ إلى ١٢ لاعب', fib: 'من ٣ إلى ١٠ لاعبين (والبوتات تكمّل)', bomb: 'من ٢ إلى ١٢ لاعب (والبوتات تكمّل)', mafia: 'من ٥ إلى ١٦ لاعب (والبوتات تكمّل)', haunt: 'من ٢ إلى ١٠ لاعبين (ثري دي، والبوتات تكمّل)', sus: 'من ٤ إلى ١٢ لاعب (والبوتات تكمّل العدد)', flip: 'من ٢ إلى ٨ لاعبين', uno: 'من ٢ إلى ٨ لاعبين', codes: 'من ٤ إلى ١٠ لاعبين، فريقين', hive: 'من ٢ إلى ١٠ لاعبين، فريقين', liars: 'من ٢ إلى ٨ لاعبين', outside: 'من ٣ إلى ١٠ لاعبين', typing: 'من ٢ إلى ١٠ لاعبين', jackaroo: '٤ لاعبين بالضبط، فريقين (شريكك قبالتك)', draw: 'من ٢ إلى ١٠ لاعبين' };
+const GNAME = { uno: 'أونو', codes: 'كلمة السر', hive: 'خلية الحروف', liars: 'الكذابين الترتيب', outside: 'برا السالفة', typing: 'سبّاق الكتابة', jackaroo: 'جاكارو', draw: 'رسم وخمّن', flip: 'أونو فليب', sus: 'المندس', haunt: 'البيت المسكون', mafia: 'المافيا', phone: 'التلفون الترتيب', fib: 'صدّقني', bomb: 'القنبلة', auction: 'المزاد', feud: 'العائلة الترتيب', flags: 'أعلام ودول', mimic: 'الأصوات الترتيب' };
+const GINFO = { mimic: 'من ١ إلى ٨ لاعبين (يحتاج مايك)', auction: 'من ٢ إلى ١٠ لاعبين (والبوتات تكمّل)', feud: 'من ٢ إلى ١٢، فريقين (والبوتات تكمّل)', flags: 'من ١ إلى ١٢ لاعب (والبوتات تكمّل)', phone: 'من ٣ إلى ١٢ لاعب', fib: 'من ٣ إلى ١٠ لاعبين (والبوتات تكمّل)', bomb: 'من ٢ إلى ١٢ لاعب (والبوتات تكمّل)', mafia: 'من ٥ إلى ١٦ لاعب (والبوتات تكمّل)', haunt: 'من ٢ إلى ١٠ لاعبين (ثري دي، والبوتات تكمّل)', sus: 'من ٤ إلى ١٢ لاعب (والبوتات تكمّل العدد)', flip: 'من ٢ إلى ٨ لاعبين', uno: 'من ٢ إلى ٨ لاعبين', codes: 'من ٤ إلى ١٠ لاعبين، فريقين', hive: 'من ٢ إلى ١٠ لاعبين، فريقين', liars: 'من ٢ إلى ٨ لاعبين', outside: 'من ٣ إلى ١٠ لاعبين', typing: 'من ٢ إلى ١٠ لاعبين', jackaroo: '٤ لاعبين بالضبط، فريقين (شريكك قبالتك)', draw: 'من ٢ إلى ١٠ لاعبين' };
 const BOTGAMES = ['auction', 'feud', 'flags', 'fib', 'bomb', 'mafia', 'uno', 'hive', 'liars', 'jackaroo', 'outside', 'typing', 'flip', 'sus', 'haunt'];
 const GHELP = {
+  mimic: 'يطلع صوت (رياكشن مشهور أو صوت غريب). اسمعه زين، وبعد ٣… ٢… ١ الكل يقلّده بالمايك بنفس الوقت. التقييم على إيقاعك ولحن صوتك (طلوع ونزول الصوت) وطوله، مو على خشونة صوتك. بعدها عجلة الحظ تختار واحد: دبل، أو +٢٥، أو تقليده يصير فسوة 💨! وبعدين تنعاد كل التقليدات وحدة وحدة. الأعلى نقاط يفوز. لازم تسمح للموقع يستخدم المايك.',
   auction: 'كل واحد معه ١٥ ألف ريال وهمية. تطلع أغراض قيمتها الحقيقية مخفية، وتتزايدون عليها (+١٠٠، +٥٠٠…). لو محد زاد ٨ ثواني ينباع للأعلى. كل غرض فيه واحد (أو اثنين) يوصله خبر سري عن قيمته الحقيقية، فانتبه مين يزايد بثقة! الصناديق الغامضة يمكن فيها كنز ويمكن خردة. بالآخر: فلوسك + قيمة أغراضك، والأغنى يفوز.',
   feud: 'فريقين. يطلع سؤال وعلى اللوحة أشهر ٦ أجوبة مخفية. كل جولة تبدأ بمواجهة: واحد من كل فريق يكتب جواب، واللي جوابه أعلى ياخذ الدور لفريقه. بعدها فريقه يجاوب بالدور، وكل جواب صح ينكشف ويزيد النقاط. ٣ أخطاء ❌❌❌ والفريق الثاني يقدر يسرق كل النقاط بجواب واحد صح. الجولة الأخيرة النقاط ×٢.',
   flags: 'يطلع علم أو دولة، وتختار الجواب من ٤ خيارات: اسم الدولة، أو علمها، أو عاصمتها (حسب اختيار المضيف). الصح ياخذ ٥٠٠ نقطة + لين ٥٠٠ زيادة على السرعة، و٣ صح ورا بعض 🔥 تعطيك ١٠٠ زيادة. تقدر تلعبها لحالك.',
@@ -74,7 +75,7 @@ function renderOther() {
   const body = $('#g2body');
   if (body.dataset.built && body.dataset.built !== S.game) { body.innerHTML = ''; body.dataset.built = ''; }
   body.className = 'g2body ' + S.game;
-  keep(body, () => ({ codes: renderCodes, hive: renderHive, liars: renderLiars, outside: renderOutside, typing: renderTyping, jackaroo: renderJack, draw: renderDraw, flip: renderFlip, sus: renderSus, haunt: renderHaunt, mafia: renderMafia, phone: renderPhone, fib: renderFib, bomb: renderBomb, auction: renderAuction, feud: renderFeud, flags: renderFlags })[S.game](body, mt));
+  keep(body, () => ({ codes: renderCodes, hive: renderHive, liars: renderLiars, outside: renderOutside, typing: renderTyping, jackaroo: renderJack, draw: renderDraw, flip: renderFlip, sus: renderSus, haunt: renderHaunt, mafia: renderMafia, phone: renderPhone, fib: renderFib, bomb: renderBomb, auction: renderAuction, feud: renderFeud, flags: renderFlags, mimic: renderMimic })[S.game](body, mt));
   // نهاية الجولة
   const over = S.phase === 'over';
   $('#over2').hidden = !over;
@@ -390,6 +391,7 @@ function renderLobbySet(isHost) {
   box.hidden = false;
   if (sig === lsSig) return; lsSig = sig;
   const sum = [o.lock ? '🔒 مقفلة بدون متفرجين' : '', o.hasPass ? '🔑 بكلمة سر' : '', S.game === 'uno' && o.stack ? 'تراكم +٢/+٤' : '', S.game === 'uno' && o.turn !== 15 ? `مهلة الدور ${o.turn} ث` : '', S.game === 'sus' ? (o.map === 'forest' ? '🌲 الغابة الملعونة' : '🚀 السفينة') : '', S.game === 'sus' ? `${o.imps || 1} ${(o.imps || 1) > 1 ? 'مندسين' : 'مندس'}` : '', S.game === 'sus' && o.doctor ? 'طور الدكتور 🩺' : '', S.game === 'typing' ? `الهدف ${o.target} نقاط` : '', S.game === 'codes' && o.nwords ? `كلمات مخصصة (${o.nwords})` : ''].filter(Boolean);
+  if (S.game === 'mimic') sum.push(`${o.mrounds || 5} جولات`, { all: 'كل الأصوات', react: '🎭 رياكشنات', basic: '🎵 منوّعة' }[o.mpack] || 'كل الأصوات');
   if (S.game === 'auction') sum.push(`${o.aitems || 8} قطع`); else if (S.game === 'feud') sum.push(`${o.drounds || 4} جولات`); else if (S.game === 'flags') sum.push({ flags: '🚩 أعلام', cap: '🏛️ عواصم', mix: '🌍 منوّع' }[o.fmode] || '🚩 أعلام', o.fdiff === 'all' ? 'كل الدول' : 'المشهورة', `${o.fcount || 10} سؤال`);
   if (S.game === 'bomb') sum.push('❤️'.repeat(o.blives || 3), { easy: 'سهل', mid: 'عادي', hard: 'صعب' }[o.bdiff] || 'عادي'); else if (S.game === 'fib') sum.push(`${o.frounds || 7} جولات`); else if (S.game === 'phone') sum.push(o.psteps ? `${o.psteps} خطوات` : 'تلف على الكل', `الرسم ${o.pdraw || 90} ث`);
   if (!isHost) { box.innerHTML = sum.length ? `<div class="lsum">${sum.map(x => `<span>${x}</span>`).join('')}</div>` : ''; box.hidden = !sum.length; return; }
@@ -405,6 +407,8 @@ function renderLobbySet(isHost) {
     <label class="chk">وقت النقاش <select id="oDay">${[60, 90, 120, 180].map(n => `<option value="${n}"${o.dayT === n ? ' selected' : ''}>${n / 60 >= 1 && n % 60 === 0 ? n / 60 + ' دقيقة' : n + ' ثانية'}</option>`).join('')}</select></label>
     <label class="chk"><input type="checkbox" id="oRev"${o.reveal !== false ? ' checked' : ''}> يبان دور اللي يموت</label>
     <div class="mfroles">${Object.keys(RN).map(k => `<label class="chk"><input type="checkbox" data-mr="${k}"${mr[k] !== 0 ? ' checked' : ''}> ${RN[k]}</label>`).join('')}</div><small class="muted">الأدوار تدخل لما يكون العدد كافي: الطبيب ٤+، المحقق ٥+، القناص والأب الروحي والمهرج ٧+، العمدة ٨+</small>`; }
+  else if (S.game === 'mimic') extra = `<label class="chk">الجولات <select id="oMr">${[5, 8, 10].map(n => `<option value="${n}"${o.mrounds === n ? ' selected' : ''}>${n}</option>`).join('')}</select></label>
+    <label class="chk">الأصوات <select id="oMp">${[['all', 'الكل'], ['react', '🎭 رياكشنات'], ['basic', '🎵 أصوات منوّعة']].map(([k, n]) => `<option value="${k}"${o.mpack === k ? ' selected' : ''}>${n}</option>`).join('')}</select></label>`;
   else if (S.game === 'auction') extra = `<label class="chk">عدد القطع <select id="oAi">${[6, 8, 10].map(n => `<option value="${n}"${o.aitems === n ? ' selected' : ''}>${n}</option>`).join('')}</select></label>`;
   else if (S.game === 'feud') extra = `<label class="chk">عدد الجولات <select id="oDr">${[4, 6].map(n => `<option value="${n}"${o.drounds === n ? ' selected' : ''}>${n}</option>`).join('')}</select></label>`;
   else if (S.game === 'flags') extra = `<label class="chk">الأسئلة <select id="oFm">${[['flags', '🚩 أعلام'], ['cap', '🏛️ عواصم'], ['mix', '🌍 منوّع']].map(([k, n]) => `<option value="${k}"${o.fmode === k ? ' selected' : ''}>${n}</option>`).join('')}</select></label>
@@ -434,6 +438,8 @@ function renderLobbySet(isHost) {
   bind('oDay', 'onchange', e => send({ t: 'opt', k: 'dayT', v: +e.target.value }));
   bind('oRev', 'onchange', e => send({ t: 'opt', k: 'reveal', v: e.target.checked }));
   box.querySelectorAll('[data-mr]').forEach(c => c.onchange = () => send({ t: 'opt', k: 'mrole', r: c.dataset.mr, v: c.checked }));
+  bind('oMr', 'onchange', e => send({ t: 'opt', k: 'mrounds', v: +e.target.value }));
+  bind('oMp', 'onchange', e => send({ t: 'opt', k: 'mpack', v: e.target.value }));
   bind('oAi', 'onchange', e => send({ t: 'opt', k: 'aitems', v: +e.target.value }));
   bind('oDr', 'onchange', e => send({ t: 'opt', k: 'drounds', v: +e.target.value }));
   bind('oFm', 'onchange', e => send({ t: 'opt', k: 'fmode', v: e.target.value }));

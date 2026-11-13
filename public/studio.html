@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex">
+<title>استوديو الأصوات</title>
+<link rel="stylesheet" href="style.css">
+<style>
+body{background:#2b1440;color:#fffaf0;margin:0;font-family:Tajawal,sans-serif;background-image:radial-gradient(rgba(255,255,255,.06) 1.5px,transparent 1.5px);background-size:18px 18px}
+.sw{max-width:860px;margin:0 auto;padding:14px 14px 100px}
+.sh{display:flex;flex-wrap:wrap;align-items:center;gap:10px;justify-content:space-between}
+.sh h1{font:400 2rem Lalezar,sans-serif;margin:0;color:#ffd34d;text-shadow:3px 3px 0 #16130f}
+.note{background:#fffaf0;color:#16130f;border:3px solid #16130f;border-radius:14px;box-shadow:4px 4px 0 #ff4fa3;padding:10px 14px;margin:12px 0;line-height:1.75;font-weight:700}
+.note b{color:#c2185b}
+.add{display:flex;gap:8px;margin:10px 0}
+.add input{flex:1;min-width:0;font:800 1.05rem Tajawal,sans-serif;padding:10px 12px;border:3px solid #16130f;border-radius:12px}
+.list{display:grid;gap:10px}
+.it{display:grid;grid-template-columns:auto 1fr;gap:6px 12px;align-items:center;background:#fffaf0;color:#16130f;border:3px solid #16130f;border-radius:14px;padding:10px 12px;box-shadow:3px 3px 0 #16130f}
+.it.done{background:#e7f7ec}.it.live{outline:4px solid #ff4fa3}
+.it .n{font:400 1.4rem Lalezar,sans-serif;width:42px;height:42px;border:3px solid #16130f;border-radius:50%;display:grid;place-items:center;background:#ffd34d}
+.it input.nm{font:800 1.1rem Tajawal,sans-serif;border:0;border-bottom:2px dashed #b9a;background:transparent;padding:4px 2px;width:100%;color:#16130f}
+.it .bt{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.it .bt button,.it .bt label{border:3px solid #16130f;border-radius:10px;background:#fff;padding:6px 12px;font:800 .95rem Tajawal,sans-serif;cursor:pointer;box-shadow:2px 2px 0 #16130f;color:#16130f}
+.it .bt .rec{background:#e8362d;color:#fff}.it .bt .rec.on{animation:rB 1s infinite}
+@keyframes rB{50%{background:#7a120c}}
+.it .bt small{font-weight:700;opacity:.7}.it .bt input[type=file]{display:none}
+.bar{position:fixed;inset:auto 0 0 0;background:#16130f;color:#fff;padding:10px 14px;display:flex;gap:10px;align-items:center;justify-content:center;flex-wrap:wrap;z-index:5}
+.bar b{font:400 1.2rem Lalezar,sans-serif}
+.bar button{border:3px solid #fff;border-radius:12px;background:#ffd34d;color:#16130f;padding:8px 16px;font:800 1rem Tajawal,sans-serif;cursor:pointer}
+.meter{width:120px;height:12px;border:2px solid #fff;border-radius:8px;overflow:hidden}.meter i{display:block;height:100%;width:0;background:#1fa35c;transition:width .08s}
+</style>
+</head>
+<body>
+<div class="sw">
+  <div class="sh"><h1>🎙️ استوديو الأصوات الترتيب</h1><a class="btn sm" href="/">↩ الموقع</a></div>
+  <div class="note">
+    هنا تسجّل الرياكشنات اللي بتنلعب في <b>الأصوات الترتيب</b>. اكتب اسم الرياكشن، اضغط <b>سجّل</b>، قلّده بأحسن ما عندك، واضغط <b>وقّف</b>.
+    الأحسن يكون الصوت قصير (من ثانية لأربع ثواني) وواضح. التسجيلات تنحفظ بهالمتصفح حتى لو سكّرت الصفحة.
+    لما تخلص اضغط <b>نزّل الكل</b> وأرسل الملف لكلود، وهو ينظّفها ويركّبها.
+    <br>💡 القائمة تحت مجرد بداية: غيّر الأسماء لأسماء الرياكشنات اللي تبيها، واحذف وأضف براحتك.
+  </div>
+  <form class="add" id="add"><input id="addIn" maxlength="40" placeholder="اسم رياكشن جديد…"><button class="btn green">＋ أضف</button></form>
+  <div class="list" id="list"></div>
+</div>
+<div class="bar"><b id="count"></b><div class="meter"><i id="meter"></i></div><button type="button" id="zipBtn">⬇️ نزّل الكل (zip)</button></div>
+<script>
+const $ = s => document.querySelector(s), $$ = s => [...document.querySelectorAll(s)];
+const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const START = ['يا حبيبي', 'لا والله؟!', 'يمممه!', 'ضحكة هههههه', 'وش السالفة؟', 'اوووووه', 'اسكت اسكت', 'يا رجال!', 'بسم الله!', 'ما شاء الله تبارك الله', 'خلاص خلاص خلاص', 'يا ساتر!', 'شهقة 😱', 'وااااو', 'لا يا شيخ', 'تعال تعال', 'افففف', 'قوووول والله', 'هاااه؟', 'يلا يلا يلا'];
+const R = { db: null, items: [], recs: {}, mr: null, stream: null };
+function idb() { return new Promise(res => { try { const q = indexedDB.open('tarteeb-studio', 1); q.onupgradeneeded = () => { q.result.createObjectStore('r'); q.result.createObjectStore('m'); }; q.onsuccess = () => res(q.result); q.onerror = () => res(null); } catch { res(null); } }); }
+function dbDo(st, mode, fn) { return new Promise(res => { if (!R.db) return res(null); try { const t = R.db.transaction(st, mode), s = t.objectStore(st), q = fn(s); t.oncomplete = () => res(q && q.result); t.onerror = () => res(null); } catch { res(null); } }); }
+const saveItems = () => dbDo('m', 'readwrite', s => s.put(R.items, 'items'));
+const uid = () => Math.random().toString(36).slice(2, 8);
+function draw() {
+  const done = R.items.filter(i => R.recs[i.id]).length;
+  $('#count').textContent = `سجّلت ${done} من ${R.items.length}`;
+  $('#list').innerHTML = R.items.map((it, k) => { const r = R.recs[it.id]; return `<div class="it ${r ? 'done' : ''}" data-id="${it.id}"><span class="n">${k + 1}</span><input class="nm" value="${esc(it.name)}" maxlength="40">
+    <div class="bt"><button type="button" class="rec">🎙️ ${r ? 'عيد' : 'سجّل'}</button>${r ? `<button type="button" class="play">▶ اسمع</button><small>✅ ${r.dur.toFixed(1)} ث</small>` : ''}<label>📁 ارفع ملف<input type="file" accept="audio/*"></label><button type="button" class="del">🗑️</button></div></div>`; }).join('');
+  $$('#list .it').forEach(el => {
+    const id = el.dataset.id, it = R.items.find(x => x.id === id);
+    el.querySelector('.nm').onchange = e => { it.name = e.target.value.trim() || it.name; saveItems(); };
+    el.querySelector('.rec').onclick = () => R.mr ? stop() : start(id, el);
+    const p = el.querySelector('.play'); if (p) p.onclick = () => new Audio(URL.createObjectURL(R.recs[id].blob)).play();
+    el.querySelector('.del').onclick = async () => { if (!confirm('تحذف «' + it.name + '»؟')) return; R.items = R.items.filter(x => x.id !== id); delete R.recs[id]; await dbDo('r', 'readwrite', s => s.delete(id)); saveItems(); draw(); };
+    el.querySelector('input[type=file]').onchange = async e => { const f = e.target.files[0]; if (!f) return; const dur = await durOf(f); R.recs[id] = { blob: f, ext: (f.name.split('.').pop() || 'mp3').toLowerCase(), dur }; await dbDo('r', 'readwrite', s => s.put(R.recs[id], id)); draw(); };
+  });
+}
+function durOf(blob) { return new Promise(res => { const a = new Audio(); a.preload = 'metadata'; a.src = URL.createObjectURL(blob); a.onloadedmetadata = () => { if (a.duration === Infinity) { a.currentTime = 1e6; a.ontimeupdate = () => { a.ontimeupdate = null; res(a.duration); }; } else res(a.duration); }; a.onerror = () => res(0); }); }
+async function mic() {
+  if (R.stream) return R.stream;
+  R.stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: false, noiseSuppression: true, autoGainControl: false } });
+  try { const ac = new AudioContext(), an = ac.createAnalyser(); an.fftSize = 512; ac.createMediaStreamSource(R.stream).connect(an); const b = new Uint8Array(512); (function l() { an.getByteTimeDomainData(b); let m = 0; for (const v of b) m = Math.max(m, Math.abs(v - 128)); $('#meter').style.width = Math.min(100, m / 128 * 160) + '%'; requestAnimationFrame(l); })(); } catch {}
+  return R.stream;
+}
+async function start(id, el) {
+  let s; try { s = await mic(); } catch { alert('اسمح للموقع يستخدم المايك من إعدادات المتصفح'); return; }
+  const types = ['audio/webm;codecs=opus', 'audio/ogg;codecs=opus', 'audio/mp4', 'audio/webm'], type = types.find(t => window.MediaRecorder && MediaRecorder.isTypeSupported(t)) || '';
+  const mr = new MediaRecorder(s, type ? { mimeType: type, audioBitsPerSecond: 128000 } : undefined), ch = []; R.mr = mr;
+  mr.ondataavailable = e => e.data.size && ch.push(e.data);
+  mr.onstop = async () => { const t = mr.mimeType || type, blob = new Blob(ch, { type: t }); R.mr = null; if (blob.size > 2000) { R.recs[id] = { blob, ext: /mp4/.test(t) ? 'm4a' : /ogg/.test(t) ? 'ogg' : 'webm', dur: (Date.now() - R.t0) / 1000 }; await dbDo('r', 'readwrite', s => s.put(R.recs[id], id)); } draw(); };
+  mr.start(); R.t0 = Date.now(); el.classList.add('live'); const b = el.querySelector('.rec'); b.textContent = '⏹ وقّف'; b.classList.add('on');
+}
+function stop() { if (R.mr && R.mr.state !== 'inactive') R.mr.stop(); }
+addEventListener('keydown', e => { if (e.key === ' ' && R.mr) { e.preventDefault(); stop(); } });
+$('#add').onsubmit = e => { e.preventDefault(); const v = $('#addIn').value.trim(); if (!v) return; R.items.push({ id: uid(), name: v }); $('#addIn').value = ''; saveItems(); draw(); };
+// ---------- ملف zip (بدون ضغط) ----------
+const CRC = (() => { const t = new Uint32Array(256); for (let n = 0; n < 256; n++) { let c = n; for (let k = 0; k < 8; k++) c = c & 1 ? 0xEDB88320 ^ (c >>> 1) : c >>> 1; t[n] = c >>> 0; } return t; })();
+function crc32(u) { let c = 0xFFFFFFFF; for (let i = 0; i < u.length; i++) c = CRC[(c ^ u[i]) & 255] ^ (c >>> 8); return (c ^ 0xFFFFFFFF) >>> 0; }
+async function zip(files) {
+  const enc = new TextEncoder(), parts = [], cen = []; let off = 0;
+  for (const f of files) {
+    const name = enc.encode(f.name), data = new Uint8Array(await f.blob.arrayBuffer()), crc = crc32(data);
+    const h = new DataView(new ArrayBuffer(30));
+    h.setUint32(0, 0x04034b50, true); h.setUint16(4, 20, true); h.setUint16(6, 0x0800, true); h.setUint16(8, 0, true); h.setUint16(12, 0x5B21, true);
+    h.setUint32(14, crc, true); h.setUint32(18, data.length, true); h.setUint32(22, data.length, true); h.setUint16(26, name.length, true);
+    parts.push(h.buffer, name, data);
+    const c = new DataView(new ArrayBuffer(46));
+    c.setUint32(0, 0x02014b50, true); c.setUint16(4, 20, true); c.setUint16(6, 20, true); c.setUint16(8, 0x0800, true); c.setUint16(14, 0x5B21, true);
+    c.setUint32(16, crc, true); c.setUint32(20, data.length, true); c.setUint32(24, data.length, true); c.setUint16(28, name.length, true); c.setUint32(42, off, true);
+    cen.push(c.buffer, name);
+    off += 30 + name.length + data.length;
+  }
+  const cs = cen.reduce((a, b) => a + b.byteLength, 0), e = new DataView(new ArrayBuffer(22));
+  e.setUint32(0, 0x06054b50, true); e.setUint16(8, files.length, true); e.setUint16(10, files.length, true); e.setUint32(12, cs, true); e.setUint32(16, off, true);
+  return new Blob([...parts, ...cen, e.buffer], { type: 'application/zip' });
+}
+$('#zipBtn').onclick = async () => {
+  const ok = R.items.filter(i => R.recs[i.id]); if (!ok.length) return alert('ما سجّلت شي للحين');
+  const files = ok.map((it, k) => ({ name: `react/${k + 1}.${R.recs[it.id].ext}`, blob: R.recs[it.id].blob }));
+  files.push({ name: 'react/names.json', blob: new Blob([JSON.stringify(ok.map((it, k) => ({ n: k + 1, name: it.name })), null, 1)], { type: 'application/json' }) });
+  const z = await zip(files), a = document.createElement('a'); a.href = URL.createObjectURL(z); a.download = 'tarteeb-sounds.zip'; document.body.appendChild(a); a.click(); a.remove();
+};
+(async () => {
+  R.db = await idb();
+  R.items = await dbDo('m', 'readonly', s => s.get('items')) || START.map(name => ({ id: uid(), name }));
+  for (const it of R.items) { const r = await dbDo('r', 'readonly', s => s.get(it.id)); if (r) R.recs[it.id] = r; }
+  saveItems(); draw();
+})();
+</script>
+</body>
+</html>

@@ -35,7 +35,7 @@ const server = http.createServer((req, res) => {
     if (e) { res.writeHead(404); return res.end('404'); }
     const ext = path.extname(f);
     if (p === '/index.html') { const o = (req.headers['x-forwarded-proto'] || 'http').split(',')[0] + '://' + req.headers.host; d = Buffer.from(d.toString('utf8').replace('content="icons/og.png"', `content="${o}/icons/og.png"`)); }
-    res.writeHead(200, { 'Content-Type': MIME[ext] || 'application/octet-stream', 'Cache-Control': ['.woff2', '.png', '.ico', '.mp3', '.mp4'].includes(ext) || p.startsWith('/vendor/') || p.startsWith('/haunt/') || p.startsWith('/flags/') ? 'public, max-age=604800' : 'no-cache' });
+    res.writeHead(200, { 'Content-Type': MIME[ext] || 'application/octet-stream', 'Cache-Control': ['.woff2', '.png', '.ico', '.mp3', '.mp4'].includes(ext) || p.startsWith('/vendor/') || p.startsWith('/haunt/') || p.startsWith('/flags/') || p.startsWith('/mimic/') ? 'public, max-age=604800' : 'no-cache' });
     res.end(d);
   });
 });
@@ -86,15 +86,15 @@ const H = {
   }
 };
 const GAMES = { uno: { min: 2, max: 8 } };
-for (const k of ['codes', 'hive', 'liars', 'outside', 'typing', 'jackaroo', 'draw', 'flip', 'sus', 'haunt', 'mafia', 'phone', 'fib', 'bomb', 'auction', 'feud', 'flags']) GAMES[k] = require('./games/' + k)(H);
-const META = { uno: { bots: true }, codes: { teams: true }, hive: { teams: true, bots: true }, liars: { bots: true }, outside: { bots: true }, typing: { bots: true }, jackaroo: { teams: true, bots: true }, draw: {}, flip: { bots: true }, sus: { bots: true }, haunt: { bots: true }, mafia: { bots: true }, phone: {}, fib: { bots: true }, bomb: { bots: true }, auction: { bots: true }, feud: { teams: true, bots: true }, flags: { bots: true } };
+for (const k of ['codes', 'hive', 'liars', 'outside', 'typing', 'jackaroo', 'draw', 'flip', 'sus', 'haunt', 'mafia', 'phone', 'fib', 'bomb', 'auction', 'feud', 'flags', 'mimic']) GAMES[k] = require('./games/' + k)(H);
+const META = { uno: { bots: true }, codes: { teams: true }, hive: { teams: true, bots: true }, liars: { bots: true }, outside: { bots: true }, typing: { bots: true }, jackaroo: { teams: true, bots: true }, draw: {}, flip: { bots: true }, sus: { bots: true }, haunt: { bots: true }, mafia: { bots: true }, phone: {}, fib: { bots: true }, bomb: { bots: true }, auction: { bots: true }, feud: { teams: true, bots: true }, flags: { bots: true }, mimic: {} };
 const AVATARS = ['😎', '🦁', '🐪', '🦅', '🐺', '🦊', '🐯', '🐼', '🦄', '🐸', '👑', '🔥', '⚡', '🌙', '🎩', '🤠'];
 const cleanAv = a => AVATARS.includes(a) ? a : '';
 // شكل الشخصية بالبيت المسكون: جسم، بشرة، شعر، لون الشعر، اللبس، لونين، لحية
 const LOOKMAX = { b: 2, s: 4, h: 6, hc: 8, o: 7, c1: 12, c2: 12, bd: 2, mf: 4, ms: 4, me: 4, mt: 3 };
 const cleanLook = l => { if (!l || typeof l !== 'object') return null; const o = {}; for (const k in LOOKMAX) { const v = +l[k]; o[k] = Number.isInteger(v) && v >= 0 && v < LOOKMAX[k] ? v : 0; } return o; };
 const randLook = () => { const l = Object.fromEntries(Object.entries(LOOKMAX).map(([k, n]) => [k, Math.random() * n | 0])); l.h = 1 + (Math.random() * 5 | 0); l.hc = Math.random() * 6 | 0; return l; };
-const optsView = (r, p) => ({ stack: !!r.opts.stack, turn: r.opts.turn || 15, lock: !!r.opts.lock, hasPass: !!r.opts.pass, pass: r.host === p.id ? (r.opts.pass || '') : null, target: r.opts.target || 5, imps: r.opts.imps || 1, doctor: !!r.opts.doctor, map: r.opts.map || 'ship', nwords: r.opts.words ? r.opts.words.length : 0, wordsText: r.host === p.id ? (r.opts.wordsText || '') : '', mcount: r.opts.mcount || 0, dayT: r.opts.dayT || 90, reveal: r.opts.reveal !== false, mroles: Object.assign({ doc: 1, det: 1, sniper: 1, god: 1, jester: 1, mayor: 1 }, r.opts.mroles), blives: r.opts.blives || 3, bdiff: r.opts.bdiff || 'mid', frounds: r.opts.frounds || 7, psteps: r.opts.psteps || 0, pdraw: r.opts.pdraw || 90, aitems: r.opts.aitems || 8, drounds: r.opts.drounds || 4, fcount: r.opts.fcount || 10, fmode: r.opts.fmode || 'flags', fdiff: r.opts.fdiff || 'easy' });
+const optsView = (r, p) => ({ stack: !!r.opts.stack, turn: r.opts.turn || 15, lock: !!r.opts.lock, hasPass: !!r.opts.pass, pass: r.host === p.id ? (r.opts.pass || '') : null, target: r.opts.target || 5, imps: r.opts.imps || 1, doctor: !!r.opts.doctor, map: r.opts.map || 'ship', nwords: r.opts.words ? r.opts.words.length : 0, wordsText: r.host === p.id ? (r.opts.wordsText || '') : '', mcount: r.opts.mcount || 0, dayT: r.opts.dayT || 90, reveal: r.opts.reveal !== false, mroles: Object.assign({ doc: 1, det: 1, sniper: 1, god: 1, jester: 1, mayor: 1 }, r.opts.mroles), blives: r.opts.blives || 3, bdiff: r.opts.bdiff || 'mid', frounds: r.opts.frounds || 7, psteps: r.opts.psteps || 0, pdraw: r.opts.pdraw || 90, aitems: r.opts.aitems || 8, drounds: r.opts.drounds || 4, fcount: r.opts.fcount || 10, fmode: r.opts.fmode || 'flags', fdiff: r.opts.fdiff || 'easy', mrounds: r.opts.mrounds || 5, mpack: r.opts.mpack || 'all' });
 const maxOf = r => GAMES[r.game].max;
 
 const newRoom = (code, game = 'uno') => ({ code, game, g: null, opts: {}, owed: 0, botT: null, phase: 'lobby', players: [], host: null, deck: [], discard: [], color: null, dir: 1, turn: 0, pending: null, catchable: null, log: [], winner: null, chat: [], teams: false, score: [0, 0], winTeam: null, specs: [], recorded: false, banned: new Set(), turnSeq: 0, armed: -1, timer: null, deadline: 0 });
@@ -578,6 +578,8 @@ wss.on('connection', (ws, req) => {
         else if (k === 'fcount' && r.game === 'flags' && [10, 15, 20].includes(+v)) r.opts.fcount = +v;
         else if (k === 'fmode' && r.game === 'flags' && ['flags', 'cap', 'mix'].includes(v)) r.opts.fmode = v;
         else if (k === 'fdiff' && r.game === 'flags' && ['easy', 'all'].includes(v)) r.opts.fdiff = v;
+        else if (k === 'mrounds' && r.game === 'mimic' && [5, 8, 10].includes(+v)) r.opts.mrounds = +v;
+        else if (k === 'mpack' && r.game === 'mimic' && ['all', 'react', 'basic'].includes(v)) r.opts.mpack = v;
         else if (k === 'words' && r.game === 'codes') {
           const text = String(v || '').slice(0, 1500);
           const list = [...new Set(text.split(/[\n,،؛;]+/).map(x => x.trim()).filter(x => x && x.length <= 16))];
