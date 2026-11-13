@@ -1,8 +1,11 @@
 // واجهات الألعاب الثانية: كلمة السر، خلية الحروف، الكذابين الترتيب
-const GNAME = { uno: 'أونو', codes: 'كلمة السر', hive: 'خلية الحروف', liars: 'الكذابين الترتيب', outside: 'برا السالفة', typing: 'سبّاق الكتابة', jackaroo: 'جاكارو', draw: 'رسم وخمّن', flip: 'أونو فليب', sus: 'المندس', haunt: 'البيت المسكون', mafia: 'المافيا' };
-const GINFO = { mafia: 'من ٥ إلى ١٦ لاعب (والبوتات تكمّل)', haunt: 'من ٢ إلى ١٠ لاعبين (ثري دي، والبوتات تكمّل)', sus: 'من ٤ إلى ١٢ لاعب (والبوتات تكمّل العدد)', flip: 'من ٢ إلى ٨ لاعبين', uno: 'من ٢ إلى ٨ لاعبين', codes: 'من ٤ إلى ١٠ لاعبين، فريقين', hive: 'من ٢ إلى ١٠ لاعبين، فريقين', liars: 'من ٢ إلى ٨ لاعبين', outside: 'من ٣ إلى ١٠ لاعبين', typing: 'من ٢ إلى ١٠ لاعبين', jackaroo: '٤ لاعبين بالضبط، فريقين (شريكك قبالتك)', draw: 'من ٢ إلى ١٠ لاعبين' };
-const BOTGAMES = ['mafia', 'uno', 'hive', 'liars', 'jackaroo', 'outside', 'typing', 'flip', 'sus', 'haunt'];
+const GNAME = { uno: 'أونو', codes: 'كلمة السر', hive: 'خلية الحروف', liars: 'الكذابين الترتيب', outside: 'برا السالفة', typing: 'سبّاق الكتابة', jackaroo: 'جاكارو', draw: 'رسم وخمّن', flip: 'أونو فليب', sus: 'المندس', haunt: 'البيت المسكون', mafia: 'المافيا', phone: 'التلفون الترتيب', fib: 'صدّقني', bomb: 'القنبلة' };
+const GINFO = { phone: 'من ٣ إلى ١٢ لاعب', fib: 'من ٣ إلى ١٠ لاعبين (والبوتات تكمّل)', bomb: 'من ٢ إلى ١٢ لاعب (والبوتات تكمّل)', mafia: 'من ٥ إلى ١٦ لاعب (والبوتات تكمّل)', haunt: 'من ٢ إلى ١٠ لاعبين (ثري دي، والبوتات تكمّل)', sus: 'من ٤ إلى ١٢ لاعب (والبوتات تكمّل العدد)', flip: 'من ٢ إلى ٨ لاعبين', uno: 'من ٢ إلى ٨ لاعبين', codes: 'من ٤ إلى ١٠ لاعبين، فريقين', hive: 'من ٢ إلى ١٠ لاعبين، فريقين', liars: 'من ٢ إلى ٨ لاعبين', outside: 'من ٣ إلى ١٠ لاعبين', typing: 'من ٢ إلى ١٠ لاعبين', jackaroo: '٤ لاعبين بالضبط، فريقين (شريكك قبالتك)', draw: 'من ٢ إلى ١٠ لاعبين' };
+const BOTGAMES = ['fib', 'bomb', 'mafia', 'uno', 'hive', 'liars', 'jackaroo', 'outside', 'typing', 'flip', 'sus', 'haunt'];
 const GHELP = {
+  phone: 'كل واحد يكتب جملة غريبة. الجملة تروح للي بعدك ويرسمها، والرسمة تروح للي بعده ويكتب وش شاف، وهكذا لين تلف على الكل. بالآخر تنعرض كل سلسلة من أولها وتشوفون كيف «خربت» المكالمة 😂. اضغط 😂 على أضحك شي، واللي يضحّك الناس أكثر يفوز.',
+  fib: 'يطلع سؤال غريب جوابه حقيقة ما يعرفها أحد. الكل يكتب جواب كذب يقنع. بعدها تنعرض كل الأجوبة مع الجواب الصح، وكل واحد يختار اللي يحسبه صح. لقيت الصح = ١٠٠٠ نقطة، وكل واحد ينخدع بكذبتك = ٥٠٠ لك. الجولة الأخيرة النقاط دبل.',
+  bomb: 'القنبلة تلف بينكم، واللي معه القنبلة يطلع له مقطع حرفين (مثل «ست»). اكتب كلمة فيها المقطع (٣ حروف أو أكثر، وما تتكرر) وتروح القنبلة للي بعدك. القنبلة تنفجر بوقت عشوائي، واللي تنفجر بيده يخسر قلب. آخر واحد يبقى يفوز. كمّل حروف المكافأة كلها وتاخذ قلب زيادة.',
   mafia: 'مدينة فيها مافيا متخفين بين الناس. بالبداية كل واحد يشوف كرت دوره بالسر. بالليل: المافيا يختارون ضحية (ويتكلمون بشات سري)، الطبيب يحمي شخص، المحقق يفتّش على شخص ويعرف هو مافيا ولا لا (الأب الروحي يطلع بريء)، والقناص عنده طلقة وحدة باللعبة. الصبح تطلع جريدة المدينة بأسماء الضحايا. بالنهار تتناقشون بصوت الديسكورد أو بالشات، وبعدها تصوّتون على شخص تطردونه. العمدة يقدر يكشف نفسه وصوته يصير بصوتين، والمهرج يفوز لو المدينة صوّتت عليه. المدينة تفوز لو طلّعت كل المافيا، والمافيا تفوز لو صار عددهم نفس الباقين.',
   haunt: 'لعبة رعب ثري دي بمنظور العين داخل قصر كبير بأربع طوابق (قبو، أرضي، علوي، علّية). واحد منكم شبح (اثنين لو كنتم ٧ أو أكثر) والباقين ناجين معهم كشافات. القصة بمراحل: دوّروا ٣ فيوزات وركّبوها بصندوق الكهرباء في القبو، بعدها المفاتيح تفتح مكتب الجد ثم الغرفة الكبيرة ثم العلّية، جيبوا ٤ قطع ملعونة للمذبح بالعلّية وسوّوا الطقس، وبعدها ينفتح الباب الأمامي وتهربون. الكشاف لو انوجّه على الشبح يحرقه ويجمّده، بس البطارية تخلص. أول مرة يمسكك الشبح تنحبس بقفص القبو وربعك يقدرون يطلّعونك، والمرة الثانية تموت. تقدر تختبي بالدواليب. الشبح يشوف بالظلام، يصرخ عشان يطفّي الكشافات، وينتقل بين المرايا. الكمبيوتر: WASD للمشي، الماوس للف، Shift للركض، F الكشاف، E استخدم، M الخريطة، Q صرخة الشبح. الجوال: يسار الشاشة للمشي (اسحب للآخر عشان تركض)، ويمينها للف. اللعبة تاخذ قريب نص ساعة، والناجين يفوزون لو هرب نصهم أو أكثر.',
   sus: 'أنتم طاقم سفينة وبينكم مندسين (١–٣ حسب اختيار المضيف). امشِ بالأسهم/WASD أو اسحب على الشاشة. ما تشوف إلا اللي قدامك، والغرف الثانية ظلام. الطاقم يخلّصون مهامهم (العلامات الصفراء)، والمندس يقتل ويخرّب ويتنقّل بالفتحات. غرفة المراقبة فيها كاميرات للممرات. لو لقيت جثة بلّغ، أو اضغط زر الطوارئ بالكافتيريا. وبطور الدكتور: الدكتور يعطي درع لشخص واحد كل جولة يحميه من القتل لين الاجتماع الجاي. الطاقم يفوز لو خلّصوا المهام أو طردوا المندسين، والمندس يفوز لو صار عددهم نفس الطاقم أو انفجر المفاعل.',
@@ -68,13 +71,14 @@ function renderOther() {
   const body = $('#g2body');
   if (body.dataset.built && body.dataset.built !== S.game) { body.innerHTML = ''; body.dataset.built = ''; }
   body.className = 'g2body ' + S.game;
-  keep(body, () => ({ codes: renderCodes, hive: renderHive, liars: renderLiars, outside: renderOutside, typing: renderTyping, jackaroo: renderJack, draw: renderDraw, flip: renderFlip, sus: renderSus, haunt: renderHaunt, mafia: renderMafia })[S.game](body, mt));
+  keep(body, () => ({ codes: renderCodes, hive: renderHive, liars: renderLiars, outside: renderOutside, typing: renderTyping, jackaroo: renderJack, draw: renderDraw, flip: renderFlip, sus: renderSus, haunt: renderHaunt, mafia: renderMafia, phone: renderPhone, fib: renderFib, bomb: renderBomb })[S.game](body, mt));
   // نهاية الجولة
   const over = S.phase === 'over';
   $('#over2').hidden = !over;
   if (over) {
     const g = S.g || {}, amSpy = g.role === 'spy';
     if (S.game === 'haunt') $('#winner2').textContent = (g.win === 'surv' ? 'فاز الناجين 🔦' : 'فاز الشبح 👻') + (S.spec || !g.me ? '' : (g.win === 'ghost') === !!g.me.ghost ? ' — فزت!' : ' — خسرت');
+    else if (S.game === 'phone') $('#winner2').textContent = S.winner && S.winner !== 'انتهت اللعبة' ? '😂 أضحك واحد: ' + S.winner : 'انتهت المكالمة 📞';
     else if (S.game === 'mafia') $('#winner2').textContent = (g.win === 't' ? 'فازت المدينة 🏙️' : g.win === 'm' ? 'فازت المافيا 🎩' : 'فاز المهرج 🃏') + (S.spec || !g.me ? '' : (g.win === 'j' ? g.jWin === S.me : g.win === (MROLE[g.me.role] || {}).team) ? ' — فزت!' : ' — خسرت');
     else if (S.game === 'sus') $('#winner2').textContent = (g.win === 'crew' ? 'فاز الطاقم 🧑‍🚀' : 'فاز المندسين 😈') + (S.spec || !g.me ? '' : (g.win === 'imp') === !!g.me.imp ? ' — فزت!' : ' — خسرت');
     else if (S.game === 'outside') $('#winner2').textContent = S.spec ? (g.spyWins ? 'فاز برا السالفة' : 'فاز اللي داخل السالفة') : g.spyWins === amSpy ? 'فزت! 🎉' : (g.spyWins ? 'برا السالفة نجا!' : 'انكشف برا السالفة!');
@@ -383,6 +387,7 @@ function renderLobbySet(isHost) {
   box.hidden = false;
   if (sig === lsSig) return; lsSig = sig;
   const sum = [o.lock ? '🔒 مقفلة بدون متفرجين' : '', o.hasPass ? '🔑 بكلمة سر' : '', S.game === 'uno' && o.stack ? 'تراكم +٢/+٤' : '', S.game === 'uno' && o.turn !== 15 ? `مهلة الدور ${o.turn} ث` : '', S.game === 'sus' ? (o.map === 'forest' ? '🌲 الغابة الملعونة' : '🚀 السفينة') : '', S.game === 'sus' ? `${o.imps || 1} ${(o.imps || 1) > 1 ? 'مندسين' : 'مندس'}` : '', S.game === 'sus' && o.doctor ? 'طور الدكتور 🩺' : '', S.game === 'typing' ? `الهدف ${o.target} نقاط` : '', S.game === 'codes' && o.nwords ? `كلمات مخصصة (${o.nwords})` : ''].filter(Boolean);
+  if (S.game === 'bomb') sum.push('❤️'.repeat(o.blives || 3), { easy: 'سهل', mid: 'عادي', hard: 'صعب' }[o.bdiff] || 'عادي'); else if (S.game === 'fib') sum.push(`${o.frounds || 7} جولات`); else if (S.game === 'phone') sum.push(o.psteps ? `${o.psteps} خطوات` : 'تلف على الكل', `الرسم ${o.pdraw || 90} ث`);
   if (!isHost) { box.innerHTML = sum.length ? `<div class="lsum">${sum.map(x => `<span>${x}</span>`).join('')}</div>` : ''; box.hidden = !sum.length; return; }
   const gm = Object.keys(GNAME).map(k => `<button type="button" class="gsw${k === S.game ? ' on' : ''}" data-g="${k}">${GNAME[k]}</button>`).join('');
   let extra = '';
@@ -396,6 +401,11 @@ function renderLobbySet(isHost) {
     <label class="chk">وقت النقاش <select id="oDay">${[60, 90, 120, 180].map(n => `<option value="${n}"${o.dayT === n ? ' selected' : ''}>${n / 60 >= 1 && n % 60 === 0 ? n / 60 + ' دقيقة' : n + ' ثانية'}</option>`).join('')}</select></label>
     <label class="chk"><input type="checkbox" id="oRev"${o.reveal !== false ? ' checked' : ''}> يبان دور اللي يموت</label>
     <div class="mfroles">${Object.keys(RN).map(k => `<label class="chk"><input type="checkbox" data-mr="${k}"${mr[k] !== 0 ? ' checked' : ''}> ${RN[k]}</label>`).join('')}</div><small class="muted">الأدوار تدخل لما يكون العدد كافي: الطبيب ٤+، المحقق ٥+، القناص والأب الروحي والمهرج ٧+، العمدة ٨+</small>`; }
+  else if (S.game === 'bomb') extra = `<label class="chk">القلوب <select id="oBl">${[2, 3, 4].map(n => `<option value="${n}"${o.blives === n ? ' selected' : ''}>${'❤️'.repeat(n)}</option>`).join('')}</select></label>
+    <label class="chk">الصعوبة <select id="oBd">${[['easy', 'سهل'], ['mid', 'عادي'], ['hard', 'صعب']].map(([k, n]) => `<option value="${k}"${o.bdiff === k ? ' selected' : ''}>${n}</option>`).join('')}</select></label>`;
+  else if (S.game === 'fib') extra = `<label class="chk">عدد الجولات <select id="oFr">${[5, 7, 10].map(n => `<option value="${n}"${o.frounds === n ? ' selected' : ''}>${n}</option>`).join('')}</select></label>`;
+  else if (S.game === 'phone') extra = `<label class="chk">طول المكالمة <select id="oPs">${[[0, 'كل اللاعبين'], [4, '٤ خطوات'], [6, '٦ خطوات'], [8, '٨ خطوات']].map(([n, t]) => `<option value="${n}"${o.psteps === n ? ' selected' : ''}>${t}</option>`).join('')}</select></label>
+    <label class="chk">وقت الرسم <select id="oPd">${[60, 90, 120].map(n => `<option value="${n}"${o.pdraw === n ? ' selected' : ''}>${n} ثانية</option>`).join('')}</select></label>`;
   else if (S.game === 'typing') extra = `<label class="chk">الهدف <select id="oTarget">${[3, 5, 8, 12].map(n => `<option value="${n}"${o.target === n ? ' selected' : ''}>${n} نقاط</option>`).join('')}</select></label>`;
   else if (S.game === 'codes') extra = `<details class="wdet"><summary>كلمات مخصصة ${o.nwords ? `(مفعّلة: ${o.nwords})` : '(اختياري)'}</summary><textarea id="oWords" rows="4" placeholder="اكتب ٢٥ كلمة أو أكثر، كل كلمة بسطر أو افصلها بفاصلة">${esc(o.wordsText || '')}</textarea><div class="row"><button type="button" id="oWordsSave" class="btn sm">حفظ الكلمات</button><button type="button" id="oWordsClear" class="btn sm">رجّع الكلمات العادية</button></div></details>`;
   box.innerHTML = `<div class="ls-row"><b>اللعبة</b><div class="chips">${gm}</div></div>
@@ -415,6 +425,11 @@ function renderLobbySet(isHost) {
   bind('oDay', 'onchange', e => send({ t: 'opt', k: 'dayT', v: +e.target.value }));
   bind('oRev', 'onchange', e => send({ t: 'opt', k: 'reveal', v: e.target.checked }));
   box.querySelectorAll('[data-mr]').forEach(c => c.onchange = () => send({ t: 'opt', k: 'mrole', r: c.dataset.mr, v: c.checked }));
+  bind('oBl', 'onchange', e => send({ t: 'opt', k: 'blives', v: +e.target.value }));
+  bind('oBd', 'onchange', e => send({ t: 'opt', k: 'bdiff', v: e.target.value }));
+  bind('oFr', 'onchange', e => send({ t: 'opt', k: 'frounds', v: +e.target.value }));
+  bind('oPs', 'onchange', e => send({ t: 'opt', k: 'psteps', v: +e.target.value }));
+  bind('oPd', 'onchange', e => send({ t: 'opt', k: 'pdraw', v: +e.target.value }));
   bind('oLock', 'onchange', e => send({ t: 'opt', k: 'lock', v: e.target.checked }));
   bind('oPassSave', 'onclick', () => { send({ t: 'opt', k: 'pass', v: $('#oPass').value }); toast($('#oPass').value.trim() ? 'انحفظت كلمة السر' : 'انشالت كلمة السر'); });
   bind('addBot', 'onclick', () => send({ t: 'addbot' }));

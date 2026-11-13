@@ -12,7 +12,10 @@ const GTI = {
   draw: { s: 'pop', t: 'رسم وخمّن', html: () => `<svg class="dw" viewBox="0 0 200 160"><path d="M30 130V70l50-40 50 40v60z"/><path d="M68 130v-32h24v32"/><circle cx="160" cy="36" r="16"/><path d="M10 140c40-10 140-10 180 0"/></svg><i class="pen"></i>` },
   sus: { s: 'whoosh', t: 'المندس', html: () => `<div class="warp">${Array.from({ length: 26 }, (_, i) => `<i style="--a:${i * 360 / 26}deg;--k:${i % 7}"></i>`).join('')}</div><div class="crew"><i class="v"></i></div><em class="knife"></em>` },
   haunt: { s: 'thunder', t: 'البيت المسكون', html: () => `<svg class="hs" viewBox="0 0 200 140"><path d="M20 140V80L60 50V30h14v12l26-20 80 58v60z"/><rect x="88" y="96" width="24" height="44" class="dr"/><rect x="40" y="90" width="14" height="14" class="wn"/><rect x="140" y="88" width="14" height="14" class="wn"/></svg>${[0, 1, 2].map(i => `<i class="bat" style="--k:${i}">🦇</i>`).join('')}` },
-  mafia: { s: 'bang', t: 'المافيا', html: () => `<svg class="sky" viewBox="0 0 300 100" preserveAspectRatio="none"><path d="M0 100V60h20V40h18v30h14V30h22v40h16V50h20v50zM130 100V45h16V30h20v70zM180 100V55h24V35h18v65zM230 100V60h20V42h26v58z"/></svg><svg class="hat" viewBox="0 0 100 60"><path d="M4 50h92l-12-9H16z"/><path d="M22 41c0-22 10-34 28-34s28 12 28 34z"/><path d="M23 36h54" class="band"/></svg>` }
+  mafia: { s: 'bang', t: 'المافيا', html: () => `<svg class="sky" viewBox="0 0 300 100" preserveAspectRatio="none"><path d="M0 100V60h20V40h18v30h14V30h22v40h16V50h20v50zM130 100V45h16V30h20v70zM180 100V55h24V35h18v65zM230 100V60h20V42h26v58z"/></svg><svg class="hat" viewBox="0 0 100 60"><path d="M4 50h92l-12-9H16z"/><path d="M22 41c0-22 10-34 28-34s28 12 28 34z"/><path d="M23 36h54" class="band"/></svg>` },
+  phone: { s: 'bell', t: 'التلفون الترتيب', html: () => `<svg class="ph" viewBox="0 0 160 120"><path d="M14 44c0-20 30-32 66-32s66 12 66 32l-22 8-8-18c-24-8-48-8-72 0l-8 18z" class="hs"/><path d="M40 60h80l14 50H26z" class="bd"/><circle cx="80" cy="84" r="20" class="dial"/>${[0, 1, 2, 3, 4, 5, 6, 7].map(i => `<circle cx="${80 + 13 * Math.cos(i / 8 * 6.28)}" cy="${84 + 13 * Math.sin(i / 8 * 6.28)}" r="3.2" class="hole"/>`).join('')}</svg>${[0, 1, 2].map(i => `<i class="wave" style="--k:${i}"></i>`).join('')}<svg class="cord" viewBox="0 0 300 40" preserveAspectRatio="none"><path d="M0 20q10-18 20 0t20 0 20 0 20 0 20 0 20 0 20 0 20 0 20 0 20 0 20 0 20 0 20 0 20 0 20 0"/></svg>` },
+  fib: { s: 'ding', t: 'صدّقني', html: () => `<div class="bulbs">${Array.from({ length: 14 }, (_, i) => `<i style="--k:${i}"></i>`).join('')}</div><div class="pg"><svg viewBox="0 0 200 60" preserveAspectRatio="none"><path d="M0 30h30l8-18 8 34 8-26 6 14h20l6-24 10 44 8-30 6 10h20l8-14 8 22 6-8h28"/></svg></div><em class="lie">كذّاب؟</em>` },
+  bomb: { s: 'tick', t: 'القنبلة', html: () => `<div class="hz"></div><div class="bm"><i class="cap"></i><i class="fz"></i><i class="sp"></i><i class="sh"></i></div><div class="kb"></div>` }
 };
 const GT = { last: '', lastAt: 0, cur: '' };
 function gtIntro(g) {
@@ -24,7 +27,7 @@ function gtIntro(g) {
   document.body.appendChild(o);
   const kill = () => { if (!o.isConnected) return; o.classList.add('out'); setTimeout(() => o.remove(), 420); };
   o.onclick = kill; setTimeout(kill, matchMedia('(prefers-reduced-motion: reduce)').matches ? 700 : 2300);
-  try { sfx(d.s); if (g === 'liars') setTimeout(() => sfx('bang'), 900); if (g === 'uno' || g === 'flip') setTimeout(() => sfx('uno'), 1000); } catch {}
+  try { sfx(d.s); if (g === 'liars') setTimeout(() => sfx('bang'), 900); if (g === 'uno' || g === 'flip') setTimeout(() => sfx('uno'), 1000); if (g === 'bomb') { [300, 650, 950, 1200, 1400].forEach(t => setTimeout(() => sfx('tick'), t)); setTimeout(() => sfx('bang'), 1550); } if (g === 'phone') setTimeout(() => sfx('bell'), 700); } catch {}
 }
 // اللوبي ياخذ ستايل لعبته
 function gtSync() {

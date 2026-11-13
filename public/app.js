@@ -69,6 +69,8 @@ function on(m) {
     if (typeof susNet === 'function') susNet(m);
   } else if (m.t === 'hpos' || m.t === 'hsnap' || m.t === 'hev') {
     if (typeof hauntNet === 'function') hauntNet(m);
+  } else if (m.t === 'gnet') {
+    const f = window['net_' + m.g]; if (typeof f === 'function') f(m);
   } else if (m.t === 'react') {
     showReact(m.from, m.e);
   } else if (m.t === 'state') {

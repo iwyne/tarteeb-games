@@ -1,0 +1,4 @@
+قاموس لعبة القنبلة (bomb-words.txt.gz و bomb-syl.json) مأخوذ ومعدّل من:
+FrequencyWords by Hermit Dave — https://github.com/hermitdave/FrequencyWords
+(based on OpenSubtitles 2018). Content licensed CC BY-SA 4.0.
+التعديل: تطبيع الحروف، حذف الكلمات النادرة (أقل من ٨ مرات) والرموز، وإضافة كلمات خليجية يومية.
