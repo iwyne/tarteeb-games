@@ -37,7 +37,7 @@ function renderFib(body) {
   const pc = g.sub === 'write' ? g.wrote : g.sub === 'pick' ? g.picked : [];
   const show = g.sub === 'score' || over;
   const list = [...S.players].sort((a, b) => show ? (g.scores[b.id] || 0) - (g.scores[a.id] || 0) : 0);
-  $('#fbPpl').innerHTML = list.map(p => `<div class="fbp${pc.includes(p.id) ? ' done' : ''}${p.id === me ? ' me' : ''}"><span class="bmav">${bmFace(p.id)}</span><b class="nt">${esc(p.name)}</b><i>${(g.scores[p.id] || 0).toLocaleString('ar')}</i>${show && g.gain && g.gain[p.id] ? `<em>+${g.gain[p.id].toLocaleString('ar')}</em>` : ''}</div>`).join('');
+  $('#fbPpl').innerHTML = list.map(p => `<div class="fbp${pc.includes(p.id) ? ' done' : ''}${p.id === me ? ' me' : ''}"><span class="bmav">${bmFace(p.id)}</span><b class="nt">${esc(p.name)}</b><i>${(g.scores[p.id] || 0).toLocaleString('en-US')}</i>${show && g.gain && g.gain[p.id] ? `<em>+${g.gain[p.id].toLocaleString('en-US')}</em>` : ''}</div>`).join('');
   if (g.sub !== FB.sub || g.round !== FB.round) {
     if (g.sub === 'pick') sfx('whoosh'); else if (g.sub === 'score') sfx('card'); else if (g.sub === 'write' && FB.round !== g.round) sfx('bell');
     FB.sub = g.sub; FB.round = g.round;

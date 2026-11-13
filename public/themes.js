@@ -15,7 +15,10 @@ const GTI = {
   mafia: { s: 'bang', t: 'المافيا', html: () => `<svg class="sky" viewBox="0 0 300 100" preserveAspectRatio="none"><path d="M0 100V60h20V40h18v30h14V30h22v40h16V50h20v50zM130 100V45h16V30h20v70zM180 100V55h24V35h18v65zM230 100V60h20V42h26v58z"/></svg><svg class="hat" viewBox="0 0 100 60"><path d="M4 50h92l-12-9H16z"/><path d="M22 41c0-22 10-34 28-34s28 12 28 34z"/><path d="M23 36h54" class="band"/></svg>` },
   phone: { s: 'bell', t: 'التلفون الترتيب', html: () => `<svg class="ph" viewBox="0 0 160 120"><path d="M14 44c0-20 30-32 66-32s66 12 66 32l-22 8-8-18c-24-8-48-8-72 0l-8 18z" class="hs"/><path d="M40 60h80l14 50H26z" class="bd"/><circle cx="80" cy="84" r="20" class="dial"/>${[0, 1, 2, 3, 4, 5, 6, 7].map(i => `<circle cx="${80 + 13 * Math.cos(i / 8 * 6.28)}" cy="${84 + 13 * Math.sin(i / 8 * 6.28)}" r="3.2" class="hole"/>`).join('')}</svg>${[0, 1, 2].map(i => `<i class="wave" style="--k:${i}"></i>`).join('')}<svg class="cord" viewBox="0 0 300 40" preserveAspectRatio="none"><path d="M0 20q10-18 20 0t20 0 20 0 20 0 20 0 20 0 20 0 20 0 20 0 20 0 20 0 20 0 20 0 20 0 20 0"/></svg>` },
   fib: { s: 'ding', t: 'صدّقني', html: () => `<div class="bulbs">${Array.from({ length: 14 }, (_, i) => `<i style="--k:${i}"></i>`).join('')}</div><div class="pg"><svg viewBox="0 0 200 60" preserveAspectRatio="none"><path d="M0 30h30l8-18 8 34 8-26 6 14h20l6-24 10 44 8-30 6 10h20l8-14 8 22 6-8h28"/></svg></div><em class="lie">كذّاب؟</em>` },
-  bomb: { s: 'tick', t: 'القنبلة', html: () => `<div class="hz"></div><div class="bm"><i class="cap"></i><i class="fz"></i><i class="sp"></i><i class="sh"></i></div><div class="kb"></div>` }
+  bomb: { s: 'tick', t: 'القنبلة', html: () => `<div class="hz"></div><div class="bm"><i class="cap"></i><i class="fz"></i><i class="sp"></i><i class="sh"></i></div><div class="kb"></div>` },
+  auction: { s: 'bell', t: 'المزاد', html: () => `<div class="pod"></div><div class="lot">🏺<small>قطعة رقم ١</small></div><div class="gv">🔨</div><em class="sold">بيع!</em>` },
+  feud: { s: 'ding', t: 'العائلة الترتيب', html: () => `<div class="bd">${[0, 1, 2, 3, 4, 5].map(i => `<i style="--k:${i}"><b>${i + 1}</b></i>`).join('')}</div><em class="xx">✖</em>` },
+  flags: { s: 'whoosh', t: 'أعلام ودول', html: () => `<div class="gl">🌍</div>${['sa', 'br', 'jp', 'eg', 'ca', 'it'].map((c, i) => `<img class="fg" src="flags/${c}.svg" style="--k:${i}" alt="">`).join('')}` }
 };
 const GT = { last: '', lastAt: 0, cur: '' };
 function gtIntro(g) {
@@ -27,7 +30,7 @@ function gtIntro(g) {
   document.body.appendChild(o);
   const kill = () => { if (!o.isConnected) return; o.classList.add('out'); setTimeout(() => o.remove(), 420); };
   o.onclick = kill; setTimeout(kill, matchMedia('(prefers-reduced-motion: reduce)').matches ? 700 : 2300);
-  try { sfx(d.s); if (g === 'liars') setTimeout(() => sfx('bang'), 900); if (g === 'uno' || g === 'flip') setTimeout(() => sfx('uno'), 1000); if (g === 'bomb') { [300, 650, 950, 1200, 1400].forEach(t => setTimeout(() => sfx('tick'), t)); setTimeout(() => sfx('bang'), 1550); } if (g === 'phone') setTimeout(() => sfx('bell'), 700); } catch {}
+  try { sfx(d.s); if (g === 'liars') setTimeout(() => sfx('bang'), 900); if (g === 'uno' || g === 'flip') setTimeout(() => sfx('uno'), 1000); if (g === 'bomb') { [300, 650, 950, 1200, 1400].forEach(t => setTimeout(() => sfx('tick'), t)); setTimeout(() => sfx('bang'), 1550); } if (g === 'phone') setTimeout(() => sfx('bell'), 700); if (g === 'auction') { setTimeout(() => sfx('slam'), 1300); } if (g === 'feud') { setTimeout(() => sfx('penalty'), 1400); } } catch {}
 }
 // اللوبي ياخذ ستايل لعبته
 function gtSync() {
