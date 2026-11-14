@@ -1,0 +1,4 @@
+قطع الشطرنج: مجموعة "cburnett" من رسم Colin M.L. Burnett
+https://commons.wikimedia.org/wiki/Category:SVG_chess_pieces
+الرخصة: CC BY-SA 3.0 (https://creativecommons.org/licenses/by-sa/3.0/)
+مأخوذة من ملفات حزمة chessground (lichess) بدون تعديل.

@@ -155,6 +155,13 @@ const TUT = {
     { t: 'التقييم على الإيقاع ولحن صوتك، يعني طلوع ونزول الصوت… مو خشونته.', e: [tuTX('bar', 50, 30, { in: 'fade', p: .87, dur: 2.2 }), tuTT('٨٧٪', 50, 56, { d: 2.4, in: 'pop', c: 'y', s: 1.6 }), tuTI('🎵', 22, 70, { d: .6, in: 'pop', loop: 'bob', at: 1 }), tuTI('🥁', 78, 70, { d: 1, in: 'pop', loop: 'bob', at: 1.4 })] },
     { t: 'بعدها عجلة الحظ تختار واحد: دبل، أو زيادة، أو تقليده يصير فسوة!', e: [tuTI('🎡', 50, 44, { in: 'spin', s: 3.2 }), tuTX('chip', 22, 84, { v: '✖️٢ دبل', d: 1.4, in: 'pop', c: 'g' }), tuTX('chip', 50, 84, { v: '+٢٥', d: 1.8, in: 'pop', c: 'g' }), tuTX('chip', 78, 84, { v: '💨 فسوة', d: 2.2, in: 'pop', loop: 'shake', at: 2.6 })] },
     { t: 'وتنعاد كل التقليدات وحدة وحدة… والأعلى نقاط يفوز.', e: [...tuTTring(3, 50, 50, 28, 26), tuTI('😂', 22, 22, { d: 1, in: 'pop', s: 1.4 }), tuTI('👑', 50, 12, { d: 2, in: 'drop', s: 1.3 })] }
+  ],
+  chess: [
+    { t: 'شطرنج: الهدف تحاصر ملك خصمك لين ما يقدر يهرب… هذا هو «كش مات».', e: [tuTX('cboard', 50, 50, { in: 'pop', s: 1.1 }), tuTX('cpc', 50, 30, { v: 'bK', d: .6, in: 'drop', s: 1.2 }), tuTX('cpc', 30, 70, { v: 'wQ', d: 1.2, in: 'pop', mv: [[50, 46, 2, .5]] }), tuTS('كش مات!', 72, 74, { d: 2.8 })] },
+    { t: 'اضغط على قطعتك وتطلع لك نقاط وين تقدر تروح… أو اسحبها بيدك.', e: [tuTX('cboard', 50, 50, { in: 'fade', s: 1.1 }), tuTX('cpc', 38, 74, { v: 'wN', in: 'pop', s: 1.1, mv: [[47, 50, 2.6, .4]] }), ...[[29, 50], [47, 50], [56, 62]].map(([x, y], i) => tuTX('dot', x, y, { d: .8 + i * .15, in: 'pop', c: 'g' })), tuTI('👆', 44, 84, { d: .4, in: 'pop', mv: [[48, 56, 2.4, .5]] })] },
+    { t: 'فيه كل القوانين: التبييت، والأكل بالمرور، والعسكري لما يوصل آخر اللوحة يترقّى لوزير أو غيره.', e: [tuTX('cpc', 26, 50, { v: 'wP', in: 'pop', s: 1.3, mv: [[26, 26, 1.2, .5]] }), tuTX('cpc', 26, 26, { v: 'wQ', d: 1.8, in: 'flip', s: 1.3 }), tuTT('ترقية', 26, 82, { d: 1.9, in: 'up' }), tuTX('cpc', 66, 50, { v: 'wK', d: .6, in: 'pop', s: 1.1, mv: [[78, 50, 2.6, .5]] }), tuTX('cpc', 86, 50, { v: 'wR', d: .6, in: 'pop', s: 1.1, mv: [[70, 50, 2.6, .5]] }), tuTT('تبييت', 76, 82, { d: 2.9, in: 'up' })] },
+    { t: 'تقدر تلعب ضد صاحبك، أو ضد البوت: سهل، متوسط، أو صعب. والباقين يتفرجون.', e: [tuTA('😎', 26, 50, { in: 'pop', s: 1.5 }), tuTT('ضد', 50, 50, { d: .4, in: 'pop' }), tuTI('🤖', 74, 50, { d: .7, in: 'pop', s: 2, loop: 'bob', at: 1.2 }), ...['سهل', 'متوسط', 'صعب'].map((w, i) => tuTX('chip', 30 + i * 20, 84, { v: w, d: 1.4 + i * .2, in: 'pop', ...(i === 2 ? { c: 'r' } : {}) }))] },
+    { t: 'وفيه ساعة اختيارية للمستعجلين، وتقدر تعرض تعادل أو تستسلم.', e: [tuTT('⏱️ ٣+٢', 30, 40, { in: 'pop', s: 1.4, c: 'y' }), tuTT('🤝 تعادل؟', 70, 40, { d: .8, in: 'pop' }), tuTT('🏳️ استسلام', 50, 72, { d: 1.6, in: 'pop', c: 'r' })] }
   ]
 };
 
@@ -195,6 +202,8 @@ function tuNode(e) {
   else if (e.k === 'fusebox') d.innerHTML = '<i></i><i></i><i></i>';
   else if (e.k === 'cage') d.innerHTML = '';
   else if (e.k === 'city') d.innerHTML = '<svg viewBox="0 0 300 100" preserveAspectRatio="none"><path d="M0 100V60h20V40h18v30h14V30h22v40h16V50h20v50zM130 100V45h16V30h20v70zM180 100V55h24V35h18v65zM230 100V60h20V42h26v58h24v42z"/></svg>';
+  else if (e.k === 'cpc') d.innerHTML = `<img src="chess/${e.v}.svg" alt="">`;
+  else if (e.k === 'cboard') d.innerHTML = Array.from({ length: 64 }, (_, i) => `<i class="${((i >> 3) + i) % 2 ? 'd' : 'l'}"></i>`).join('');
   else if (e.k === 'flag') d.innerHTML = `<img src="flags/${e.v}.svg" alt="">`;
   else if (e.k === 'bomb') d.innerHTML = `<b>${e.v || ''}</b><i></i>`;
   else if (e.k === 'paper') d.innerHTML = `<b>جريدة المدينة</b><small>طبعة الصباح</small><h4>${e.v}</h4><p></p><p></p><p></p>`;

@@ -19,7 +19,8 @@ const GTI = {
   auction: { s: 'bell', t: 'المزاد', html: () => `<div class="pod"></div><div class="lot">🏺<small>قطعة رقم ١</small></div><div class="gv">🔨</div><em class="sold">بيع!</em>` },
   feud: { s: 'ding', t: 'العائلة الترتيب', html: () => `<div class="bd">${[0, 1, 2, 3, 4, 5].map(i => `<i style="--k:${i}"><b>${i + 1}</b></i>`).join('')}</div><em class="xx">✖</em>` },
   flags: { s: 'whoosh', t: 'أعلام ودول', html: () => `<div class="gl">🌍</div>${['sa', 'br', 'jp', 'eg', 'ca', 'it'].map((c, i) => `<img class="fg" src="flags/${c}.svg" style="--k:${i}" alt="">`).join('')}` },
-  mimic: { s: 'boing', t: 'الأصوات الترتيب', html: () => `<div class="mic">🎙️</div>${[0, 1, 2, 3, 4, 5, 6].map(i => `<i class="bar" style="--k:${i}"></i>`).join('')}${['😱', '😂', '🤯'].map((e, i) => `<em class="fx" style="--k:${i}">${e}</em>`).join('')}` }
+  mimic: { s: 'boing', t: 'الأصوات الترتيب', html: () => `<div class="mic">🎙️</div>${[0, 1, 2, 3, 4, 5, 6].map(i => `<i class="bar" style="--k:${i}"></i>`).join('')}${['😱', '😂', '🤯'].map((e, i) => `<em class="fx" style="--k:${i}">${e}</em>`).join('')}` },
+  chess: { s: 'card', t: 'شطرنج', html: () => `<div class="bd">${Array.from({ length: 64 }, (_, i) => `<i class="${((i >> 3) + i) % 2 ? 'd' : 'l'}" style="--k:${(i >> 3) + (i & 7)}"></i>`).join('')}</div><img class="kg w" src="chess/wK.svg" alt=""><img class="kg b" src="chess/bK.svg" alt=""><em class="mt">كش مات</em>` }
 };
 const GT = { last: '', lastAt: 0, cur: '' };
 function gtIntro(g) {
@@ -31,7 +32,7 @@ function gtIntro(g) {
   document.body.appendChild(o);
   const kill = () => { if (!o.isConnected) return; o.classList.add('out'); setTimeout(() => o.remove(), 420); };
   o.onclick = kill; setTimeout(kill, matchMedia('(prefers-reduced-motion: reduce)').matches ? 700 : 2300);
-  try { sfx(d.s); if (g === 'liars') setTimeout(() => sfx('bang'), 900); if (g === 'uno' || g === 'flip') setTimeout(() => sfx('uno'), 1000); if (g === 'bomb') { [300, 650, 950, 1200, 1400].forEach(t => setTimeout(() => sfx('tick'), t)); setTimeout(() => sfx('bang'), 1550); } if (g === 'phone') setTimeout(() => sfx('bell'), 700); if (g === 'auction') { setTimeout(() => sfx('slam'), 1300); } if (g === 'feud') { setTimeout(() => sfx('penalty'), 1400); } } catch {}
+  try { sfx(d.s); if (g === 'liars') setTimeout(() => sfx('bang'), 900); if (g === 'uno' || g === 'flip') setTimeout(() => sfx('uno'), 1000); if (g === 'bomb') { [300, 650, 950, 1200, 1400].forEach(t => setTimeout(() => sfx('tick'), t)); setTimeout(() => sfx('bang'), 1550); } if (g === 'phone') setTimeout(() => sfx('bell'), 700); if (g === 'chess') setTimeout(() => sfx('slap'), 1300); if (g === 'auction') { setTimeout(() => sfx('slam'), 1300); } if (g === 'feud') { setTimeout(() => sfx('penalty'), 1400); } } catch {}
 }
 // اللوبي ياخذ ستايل لعبته
 function gtSync() {
