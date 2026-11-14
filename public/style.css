@@ -2240,3 +2240,12 @@ body[data-gt=chess] #lobbyTitle{color:#16130f;text-shadow:3px 3px 0 #b07d4f}
 .chbar{width:100%;box-sizing:border-box}
 body[data-gt=chess]{--p1:#6f8f5a;--p1c:#fffaf0;--p2:#16130f;--p2c:#fffaf0;--p3:#b07d4f;--p3c:#fffaf0;--p4:#c9a24a;--p4c:#16130f}
 .te-cboard{grid-template-rows:repeat(8,1fr);place-items:stretch}
+.chtabs{grid-column:1/-1;display:flex;gap:8px;overflow-x:auto;padding:2px 2px 6px}
+.chtab{display:grid;grid-template-columns:64px auto;grid-template-rows:auto auto auto;gap:0 8px;align-items:center;text-align:start;background:#fffaf0;border:3px solid #16130f;border-radius:12px;padding:6px 10px 6px 6px;box-shadow:3px 3px 0 #16130f;cursor:pointer;font-family:Tajawal,sans-serif;color:#16130f;flex:none}
+.chtab.on{background:#16130f;color:#fffaf0;box-shadow:3px 3px 0 #b07d4f}
+.chtab .chmini{grid-row:1/4;width:64px;height:64px;display:grid;grid-template-columns:repeat(8,1fr);grid-template-rows:repeat(8,1fr);border:2px solid #16130f;direction:ltr}
+.chmini i{display:block;position:relative}.chmini .l{background:#efd9b4}.chmini .d{background:#b07d4f}.chmini .lm.l{background:#e8d66b}.chmini .lm.d{background:#c4a33e}
+.chmini img{position:absolute;inset:0;width:100%;height:100%}
+.chtab b{font-size:.92rem}.chtab small{font-size:.75rem;opacity:.8;white-space:nowrap}.chtab em{font-style:normal;font-size:.78rem;font-weight:800}
+.chtno{background:#16130f;color:#fffaf0;border-radius:999px;padding:0 10px}
+@media (max-width:560px){.chtab{grid-template-columns:44px auto;padding:4px 8px 4px 4px}.chtab .chmini{width:44px;height:44px}.chtab small{display:none}}
