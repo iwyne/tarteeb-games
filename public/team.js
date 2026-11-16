@@ -6,7 +6,7 @@
     { n: 'مازن', img: 'team/m2.webp', c: '#2a5bd7' },
     { n: 'أفراح', img: 'team/m3.webp', c: '#a66bff' },
     { n: 'سلمان', img: 'team/m4.webp', c: '#ff8a1f' },
-    { n: 'عبدالرحمن', img: 'team/m5.webp', c: '#19c3d6' },
+    { n: 'ايزن', img: 'team/m5.webp', c: '#19c3d6' },
     { n: 'حميد', img: 'team/m6.webp', c: '#e8362d' },
     { n: 'علي', img: 'team/m7.webp', c: '#ffc928' },
     { n: 'هدهد', img: 'team/m8.webp', c: '#1fa35c' }
