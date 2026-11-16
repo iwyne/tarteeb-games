@@ -16,7 +16,7 @@
   const face = (m, cls = '') => m.img ? `<img class="tt-img ${cls}" src="${m.img}" alt="${m.n}" loading="lazy" decoding="async" draggable="false">` : `<span class="tt-ph ${cls}"><b>${m.n[0]}</b><small>الصورة قريباً</small></span>`;
   root.innerHTML = `<div class="tt-head"><span class="tt-tag">TRTB TEAM</span><h2>فريق ترتيب</h2><p>الناس اللي ورا كل لعبة هنا. اضغط على أي واحد 👆</p></div>
     <div class="tt-stage">${TEAM.map((m, i) => `<button type="button" class="tt-card" data-i="${i}" style="--c:${m.c};--k:${i}" aria-label="${m.n}">
-      <span class="tt-in">${face(m)}</span><i class="tt-shine"></i><em class="tt-no">${pad(i)}</em><span class="tt-name"><b>${m.n}</b></span></button>`).join('')}</div>`;
+      <span class="tt-in">${face(m)}</span><i class="tt-shine"></i><span class="tt-name"><b>${m.n}</b></span></button>`).join('')}</div>`;
   const stage = root.querySelector('.tt-stage');
 
   // ---- النابض: نحسب منحنى الحركة من معادلة (كتلة + نابض + احتكاك) ----
@@ -51,7 +51,7 @@
     ov = document.createElement('div'); ov.className = 'tt-ov'; ov.style.setProperty('--c', m.c);
     ov.innerHTML = `<div class="tt-back"><i class="tt-glow"></i><i class="tt-rays"></i><b class="tt-big" aria-hidden="true">${m.n}</b></div>
       <div class="tt-fly" style="--c:${m.c}"><div class="tt-tilt"><span class="tt-in">${face(m, 'big')}</span><i class="tt-glare"></i></div></div>
-      <div class="tt-cap"><em>${pad(i)} · TRTB TEAM</em><h3><span>${m.n}</span></h3></div>
+      <div class="tt-cap"><em>TRTB TEAM</em><h3><span>${m.n}</span></h3></div>
       <button type="button" class="tt-x" aria-label="سكّر">✕</button>`;
     document.body.appendChild(ov);
     const fly = ov.querySelector('.tt-fly');

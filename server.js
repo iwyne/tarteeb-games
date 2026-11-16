@@ -5,7 +5,7 @@ const { WebSocketServer } = require('ws');
 
 const PORT = process.env.PORT || 3000;
 const PUB = path.join(__dirname, 'public');
-const MIME = { '.html': 'text/html; charset=utf-8', '.css': 'text/css; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.svg': 'image/svg+xml', '.png': 'image/png', '.ico': 'image/x-icon', '.woff2': 'font/woff2', '.webmanifest': 'application/manifest+json', '.json': 'application/json', '.mp3': 'audio/mpeg', '.mp4': 'video/mp4', '.glb': 'model/gltf-binary' };
+const MIME = { '.html': 'text/html; charset=utf-8', '.css': 'text/css; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.svg': 'image/svg+xml', '.png': 'image/png', '.ico': 'image/x-icon', '.woff2': 'font/woff2', '.webmanifest': 'application/manifest+json', '.json': 'application/json', '.mp3': 'audio/mpeg', '.mp4': 'video/mp4', '.glb': 'model/gltf-binary', '.webp': 'image/webp', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.txt': 'text/plain; charset=utf-8', '.gz': 'application/gzip' };
 
 // تبادل كود تسجيل الدخول مع ديسكورد (وضع Activity فقط)
 function tokenRoute(req, res) {
@@ -31,14 +31,50 @@ const server = http.createServer((req, res) => {
   if (p === '/') p = '/index.html';
   const f = path.normalize(path.join(PUB, p));
   if (!f.startsWith(PUB)) { res.writeHead(403); return res.end(); }
-  fs.readFile(f, (e, d) => {
-    if (e) { res.writeHead(404); return res.end('404'); }
+  fs.stat(f, (se, st) => {
+    if (se || !st.isFile()) { res.writeHead(404); return res.end('404'); }
     const ext = path.extname(f);
-    if (p === '/index.html') { const o = (req.headers['x-forwarded-proto'] || 'http').split(',')[0] + '://' + req.headers.host; d = Buffer.from(d.toString('utf8').replace('content="icons/og.png"', `content="${o}/icons/og.png"`)); }
-    res.writeHead(200, { 'Content-Type': MIME[ext] || 'application/octet-stream', 'Cache-Control': ['.woff2', '.png', '.ico', '.mp3', '.mp4'].includes(ext) || p.startsWith('/vendor/') || p.startsWith('/haunt/') || p.startsWith('/flags/') || p.startsWith('/mimic/') || p.startsWith('/chess/') ? 'public, max-age=604800' : 'no-cache' });
-    res.end(d);
+    const isIndex = p === '/index.html';
+    const origin = isIndex ? (req.headers['x-forwarded-proto'] || 'http').split(',')[0] + '://' + req.headers.host : '';
+    // ETag: يتغير مع تعديل الملف، فالمتصفح يرجع 304 بدل ما ينزل الملف كامل كل مرة
+    const tag = '"' + st.size.toString(36) + '-' + Math.floor(st.mtimeMs).toString(36) + (isIndex ? '-' + Buffer.from(origin).toString('base64url').slice(-8) : '') + '"';
+    // صور الفريق بدون كاش طويل عشان لو تغيّرت تبان فوراً (ETag يكفي)
+    const longCache = !p.startsWith('/team/') && (['.woff2', '.png', '.ico', '.mp3', '.mp4', '.webp', '.jpg', '.glb'].includes(ext) || /^\/(vendor|haunt|flags|mimic|chess|tut)\//.test(p));
+    const head = { 'Content-Type': MIME[ext] || 'application/octet-stream', 'Cache-Control': longCache ? 'public, max-age=604800' : 'no-cache', ETag: tag, Vary: 'Accept-Encoding' };
+    if (req.headers['if-none-match'] === tag) { res.writeHead(304, head); return res.end(); }
+    getBody(f, st, tag, origin, ext, (e, body) => {
+      if (e) { res.writeHead(404); return res.end('404'); }
+      const ae = req.headers['accept-encoding'] || '';
+      let out = body.raw;
+      if (body.br && /\bbr\b/.test(ae)) { out = body.br; head['Content-Encoding'] = 'br'; }
+      else if (body.gz && /\bgzip\b/.test(ae)) { out = body.gz; head['Content-Encoding'] = 'gzip'; }
+      head['Content-Length'] = out.length;
+      res.writeHead(200, head);
+      res.end(req.method === 'HEAD' ? undefined : out);
+    });
   });
 });
+
+// كاش بالذاكرة للملفات النصية مضغوطة (br + gzip) — يقلل حجم التحميل تقريباً للربع
+const zlib = require('zlib');
+const ZIP = new Set(['.html', '.css', '.js', '.svg', '.json', '.webmanifest', '.txt']);
+const BODY = new Map();
+function getBody(f, st, tag, origin, ext, cb) {
+  const key = f + tag, hit = BODY.get(key);
+  if (hit) return cb(null, hit);
+  fs.readFile(f, (e, d) => {
+    if (e) return cb(e);
+    if (origin) d = Buffer.from(d.toString('utf8').replace('content="icons/og.png"', `content="${origin}/icons/og.png"`));
+    const body = { raw: d };
+    if (ZIP.has(ext) && d.length > 1024) {
+      body.gz = zlib.gzipSync(d, { level: 9 });
+      body.br = zlib.brotliCompressSync(d, { params: { [zlib.constants.BROTLI_PARAM_QUALITY]: 10, [zlib.constants.BROTLI_PARAM_SIZE_HINT]: d.length } });
+      for (const k of BODY.keys()) if (k.startsWith(f + '"')) BODY.delete(k); // نسخة قديمة من نفس الملف
+      BODY.set(key, body);
+    }
+    cb(null, body);
+  });
+}
 
 const wss = new WebSocketServer({ server });
 const rooms = new Map();

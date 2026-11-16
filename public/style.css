@@ -2326,3 +2326,16 @@ html.tt-lock,html.tt-lock body{overflow:hidden}
 .tt-ov.on .tt-x{opacity:1;transform:none}
 .tt-ov.off .tt-x{opacity:0;transition:opacity .15s}
 @media (prefers-reduced-motion:reduce){.tt-card,.tt-card .tt-in,.tt-glow,.tt-big,.tt-cap h3 span{transition:none}.tt-rays{animation:none}}
+
+/* ---------- تحسين: شبكة الألعاب بالجوال عمودين بدل عمود واحد طويل ---------- */
+@media (max-width:560px){
+  .games{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+  .game{min-height:150px;padding:12px;border-radius:16px;gap:6px}
+  .game .logo{top:10px;left:10px;width:58px;height:58px}
+  .game.play h3{font-size:1.25rem}
+  .game.uno{grid-column:1/-1;min-height:150px}
+  .game.uno h3{font-size:2.4rem}
+  .game .tag{font-size:.66rem;padding:2px 8px;max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .game.sel{outline-width:4px}
+  .game.sel::after{width:24px;height:24px;top:8px;right:8px;font-size:.8rem}
+}
