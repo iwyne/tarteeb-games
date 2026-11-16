@@ -2292,7 +2292,7 @@ body[data-gt=chess]{--p1:#6f8f5a;--p1c:#fffaf0;--p2:#16130f;--p2c:#fffaf0;--p3:#
   .tt{padding:22px 10px 26px}
   .tt-stage{flex-wrap:wrap;gap:12px 8px;padding:10px 6px 30px}
   .tt-card{flex:0 0 calc(25% - 8px);height:min(58vw,300px)}
-  .tt-card:nth-child(n+5){flex-basis:calc(30% - 8px)}
+  .tt-card:nth-child(n+5){flex-basis:calc(25% - 8px)}
   .tt-card:nth-child(odd){--off:14}.tt-card:nth-child(3n){--off:4}
   .tt-no{font-size:1.3rem}.tt-name{bottom:10px}.tt-name b{font-size:.92rem;padding:5px 7px 3px}
   .tt-ph b{font-size:3rem}
