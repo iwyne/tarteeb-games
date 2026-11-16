@@ -422,7 +422,8 @@ function renderTyping(body) {
 }
 
 // ================= إعدادات الغرفة (اللوبي) =================
-let lsSig = '';
+let lsSig = '', lsOpen = false;
+const GEMO = { uno: '🃏', codes: '🕵️', hive: '🐝', liars: '🤥', outside: '🕶️', typing: '🏁', jackaroo: '🎱', draw: '✏️', flip: '🔄', sus: '🚀', haunt: '👻', mafia: '🎩', phone: '☎️', fib: '🤫', bomb: '💣', auction: '🔨', feud: '👨‍👩‍👧', flags: '🌍', mimic: '🎙️', chess: '♞' };
 function renderLobbySet(isHost) {
   const gh = $('#ghelp'); if (gh) { gh.hidden = !S || S.spec; $('#ghelpTxt').textContent = GHELP[S.game] || ''; }
   const box = $('#lobbyset'); if (!S || S.spec) { box.hidden = true; return; }
@@ -436,7 +437,7 @@ function renderLobbySet(isHost) {
   if (S.game === 'auction') sum.push(`${o.aitems || 8} قطع`); else if (S.game === 'feud') sum.push(`${o.drounds || 4} جولات`); else if (S.game === 'flags') sum.push({ flags: '🚩 أعلام', cap: '🏛️ عواصم', mix: '🌍 منوّع' }[o.fmode] || '🚩 أعلام', o.fdiff === 'all' ? 'كل الدول' : 'المشهورة', `${o.fcount || 10} سؤال`);
   if (S.game === 'bomb') sum.push('❤️'.repeat(o.blives || 3), { easy: 'سهل', mid: 'عادي', hard: 'صعب' }[o.bdiff] || 'عادي'); else if (S.game === 'fib') sum.push(`${o.frounds || 7} جولات`); else if (S.game === 'phone') sum.push(o.psteps ? `${o.psteps} خطوات` : 'تلف على الكل', `الرسم ${o.pdraw || 90} ث`);
   if (!isHost) { box.innerHTML = sum.length ? `<div class="lsum">${sum.map(x => `<span>${x}</span>`).join('')}</div>` : ''; box.hidden = !sum.length; return; }
-  const gm = Object.keys(GNAME).map(k => `<button type="button" class="gsw${k === S.game ? ' on' : ''}" data-g="${k}">${GNAME[k]}</button>`).join('');
+  const gm = Object.keys(GNAME).map(k => `<button type="button" class="gsw${k === S.game ? ' on' : ''}" data-g="${k}"><i>${GEMO[k] || '🎲'}</i><span>${GNAME[k]}</span></button>`).join('');
   let extra = '';
   if (S.game === 'uno') extra = `<label class="chk"><input type="checkbox" id="oStack"${o.stack ? ' checked' : ''}> تراكم السحب (+٢ على +٢ و +٤ على +٤)</label>
     <label class="chk">مهلة الدور <select id="oTurn">${[10, 15, 25, 40].map(n => `<option value="${n}"${o.turn === n ? ' selected' : ''}>${n} ثانية</option>`).join('')}</select></label>`;
@@ -465,12 +466,18 @@ function renderLobbySet(isHost) {
     <label class="chk">وقت الرسم <select id="oPd">${[60, 90, 120].map(n => `<option value="${n}"${o.pdraw === n ? ' selected' : ''}>${n} ثانية</option>`).join('')}</select></label>`;
   else if (S.game === 'typing') extra = `<label class="chk">الهدف <select id="oTarget">${[3, 5, 8, 12].map(n => `<option value="${n}"${o.target === n ? ' selected' : ''}>${n} نقاط</option>`).join('')}</select></label>`;
   else if (S.game === 'codes') extra = `<details class="wdet"><summary>كلمات مخصصة ${o.nwords ? `(مفعّلة: ${o.nwords})` : '(اختياري)'}</summary><textarea id="oWords" rows="4" placeholder="اكتب ٢٥ كلمة أو أكثر، كل كلمة بسطر أو افصلها بفاصلة">${esc(o.wordsText || '')}</textarea><div class="row"><button type="button" id="oWordsSave" class="btn sm">حفظ الكلمات</button><button type="button" id="oWordsClear" class="btn sm">رجّع الكلمات العادية</button></div></details>`;
-  box.innerHTML = `<div class="ls-row"><b>اللعبة</b><div class="chips">${gm}</div></div>
-    <div class="ls-row">${extra}</div>
-    <div class="ls-row"><label class="chk"><input type="checkbox" id="oLock"${o.lock ? ' checked' : ''}> قفل الغرفة (بدون متفرجين)</label>
-      <span class="passrow"><input id="oPass" maxlength="12" placeholder="كلمة سر (اختياري)" value="${esc(o.pass || '')}" autocomplete="off"><button type="button" id="oPassSave" class="btn sm">حفظ</button></span></div>
-    ${hasBots ? `<div class="ls-row"><button type="button" id="addBot" class="btn sm"${S.players.length >= S.max ? ' disabled' : ''}>🤖 أضف بوت</button><small class="muted">يكمّل اللاعبين الناقصين، اطرده من ✕ لو ما تبيه</small></div>` : ''}`;
-  box.querySelectorAll('.gsw').forEach(b => b.onclick = () => { if (b.dataset.g !== S.game) send({ t: 'setgame', game: b.dataset.g }); });
+  box.innerHTML = `<section class="ls-sec ls-game${lsOpen ? ' open' : ''}">
+      <div class="ls-cur"><span class="ls-ic">${GEMO[S.game] || '🎲'}</span><div><small>اللعبة</small><b>${GNAME[S.game]}</b><em>${GINFO[S.game] || ''}</em></div>
+        <button type="button" id="lsToggle" class="btn sm" aria-expanded="${lsOpen}">${lsOpen ? 'خلاص ✓' : '🔄 غيّر اللعبة'}</button></div>
+      <div class="ls-grid">${gm}</div></section>
+    ${extra ? `<section class="ls-sec"><h4>⚙️ إعدادات اللعبة</h4><div class="ls-opts">${extra}</div></section>` : ''}
+    <section class="ls-sec"><h4>🔐 الغرفة</h4><div class="ls-opts">
+      <label class="chk"><input type="checkbox" id="oLock"${o.lock ? ' checked' : ''}> قفل الغرفة (بدون متفرجين)</label>
+      <span class="passrow"><input id="oPass" maxlength="12" placeholder="كلمة سر (اختياري)" value="${esc(o.pass || '')}" autocomplete="off"><button type="button" id="oPassSave" class="btn sm">حفظ</button></span>
+      ${hasBots ? `<div class="botrow"><button type="button" id="addBot" class="btn sm"${S.players.length >= S.max ? ' disabled' : ''}>🤖 أضف بوت</button><small class="muted">يكمّل اللاعبين الناقصين، اطرده من ✕ لو ما تبيه</small></div>` : ''}
+    </div></section>`;
+  $('#lsToggle').onclick = () => { lsOpen = !lsOpen; lsSig = ''; renderLobbySet(isHost); };
+  box.querySelectorAll('.gsw').forEach(b => b.onclick = () => { lsOpen = false; if (b.dataset.g !== S.game) send({ t: 'setgame', game: b.dataset.g }); else { lsSig = ''; renderLobbySet(isHost); } });
   const bind = (id, ev, fn) => { const e = $('#' + id); if (e) e[ev] = fn; };
   bind('oStack', 'onchange', e => send({ t: 'opt', k: 'stack', v: e.target.checked }));
   bind('oTurn', 'onchange', e => send({ t: 'opt', k: 'turn', v: +e.target.value }));

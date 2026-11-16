@@ -2413,3 +2413,52 @@ html{scrollbar-color:color-mix(in srgb,var(--ink) 45%,transparent) transparent}
 /* طاولة أونو تاخذ لمسة من لون الثيم */
 .felt{background:radial-gradient(ellipse at 50% 45%,var(--surf2) 55%,color-mix(in srgb,var(--acc) 9%,var(--surf2)) 100%)}
 .felt::before{border-color:color-mix(in srgb,var(--acc) 45%,transparent)}
+
+/* ---------- إصلاح: ثيمات اللوبي الفاتحة مع الثيم الغامق (قهوة/ليلي) كانت تخلي النص فاتح على فاتح ---------- */
+body:is([data-gt=uno],[data-gt=typing],[data-gt=draw],[data-gt=phone],[data-gt=bomb],[data-gt=flags],[data-gt=chess]){--ink:#16130f}
+body:is([data-gt=uno],[data-gt=typing],[data-gt=draw],[data-gt=phone],[data-gt=bomb],[data-gt=flags],[data-gt=chess],[data-gt=fib],[data-gt=codes],[data-gt=hive],[data-gt=outside]){--hi:#fff3c4;--on-y:#16130f;--sh:5px 5px 0 var(--ink);color:var(--ink)}
+body[data-gt]:is([data-gt=flip],[data-gt=liars],[data-gt=jackaroo],[data-gt=sus],[data-gt=haunt],[data-gt=mafia],[data-gt=auction],[data-gt=feud],[data-gt=mimic]){color:var(--ink)}
+
+/* ---------- لوحة إعدادات اللوبي (تصميم جديد) ---------- */
+.lobbyset{gap:12px;padding:14px}
+.ls-sec{display:grid;gap:10px}
+.ls-sec+.ls-sec{border-top:2.5px dashed color-mix(in srgb,var(--ink) 35%,transparent);padding-top:12px}
+.ls-sec h4{font:400 1.15rem/1 Lalezar,Tajawal,sans-serif;margin:0}
+.ls-cur{display:flex;align-items:center;gap:12px}
+.ls-cur>div{flex:1;min-width:0;display:grid;line-height:1.25}
+.ls-cur small{font-size:.75rem;opacity:.7}
+.ls-cur b{font:400 1.6rem/1.1 Lalezar,Tajawal,sans-serif}
+.ls-cur em{font-style:normal;font-size:.8rem;opacity:.75}
+.ls-ic{width:56px;height:56px;flex:none;display:grid;place-items:center;font-size:1.9rem;border:3px solid var(--ink);border-radius:16px;background:var(--surf);box-shadow:3px 3px 0 var(--ink);transform:rotate(-4deg)}
+.ls-grid{display:none;grid-template-columns:repeat(auto-fill,minmax(112px,1fr));gap:8px}
+.ls-game.open .ls-grid{display:grid;animation:lsIn .25s ease-out}
+@keyframes lsIn{from{opacity:0;transform:translateY(-6px)}}
+.ls-grid .gsw{display:flex;flex-direction:column;align-items:center;gap:2px;padding:8px 6px 7px;border-radius:14px;border:2.5px solid var(--ink);background:var(--surf);color:var(--ink);text-align:center;line-height:1.15;transition:transform .12s,box-shadow .12s}
+.ls-grid .gsw i{font-style:normal;font-size:1.5rem}
+.ls-grid .gsw span{font-size:.8rem}
+.ls-grid .gsw:hover{transform:translateY(-2px);box-shadow:3px 3px 0 var(--ink)}
+.ls-grid .gsw.on{background:var(--yellow);color:var(--on-y);box-shadow:3px 3px 0 var(--ink)}
+.ls-opts{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:8px}
+.ls-opts>.chk,.ls-opts>.passrow,.ls-opts>.botrow,.ls-opts>.mfroles,.ls-opts>.wdet{background:var(--surf);border:2.5px solid var(--ink);border-radius:14px;padding:9px 12px;min-height:52px}
+.ls-opts>.chk{justify-content:space-between}
+.ls-opts>small,.ls-opts>.mfroles,.ls-opts>.wdet,.ls-opts>.botrow{grid-column:1/-1}
+.ls-opts>small{opacity:.75}
+.ls-opts>.passrow{align-items:center;min-width:0}
+.botrow{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.mfroles{display:flex;flex-wrap:wrap;gap:6px 14px}
+/* القوائم المنسدلة */
+.lobbyset select,body .lobbyset .chk select{appearance:none;-webkit-appearance:none;font:700 .92rem Tajawal,sans-serif;border:2.5px solid var(--ink);border-radius:99px;padding:5px 14px 5px 32px;background-color:var(--surf2);background-image:linear-gradient(45deg,transparent 50%,var(--ink) 50%),linear-gradient(135deg,var(--ink) 50%,transparent 50%);background-position:left 17px center,left 12px center;background-size:5px 5px;background-repeat:no-repeat;color:var(--ink);cursor:pointer;box-shadow:2px 2px 0 var(--ink)}
+.lobbyset select:focus-visible{outline:3px solid var(--acc);outline-offset:2px}
+/* مفاتيح تشغيل بدل مربعات الصح */
+.lobbyset .chk input[type=checkbox]{appearance:none;-webkit-appearance:none;order:2;flex:none;width:46px;height:26px;border:2.5px solid var(--ink);border-radius:99px;background:var(--surf2);position:relative;cursor:pointer;transition:background .2s;margin:0}
+.lobbyset .chk input[type=checkbox]::before{content:'';position:absolute;top:2px;inset-inline-start:2px;width:17px;height:17px;border-radius:50%;background:var(--ink);transition:inset-inline-start .2s cubic-bezier(.3,1.5,.5,1)}
+.lobbyset .chk input[type=checkbox]:checked{background:var(--green)}
+.lobbyset .chk input[type=checkbox]:checked::before{inset-inline-start:21px;background:#fff;box-shadow:0 0 0 2px var(--ink)}
+.mfroles .chk{gap:8px}
+.mfroles .chk input[type=checkbox]{order:0}
+@media (max-width:560px){
+  .ls-opts{grid-template-columns:1fr}
+  .ls-grid{grid-template-columns:repeat(3,1fr)}
+  .ls-cur b{font-size:1.35rem}
+  .ls-cur #lsToggle{padding:6px 10px;font-size:.8rem}
+}
