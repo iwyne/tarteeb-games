@@ -40,17 +40,25 @@ function renderChess(body) {
   const ranks = bot === 'w' ? [8, 7, 6, 5, 4, 3, 2, 1] : [1, 2, 3, 4, 5, 6, 7, 8], files = bot === 'w' ? [...CHF] : [...CHF].reverse();
   const kingSq = g.check && !g.over ? Object.keys(B).find(k => B[k] === (g.turn === 'w' ? 'K' : 'k')) : null;
   const targets = CH.sel ? g.moves.filter(m => m.startsWith(CH.sel)).map(m => m.slice(2, 4)) : [];
+  // نبني اللوحة بس إذا تغيّر شي يبان عليها (يخفف التعليق مع كل رسالة من السيرفر)
+  const bkey = [g.fen, bot, CH.sel, kingSq, g.last ? g.last.from + g.last.to : '', targets.join()].join('|');
+  if (bd.dataset.k !== bkey) { bd.dataset.k = bkey;
   bd.innerHTML = ranks.map((rk, ri) => files.map((f, fi) => {
     const sq = f + rk, dark = (CHF.indexOf(f) + rk) % 2 === 0, p = B[sq];
     const cls = ['chsq', dark ? 'd' : 'l', g.last && (g.last.from === sq || g.last.to === sq) ? 'lm' : '', CH.sel === sq ? 'sel' : '', kingSq === sq ? 'chk' : '', targets.includes(sq) ? (p ? 'tgt cap' : 'tgt') : ''].join(' ');
     return `<div class="${cls}" data-sq="${sq}">${p ? chPiece(p) : ''}${fi === 0 ? `<em class="rk">${rk}</em>` : ''}${ri === 7 ? `<em class="fl">${f}</em>` : ''}</div>`;
-  }).join('')).join('');
+  }).join('')).join(''); }
   // انميشن آخر حركة
   if (g.last && g.last.n !== CH.lastN) {
     const first = CH.lastN === -1; CH.lastN = g.last.n;
     if (!first) {
       const a = bd.querySelector(`[data-sq="${g.last.from}"]`), b = bd.querySelector(`[data-sq="${g.last.to}"]`), img = b && b.querySelector('.chpc');
-      if (a && img && !CH.justDropped) { const ra = a.getBoundingClientRect(), rb = b.getBoundingClientRect(); img.animate([{ transform: `translate(${ra.left - rb.left}px,${ra.top - rb.top}px)` }, { transform: 'none' }], { duration: 180, easing: 'cubic-bezier(.3,.7,.4,1)' }); }
+      if (a && img && !CH.justDropped) {
+        // نحسب المسافة من ترتيب المربعات بدل ما نقيس الصفحة (القياس كان يجبر المتصفح يعيد تخطيط الصفحة كاملة)
+        const sz = CH.sqSize || (CH.sqSize = bd.clientWidth / 8), ia = [...bd.children].indexOf(a), ib = [...bd.children].indexOf(b);
+        const dx = (ia % 8 - ib % 8) * sz /* اللوحة دايماً ltr */, dy = (Math.floor(ia / 8) - Math.floor(ib / 8)) * sz;
+        img.animate([{ transform: `translate(${dx}px,${dy}px)` }, { transform: 'none' }], { duration: 180, easing: 'cubic-bezier(.3,.7,.4,1)' });
+      }
       CH.justDropped = false;
       try { sfx(g.check ? 'alarm' : g.last.cap ? 'slap' : 'card'); } catch {}
     }
@@ -63,10 +71,11 @@ function renderChess(body) {
   $('#chBtns').innerHTML = `<button type="button" class="btn sm" data-a="flip">🔄 اقلب</button>` + (me && !g.over ? `${g.drawBy && g.drawBy !== me ? '<button type="button" class="btn sm green" data-a="dyes">🤝 أقبل التعادل</button><button type="button" class="btn sm" data-a="dno">لا</button>' : !oppBot ? `<button type="button" class="btn sm" data-a="draw"${g.drawBy === me ? ' disabled' : ''}>${g.drawBy === me ? 'عرضت تعادل…' : '🤝 تعادل؟'}</button>` : ''}<button type="button" class="btn sm red" data-a="resign">🏳️ استسلام</button>` : '');
   const h = g.hist, L = [];
   for (let i = 0; i < h.length; i += 2) L.push(`<li><b>${i / 2 + 1}.</b><span>${chSan(h[i])}</span><span>${h[i + 1] ? chSan(h[i + 1]) : ''}</span></li>`);
-  const list = $('#chList'); list.innerHTML = L.join(''); list.scrollTop = list.scrollHeight; list.scrollLeft = -list.scrollWidth;
+  const list = $('#chList'), lk = vkey + h.length; if (list.dataset.k === lk) { /* نفس القائمة */ } else { list.dataset.k = lk; list.innerHTML = L.join(''); list.scrollTop = list.scrollHeight; list.scrollLeft = -list.scrollWidth; }
   if (g.over && CH.endN !== vkey + CH.lastN + ':' + g.over.why) { const first = CH.endN === undefined; CH.endN = vkey + CH.lastN + ':' + g.over.why; if (!first || over) try { sfx(!g.over.win ? 'card' : g.over.win === me ? 'win' : me ? 'lose' : 'win'); } catch {} }
   chClocks();
 }
+addEventListener('resize', () => { CH.sqSize = 0; }, { passive: true });
 function chClocks() {
   if (!S || S.game !== 'chess' || !S.g || !S.g.T) return;
   const t = chT(); if (!t || !t.clk) return;

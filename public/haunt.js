@@ -683,12 +683,24 @@ function renderHaunt(body) {
   if (!HU.loop) { HU.loop = true; HU.lt = performance.now(); requestAnimationFrame(hFrame); }
 }
 
+// دقة متكيّفة: لو الجهاز ما لحق (أقل من ~٣٨ إطار) ننزّل دقة الرسم شوي، ولو صار مرتاح نرجّعها
+function hAdapt(ft) {
+  if (!HU.r || !(ft > 0) || ft > 250) return;
+  const A = HU.ad || (HU.ad = { n: 0, sum: 0, pr: HU.r.getPixelRatio(), max: HU.r.getPixelRatio() });
+  A.n++; A.sum += ft; if (A.n < 90) return;
+  const avg = A.sum / A.n; A.n = 0; A.sum = 0;
+  let pr = A.pr;
+  if (avg > 26 && pr > .6) pr = Math.max(.6, +(pr - .15).toFixed(2));
+  else if (avg < 17.5 && pr < A.max) pr = Math.min(A.max, +(pr + .1).toFixed(2));
+  if (pr !== A.pr) { A.pr = pr; HU.r.setPixelRatio(pr); HU.w = 0; }
+}
 // ---------- الحلقة ----------
 function hFrame(t) {
   const g = hg();
   if (!g || S.phase === 'lobby' || !$('#hCvBox') || !HU.built) { HU.loop = false; hsAmb(false); hHeart(0); try { if (document.pointerLockElement) document.exitPointerLock(); } catch {} return; }
   requestAnimationFrame(hFrame);
   if (window.__noRender) return;
+  hAdapt(t - HU.lt);
   const dt = Math.min(.05, (t - HU.lt) / 1000); HU.lt = t;
   const Mp = HMAP, me = g.me, cam = HU.cam, now = performance.now();
   const ghost = !!(me && me.ghost), alive = !!(me && me.alive && !me.escaped), hidden = !!(me && me.hidden != null), trapped = !!(me && me.trapped);

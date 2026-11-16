@@ -1304,9 +1304,11 @@ body.hcine-on{overflow:hidden}
 .mfwins rect{fill:#f2c464;animation:mfWin 7s steps(1) infinite}
 .mfwrap.daytime .mfwins rect{fill:#3a2a20;animation:none}
 @keyframes mfWin{0%,70%{opacity:1}71%,100%{opacity:.15}}
-.mfrain{position:absolute;inset:0;background-image:repeating-linear-gradient(105deg,transparent 0 22px,rgba(180,200,230,.16) 22px 23px);background-size:120px 120px;animation:mfRain .45s linear infinite;opacity:.8;transition:opacity 2s}
+.mfrain{position:absolute;inset:-130px;background-image:repeating-linear-gradient(105deg,transparent 0 22px,rgba(180,200,230,.16) 22px 23px);background-size:120px 120px;animation:mfRain .45s linear infinite;opacity:.8;transition:opacity 2s;will-change:transform}
 .mfwrap:not(.night) .mfrain{opacity:0}
-@keyframes mfRain{to{background-position:-30px 120px}}
+@keyframes mfRain{to{transform:translate(-30px,120px)}}
+.mfsky{overflow:hidden}
+.mfwrap:not(.night) .mfrain{animation-play-state:paused}
 .mffog{position:absolute;left:-10%;right:-10%;bottom:0;height:30%;background:linear-gradient(0deg,rgba(150,160,190,.25),transparent);filter:blur(6px)}
 .mfwrap.daytime .mffog{background:linear-gradient(0deg,rgba(255,240,210,.35),transparent)}
 .mftop{display:flex;justify-content:space-between;align-items:center;gap:10px}
@@ -2380,3 +2382,34 @@ html.tt-lock,html.tt-lock body{overflow:hidden}
   .hstats li:nth-child(4){display:none}
   .btn.rnd{margin-top:12px;padding:9px 16px;font-size:.95rem}
 }
+
+/* الشطرنج: الصف الفاضي كان ينضغط — نثبّت ارتفاع الصفوف */
+.chbd{grid-template-rows:repeat(8,1fr)}
+.chsq{min-height:0;min-width:0}
+
+/* ---------- الثيمات: لون مميز لكل ثيم + ثيمين جدد ---------- */
+:root{--acc:var(--red);--acc2:var(--yellow)}
+:root[data-theme=night]{--acc:#ffc928;--acc2:#7a4ee0}
+:root[data-theme=sea]{--acc:#2a5bd7;--acc2:#19c3d6}
+:root[data-theme=sunset]{--acc:#e8362d;--acc2:#ff8a1f}
+:root[data-theme=mint]{--acc:#1fa35c;--acc2:#ffc928}
+:root[data-theme=lilac]{--acc:#7a4ee0;--acc2:#ff4fa3}
+:root[data-theme=rose]{--acc:#e0407a;--acc2:#ff8a1f}
+:root[data-theme=coffee]{--ink:#f1e2cc;--paper:#1d1611;--surf:#2c221b;--surf2:#251c16;--hi:#4a3618;--dot:rgba(241,226,204,.07);--acc:#d9893a;--acc2:#e8362d}
+:root[data-theme=sand]{--ink:#2d1d0c;--paper:#efd9b0;--surf:#fff7e8;--surf2:#fbefd9;--hi:#ffe08a;--dot:rgba(45,29,12,.1);--acc:#c4561d;--acc2:#1fa35c}
+/* توهج خفيف بلون الثيم بالرئيسية بس (طبقة ثابتة، ما تعيد الرسم مع السكرول) */
+body:not(.ingame):not([data-gt])::before{content:'';position:fixed;inset:0;z-index:-1;pointer-events:none;
+  background:radial-gradient(60vmax 45vmax at 105% -10%,color-mix(in srgb,var(--acc) 16%,transparent),transparent 70%),radial-gradient(55vmax 40vmax at -10% 110%,color-mix(in srgb,var(--acc2) 14%,transparent),transparent 70%)}
+.hero h1 .dot{color:var(--acc)}
+::selection{background:var(--acc);color:#fff}
+:focus-visible{outline:3px solid var(--acc);outline-offset:2px}
+html{scrollbar-color:color-mix(in srgb,var(--ink) 45%,transparent) transparent}
+.gfilter button.on{background:var(--ink);color:var(--paper);box-shadow:inset 0 -4px 0 var(--acc)}
+.sectrow .sect{background:linear-gradient(transparent 62%,color-mix(in srgb,var(--acc) 28%,transparent) 62% 88%,transparent 88%);padding-inline:4px}
+/* منتقي الثيم: علامة صح على المختار */
+.sw.on i::before{content:'✓';position:absolute;inset:0;display:grid;place-items:center;z-index:1;font:900 1.1rem Tajawal,sans-serif;color:var(--ac);text-shadow:0 0 3px #fff,0 0 6px #fff}
+.themebar{grid-template-columns:repeat(3,1fr)}
+@media (min-width:561px){.themebar{grid-template-columns:repeat(5,1fr)}}
+/* طاولة أونو تاخذ لمسة من لون الثيم */
+.felt{background:radial-gradient(ellipse at 50% 45%,var(--surf2) 55%,color-mix(in srgb,var(--acc) 9%,var(--surf2)) 100%)}
+.felt::before{border-color:color-mix(in srgb,var(--acc) 45%,transparent)}

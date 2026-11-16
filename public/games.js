@@ -332,7 +332,8 @@ setInterval(tick2, 300);
 // ---- الثيمات ----
 const THEMES = [
   ['paper', 'ورق', '#f3ead8', '#e8362d'], ['night', 'ليل', '#17161d', '#ffc928'], ['sea', 'بحر', '#d6edf2', '#2a5bd7'],
-  ['sunset', 'غروب', '#ffd9c2', '#e8362d'], ['mint', 'نعناع', '#d3f0da', '#1fa35c'], ['lilac', 'ليلكي', '#e4d9fb', '#7a4ee0'], ['rose', 'ورد', '#ffd6e6', '#e0407a']
+  ['sunset', 'غروب', '#ffd9c2', '#e8362d'], ['mint', 'نعناع', '#d3f0da', '#1fa35c'], ['lilac', 'ليلكي', '#e4d9fb', '#7a4ee0'], ['rose', 'ورد', '#ffd6e6', '#e0407a'],
+  ['coffee', 'قهوة', '#1d1611', '#d9893a'], ['sand', 'صحراء', '#efd9b0', '#c4561d']
 ];
 function setTheme(id, save = true) {
   if (!THEMES.some(t => t[0] === id)) id = 'paper';

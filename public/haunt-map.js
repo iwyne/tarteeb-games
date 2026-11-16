@@ -73,7 +73,7 @@
   // كل قطعة: {lv, m: اسم الموديل, x, z بالمتر, r: دوران (0..3 × 90°), w, d: الحجم} — نعبّيها من haunt-props (الحجم) وقت البناء
   const PROPS = [];
   const PR = {}; // أحجام الموديلات (من props.json) — يعبيها setSizes
-  function setSizes(meta) { Object.assign(PR, meta); PROPS.forEach(p => fitProp(p)); if (typeof calcFloors === 'function') calcFloors(); }
+  function setSizes(meta) { Object.assign(PR, meta); PROPS.forEach(p => fitProp(p)); PB = null; if (typeof calcFloors === 'function') calcFloors(); }
   function fitProp(p) {
     const m = PR[p.m]; if (!m) return;
     const sx = (m.max[0] - m.min[0]) * (p.s || 1), sz = (m.max[2] - m.min[2]) * (p.s || 1), rot = (p.r || 0) % 2;
@@ -191,12 +191,21 @@
   const center = (x, y) => [x * T + T / 2, y * T + T / 2];
   // ---------- المسارات (للبوتات): عقد = (طابق، مربع) ----------
   const key = (lv, x, y) => (lv * H + y) * W + x;
+  // كاش لفحص الأثاث (ثابت بعد setSizes) — كان أثقل شي بالسيرفر لما البوتات تدوّر مسارات
+  var PB = null; const NBD = [[1, 0], [-1, 0], [0, 1], [0, -1]];
+  const pbEdge = (lv, x, y, d) => {
+    if (!PB) PB = new Int8Array(LV * H * W * 4).fill(-1);
+    const i = ((lv * H + y) * W + x) * 4 + d; let v = PB[i];
+    if (v < 0) { const nx = x + NBD[d][0], ny = y + NBD[d][1]; v = PB[i] = (propBlocks(lv, (nx + .5) * T, (ny + .5) * T, .3) || propBlocks(lv, (x + nx + 1) / 2 * T, (y + ny + 1) / 2 * T, .3)) ? 1 : 0; }
+    return v === 1;
+  };
   function nb(lv, x, y, o) {
     const out = [], c = at(lv, x, y);
-    for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+    for (let d = 0; d < 4; d++) {
+      const dx = NBD[d][0], dy = NBD[d][1];
       const nx = x + dx, ny = y + dy; let nl = lv, cc = at(lv, nx, ny), top = false;
       if (cc === 0) continue;
-      if ((cc === 1 || cc === 2) && (propBlocks(lv, (nx + .5) * T, (ny + .5) * T, .3) || propBlocks(lv, (x + nx + 1) / 2 * T, (y + ny + 1) / 2 * T, .3))) continue;
+      if ((cc === 1 || cc === 2) && pbEdge(lv, x, y, d)) continue;
       if (cc === 3) { const d = doorAt(lv, nx, ny); if (!(o.open && d && o.open.has(d.lock))) continue; }
       if (cc === 6 && !o.exitOpen) continue;
       if (cc === 5) { // من فوق تدخل الدرج من أعلاه بس

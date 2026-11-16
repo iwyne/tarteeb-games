@@ -319,9 +319,19 @@ function susUse() {
 }
 
 // ---------- الحلقة ----------
+// لو الإطارات بطيئة ننزّل دقة الرسم شوي شوي، ولو رجع الجهاز مرتاح نرفعها
+function susAdapt(ft) {
+  if (!(ft > 0) || ft > 250) return;
+  const A = SU.ad || (SU.ad = { n: 0, sum: 0 });
+  A.n++; A.sum += ft; if (A.n < 90) return;
+  const avg = A.sum / A.n; A.n = 0; A.sum = 0; const q = SU.qs || 1;
+  if (avg > 26 && q > .6) SU.qs = Math.max(.6, +(q - .15).toFixed(2));
+  else if (avg < 17.5 && q < 1) SU.qs = Math.min(1, +(q + .1).toFixed(2));
+}
 function susFrame(t) {
   if (!sg() || S.phase === 'lobby' || !$('#sCv')) { SU.loop = false; clearInterval(SU.fixing); SU.fixing = 0; return; }
   requestAnimationFrame(susFrame);
+  susAdapt(t - SU.lt);
   const dt = Math.min(.05, (t - SU.lt) / 1000); SU.lt = t;
   const g = S.g, me = g.me, M = SUSMAP;
   if (SU.me && me && g.sub === 'play' && S.phase === 'play' && !SU.task && !SU.map && !SU.cams) {
@@ -348,7 +358,8 @@ function susFrame(t) {
 
 function susDraw(t) {
   const cv = $('#sCv'), g = S.g, M = SUSMAP; if (!cv) return;
-  const dpr = Math.min(2, devicePixelRatio || 1), W = cv.clientWidth, H = cv.clientHeight;
+  // الدقة: حدها ١.٥ (الفرق ما يبان والرسم أخف بكثير)، وتنزل تلقائياً لو الجهاز ما لحق
+  const dpr = Math.min(1.5, devicePixelRatio || 1) * (SU.qs || 1), W = cv.clientWidth, H = cv.clientHeight;
   if (cv.width !== Math.round(W * dpr) || cv.height !== Math.round(H * dpr)) { cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr); }
   const ctx = cv.getContext('2d'); ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   const me = g.me, follow = SU.me && me, alive = follow && me.alive && S.phase === 'play';
@@ -361,8 +372,10 @@ function susDraw(t) {
   // الظلام: كل شي برا نظرك (الغرف الثانية) يصير مظلم
   if (alive) {
     if (!SU.fog) SU.fog = document.createElement('canvas');
-    const F = SU.fog; if (F.width !== cv.width || F.height !== cv.height) { F.width = cv.width; F.height = cv.height; }
-    const f = F.getContext('2d'); f.setTransform(dpr, 0, 0, dpr, 0, 0);
+    // الظلام ناعم أصلاً، فنرسمه بنص الدقة ونكبّره (أخف ٤ مرات)
+    const fd = Math.max(.5, dpr * .5), FW = Math.round(W * fd), FH = Math.round(H * fd);
+    const F = SU.fog; if (F.width !== FW || F.height !== FH) { F.width = FW; F.height = FH; }
+    const f = F.getContext('2d'); f.setTransform(fd, 0, 0, fd, 0, 0);
     const FOR = M.theme === 'forest', flash = SU.flash && t - SU.flash < 220;
     f.globalCompositeOperation = 'source-over'; f.clearRect(0, 0, W, H); f.fillStyle = FOR ? `rgba(2,3,2,${flash ? .55 : SU.blackout && t < SU.blackout ? 1 : .96})` : 'rgba(8,6,18,.9)'; f.fillRect(0, 0, W, H);
     f.globalCompositeOperation = 'destination-out';
@@ -371,7 +384,7 @@ function susDraw(t) {
     const gr = f.createRadialGradient(W / 2, H / 2, rad * sc * (FOR ? .45 : .7) * fl, W / 2, H / 2, rad * sc * fl);
     gr.addColorStop(0, 'rgba(0,0,0,1)'); gr.addColorStop(1, 'rgba(0,0,0,0)');
     f.fillStyle = gr; f.beginPath(); poly.forEach(([x, y], i) => { const [a, b] = toS(x, y); i ? f.lineTo(a, b) : f.moveTo(a, b); }); f.closePath(); f.fill();
-    ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.drawImage(F, 0, 0); ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.imageSmoothingEnabled = true; ctx.drawImage(F, 0, 0, cv.width, cv.height); ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     if (FOR) { const lg = ctx.createRadialGradient(W / 2, H / 2 - 10, 10, W / 2, H / 2, rad * sc * .55); lg.addColorStop(0, 'rgba(255,180,90,.16)'); lg.addColorStop(1, 'rgba(255,180,90,0)'); ctx.fillStyle = lg; ctx.fillRect(0, 0, W, H); scaresDraw(ctx, W, H, t, rad * sc); }
   }
   if (M.theme === 'forest') { const k = SU.flash ? Math.max(0, 1 - (t - SU.flash) / 260) : 0; if (k > 0) { ctx.fillStyle = `rgba(255,60,50,${k * .35})`; ctx.fillRect(0, 0, W, H); } }

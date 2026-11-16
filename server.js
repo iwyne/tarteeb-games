@@ -76,7 +76,7 @@ function getBody(f, st, tag, origin, ext, cb) {
   });
 }
 
-const wss = new WebSocketServer({ server });
+const wss = new WebSocketServer({ server, maxPayload: 1024 * 1024 }); // أكبر رسالة ١ ميغا (تسجيل الأصوات تحت ٤٠٠ كيلو)
 const rooms = new Map();
 const COLORS = ['red', 'yellow', 'green', 'blue'];
 const AR = { red: 'أحمر', yellow: 'أصفر', green: 'أخضر', blue: 'أزرق' };
@@ -456,7 +456,10 @@ function botTurn(r) {
 }
 
 function after(r) {
-  if (!r.players.length) return;
+  if (!r.players.length || rooms.get(r.code) !== r) return; // الغرفة انقفلت
+  try { afterInner(r); } catch (e) { console.error('after() error', r.game, e); }
+}
+function afterInner(r) {
   if (r.phase === 'lobby') { fill(r); fixTeams(r); }
   if (r.game === 'uno' && r.phase === 'play' && r.armed !== r.turnSeq) { r.armed = r.turnSeq; armTurn(r); }
   else if (r.phase !== 'play') clearTimeout(r.timer);
@@ -464,7 +467,7 @@ function after(r) {
   botTurn(r);
   if (r.phase !== 'play' || r.game !== 'uno') return;
   const p = cur(r);
-  if (p.online) return;
+  if (!p || p.online) return;
   setTimeout(() => {
     if (r.phase !== 'play' || cur(r) !== p || p.online) return;
     draw(r, p); if (cur(r) === p && r.pending !== null) pass(r, p);
@@ -547,8 +550,19 @@ wss.on('connection', (ws, req) => {
   ws.ip = String(req.headers['x-forwarded-for'] || req.socket.remoteAddress || '').split(',')[0].trim();
   ws.dead = false;
   ws.on('pong', () => { ws.dead = false; });
-  ws.on('message', raw => {
+  ws.on('message', raw => { try { onMsg(ws, raw); } catch (e) { console.error('message error', e); } });
+  function onMsg(ws, raw) {
+    // حماية من الإغراق: أكثر من ١٠٠ رسالة بالثانية من نفس الاتصال تنتجاهل
+    const now = Date.now();
+    if (!ws.rl || now - ws.rl.t > 1000) ws.rl = { t: now, n: 0 };
+    if (++ws.rl.n > 100) return;
     let m; try { m = JSON.parse(raw); } catch { return; }
+    if (!m || typeof m !== 'object') return;
+    if (m.t === 'create') { // ما يسوي أكثر من ٨ غرف بالدقيقة
+      ws.cr = (ws.cr || []).filter(t => now - t < 60000);
+      if (ws.cr.length >= 8) return send(ws, { t: 'err', msg: 'سويت غرف كثير، انتظر دقيقة' });
+      ws.cr.push(now);
+    }
     if (m.t === 'create') {
       const r = newRoom(newCode(), GAMES[m.game] ? m.game : 'uno');
       rooms.set(r.code, r);
@@ -678,7 +692,7 @@ wss.on('connection', (ws, req) => {
       }
     }
     after(r);
-  });
+  }
   ws.on('close', () => {
     const c = ws.ctx; if (!c || c.p.ws !== ws) return;
     const { r, p } = c;
@@ -692,3 +706,7 @@ wss.on('connection', (ws, req) => {
 
 setInterval(() => wss.clients.forEach(w => { if (w.dead) return w.terminate(); w.dead = true; w.ping(); }), 30000);
 server.listen(PORT, () => console.log(`ترتيب شغّال على http://localhost:${PORT}`));
+
+// شبكة أمان: خطأ في لعبة وحدة ما يطيّح السيرفر كامل (ويطلّع كل الغرف)
+process.on('uncaughtException', e => console.error('uncaught', e));
+process.on('unhandledRejection', e => console.error('unhandled', e));
