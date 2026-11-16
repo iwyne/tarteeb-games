@@ -136,7 +136,8 @@ module.exports = H => {
     g.sub = 'vote'; g.votes = {};
     sys(r, '🗳️ وقت التصويت: مين تطردون من المدينة؟');
     H.setTimer(r, VOTE, () => verdict(r));
-    bots(r).forEach(P => later(r, 3000 + rnd(14000), () => {
+    g.vpend = {};
+    bots(r).forEach(P => { const fn = () => {
       if (g.sub !== 'vote' || g.votes[P.id]) return;
       const others = alive(g).filter(Q => Q.id !== P.id);
       let t = null;
@@ -148,12 +149,16 @@ module.exports = H => {
         t = pool.length && Math.random() < .55 ? pool.sort((a, b) => cnt[b] - cnt[a])[0] : Math.random() < .2 ? 'skip' : (pick(others.filter(Q => !(isM(P) && isM(Q)))) || {}).id || 'skip';
       }
       castVote(r, P, t);
-    }));
+    }; g.vpend[P.id] = fn; later(r, 2500 + rnd(8000), fn); });
   }
   function castVote(r, P, t) {
     const g = r.g; if (g.sub !== 'vote' || !P.alive) return;
     if (t !== 'skip' && (!g.P[t] || !g.P[t].alive || t === P.id)) return;
     g.votes[P.id] = t;
+    // كل الحقيقيين صوّتوا؟ البوتات الباقية تصوّت بسرعة
+    if (!P.bot && g.vpend && alive(g).filter(Q => !Q.bot).every(Q => g.votes[Q.id] || !(r.players.find(p => p.id === Q.id) || {}).online)) {
+      alive(g).filter(Q => Q.bot && !g.votes[Q.id]).forEach((Q, i) => { const fn = g.vpend[Q.id]; if (fn) later(r, 500 + i * 450 + rnd(400), fn); });
+    }
     if (alive(g).every(Q => g.votes[Q.id])) H.setTimer(r, 1500, () => verdict(r));
   }
   function verdict(r) {

@@ -13,6 +13,7 @@ const BANK = (() => { const seen = new Set(), out = []; for (const q of [...QJ, 
 const WRONG = ['كرسي', 'بطاطس', 'سيارة', 'قطو', 'نوم', 'شاي', 'ماي', 'جوال', 'فلوس', 'رز', 'كتاب'];
 
 module.exports = H => {
+  const BK = require('./botkit')(H, SCALE);
   const byId = (r, id) => r.players.find(p => p.id === id);
   function later(r, ms, fn) { const g = r.g; const t = setTimeout(() => { if (!H.alive(r) || r.g !== g || r.phase !== 'play') return; fn(); H.push(r); }, ms); g.bt.push(t); }
   // يرجع رقم الجواب باللوحة (٠ = الأشهر) أو -1 — نختار أطول صيغة طابقت
@@ -38,17 +39,20 @@ module.exports = H => {
     r.players.forEach(p => { g.ans[p.id] = []; });
     H.setTimer(r, g.time * 1000 * SCALE, () => reveal(r));
     // البوتات: تكتب من ١ إلى n أجوبة، أغلبها من اللوحة (الأشهر أكثر)
+    // (لو كل اللاعبين الحقيقيين خلصوا، البوتات تخلص على طول)
+    BK.clear(r);
     r.players.filter(p => p.bot).forEach(b => {
-      const k = 1 + rnd(g.n);
-      for (let i = 0; i < k; i++) later(r, (2500 + rnd(g.time * 700)) * SCALE, () => {
+      const k = 1 + rnd(g.n), times = Array.from({ length: k }, () => 2000 + rnd(Math.max(1500, g.time * 550))).sort((a, c) => a - c);
+      times.forEach(ms => BK.botLater(r, b, ms * SCALE, () => {
         let t;
         if (Math.random() < .72) { const w = g.q.a.map(a => a[1]); let x = rnd(w.reduce((s, v) => s + v, 0)), j = 0; while (x >= w[j]) x -= w[j++]; t = g.q.a[j][0]; }
         else t = WRONG[rnd(WRONG.length)];
         add(r, b, t);
-      });
-      later(r, (g.time * 800 + rnd(2000)) * SCALE, () => { if (g.sub === 'q') { g.done.add(b.id); if (allDone(r, g)) H.setTimer(r, 700, () => reveal(r)); } });
+      }));
+      BK.botLater(r, b, (times[times.length - 1] + 800 + rnd(1500)) * SCALE, () => { if (g.sub === 'q') { g.done.add(b.id); if (allDone(r, g)) H.setTimer(r, 700, () => reveal(r)); } });
     });
   }
+  const humansFinished = (r, g) => BK.humansDone(r, p => g.done.has(p.id) || (g.ans[p.id] || []).length >= g.n);
   function add(r, p, text) {
     const g = r.g; if (g.sub !== 'q' || p.spec) return;
     const L = g.ans[p.id] || (g.ans[p.id] = []);
@@ -59,6 +63,7 @@ module.exports = H => {
     const bi = match(g.q, t), nk = stem(norm(t));
     if (L.some(a => stem(norm(a)) === nk || (bi >= 0 && match(g.q, a) === bi))) return p.bot ? null : H.err(p, 'كتبت هالجواب قبل');
     L.push(t);
+    if (!p.bot && humansFinished(r, g)) BK.hurry(r);
     if (allDone(r, g)) H.setTimer(r, 700, () => reveal(r));
   }
   function reveal(r) {
@@ -115,7 +120,7 @@ module.exports = H => {
       const g = r.g; if (!g || r.phase !== 'play') return;
       if (m.t === 'jans') return add(r, p, m.text);
       if (m.t === 'jdel') { if (g.sub !== 'q') return; const L = g.ans[p.id] || []; const i = +m.i; if (i >= 0 && i < L.length) L.splice(i, 1); g.done.delete(p.id); return; }
-      if (m.t === 'jdone') { if (g.sub !== 'q') return; g.done.add(p.id); if (allDone(r, g)) H.setTimer(r, 700, () => reveal(r)); return; }
+      if (m.t === 'jdone') { if (g.sub !== 'q') return; g.done.add(p.id); if (humansFinished(r, g)) BK.hurry(r); if (allDone(r, g)) H.setTimer(r, 700, () => reveal(r)); return; }
     },
     view(r, p) {
       const g = r.g; if (!g) return null;

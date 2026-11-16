@@ -30,14 +30,21 @@ module.exports = H => {
     g.q = makeQ(g); g.sub = 'q'; g.ans = {}; g.at = Date.now(); g.gain = {};
     g.next = null;
     H.setTimer(r, Q_MS * SCALE, () => show(r));
-    r.players.filter(p => p.bot).forEach(b => later(r, (1800 + rnd(8000)) * SCALE, () => {
-      const acc = g.diff === 'all' ? .5 : .68;
-      answer(r, b, Math.random() < acc ? g.q.ok : (g.q.ok + 1 + rnd(3)) % 4);
-    }));
+    // كل بوت له وقت إجابة «افتراضي»؛ لو اللاعبين الحقيقيين جاوبوا كلهم، البوتات تجاوب على طول بنفس وقتها الافتراضي (عشان النقاط تبقى عادلة)
+    g.botPlan = {};
+    r.players.filter(p => p.bot).forEach(b => {
+      const acc = g.diff === 'all' ? .5 : .68, ms = (1800 + rnd(8000)) * SCALE;
+      g.botPlan[b.id] = { ms, i: Math.random() < acc ? g.q.ok : (g.q.ok + 1 + rnd(3)) % 4 };
+      later(r, ms, () => answer(r, b, g.botPlan[b.id].i));
+    });
   }
   function answer(r, p, i) {
     const g = r.g; if (g.sub !== 'q' || p.spec || g.ans[p.id] || !(i >= 0 && i < 4)) return;
-    g.ans[p.id] = { i, t: Date.now() - g.at };
+    g.ans[p.id] = { i, t: p.bot && g.botPlan && g.botPlan[p.id] ? g.botPlan[p.id].ms : Date.now() - g.at };
+    if (!p.bot && r.players.filter(q => !q.bot && q.online && !q.spec).every(q => g.ans[q.id])) {
+      // كل الحقيقيين جاوبوا: البوتات الباقية تجاوب الحين (بوقتها الافتراضي)
+      r.players.filter(q => q.bot && !g.ans[q.id] && g.botPlan[q.id]).forEach((b, k) => later(r, (350 + k * 250), () => answer(r, b, g.botPlan[b.id].i)));
+    }
     if (r.players.every(q => g.ans[q.id] || !q.online)) H.setTimer(r, 600, () => show(r));
   }
   function show(r) {

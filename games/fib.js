@@ -8,13 +8,15 @@ const norm = s => String(s || '').toLowerCase().replace(/[ً-ْـٰ]/g, '').repl
 const rnd = n => Math.random() * n | 0;
 module.exports = H => {
   const byId = (r, id) => r.players.find(p => p.id === id);
+  const BK = require('./botkit')(H, SCALE);
   function later(r, ms, fn) { const g = r.g; const t = setTimeout(() => { if (!H.alive(r) || r.g !== g || r.phase !== 'play') return; fn(); H.push(r); }, ms); g.bt.push(t); }
   const isTruth = (q, s) => { const n = norm(s); return !!n && [q.a, ...(q.alt || [])].some(x => norm(x) === n); };
   function ask(r) {
     const g = r.g; g.round++; g.bt.forEach(clearTimeout); g.bt = [];
     g.q = g.deck[g.round - 1]; g.sub = 'write'; g.lies = {}; g.picks = {}; g.opts = null; g.rev = -1;
     H.setTimer(r, WRITE_MS * SCALE, () => toPick(r));
-    r.players.filter(p => p.bot).forEach(b => later(r, (5000 + rnd(20000)) * SCALE, () => {
+    BK.clear(r);
+    r.players.filter(p => p.bot).forEach(b => BK.botLater(r, b, (4000 + rnd(11000)) * SCALE, () => {
       const used = new Set(Object.values(g.lies).map(norm));
       const pool = g.q.l.filter(x => !used.has(norm(x)));
       const fake = pool.length ? pool[rnd(pool.length)] : BOTLIE[rnd(BOTLIE.length)];
@@ -28,6 +30,7 @@ module.exports = H => {
     if (!t) return;
     if (isTruth(g.q, t)) { H.err(p, 'هذا الجواب الصح نفسه 😅 اكتب كذبة!'); return; }
     g.lies[p.id] = t;
+    if (!p.bot && BK.humansDone(r, q => g.lies[q.id])) BK.hurry(r);
     if (r.players.every(q => g.lies[q.id] || !q.online)) { H.setTimer(r, 1200 * SCALE, () => toPick(r)); }
   }
   function toPick(r) {
@@ -41,7 +44,8 @@ module.exports = H => {
     opts.push({ t: g.q.a, by: [], truth: 1 });
     g.opts = H.shuffle(opts).map((o, i) => Object.assign(o, { i }));
     H.setTimer(r, PICK_MS * SCALE, () => toReveal(r));
-    r.players.filter(p => p.bot).forEach(b => later(r, (3000 + rnd(14000)) * SCALE, () => {
+    BK.clear(r);
+    r.players.filter(p => p.bot).forEach(b => BK.botLater(r, b, (2500 + rnd(8000)) * SCALE, () => {
       const ok = g.opts.filter(o => !o.by.includes(b.id));
       const tr = ok.find(o => o.truth);
       pick(r, b, (Math.random() < .4 ? tr : ok[rnd(ok.length)]).i);
@@ -51,6 +55,7 @@ module.exports = H => {
     const g = r.g; if (g.sub !== 'pick' || p.spec) return;
     const o = g.opts[i]; if (!o || o.by.includes(p.id)) return;
     g.picks[p.id] = i;
+    if (!p.bot && BK.humansDone(r, q => g.picks[q.id] != null)) BK.hurry(r);
     if (r.players.every(q => g.picks[q.id] != null || !q.online)) H.setTimer(r, 900 * SCALE, () => toReveal(r));
   }
   function toReveal(r) {

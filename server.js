@@ -349,6 +349,10 @@ function leaveGame(r, p) {
 
 // ---- البوتات ----
 const rnd = n => Math.random() * n | 0;
+// البوت يكتب بالشات مثل أي لاعب
+function botSay(r, b, text) { if (!b || rooms.get(r.code) !== r) return; const msg = { from: b.id, name: b.name, text }; r.chat.push(msg); if (r.chat.length > 30) r.chat.shift(); cast(r, { t: 'chat', ...msg }); }
+const OUT_ANS = ['إيه أحبه 😄', 'يعتمد على المزاج', 'مرة بالأسبوع تقريباً', 'لا والله ما أحبه', 'كل يوم تقريباً!', 'أكيد، مع الربع', 'حسب الوقت', 'آخر مرة كانت من زمان', 'إيه بس مو كثير', 'هههه سؤال صعب', 'أحس عادي', 'أحياناً'];
+const OUT_SUS = n => [`أشك في ${n} 🤨`, `${n} جوابه غريب`, `أحس إنه ${n}`, `${n} مرتبك شوي 👀`][rnd(4)];
 function botAction(r) {
   const bots = r.players.filter(q => q.bot);
   if (!bots.length || r.phase !== 'play') return null;
@@ -376,13 +380,7 @@ function botAction(r) {
       L.act(r, p, { t: 'put', ids: H.shuffle(pool.slice()).slice(0, k).map(c => c.id) });
     } };
   }
-  if (r.game === 'typing') {
-    const g = r.g; if (g.sub !== 'go') return null;
-    return { d: 4000 + rnd(7000), fn() {
-      if (g.sub !== 'go' || r.g !== g) return;
-      GAMES.typing.act(r, bots[rnd(bots.length)], { t: 'type', text: g.text });
-    } };
-  }
+  // سبّاق الكتابة: البوتات تتسابق من داخل games/typing.js
   if (r.game === 'outside') {
     const g = r.g, words = require('./games/outside-words')[g.cat] || [], pickW = ex => { const ok = words.filter(w => w !== ex); return ok[rnd(ok.length)] || '؟'; };
     if (g.sub === 'ask') {
@@ -391,11 +389,14 @@ function botAction(r) {
     }
     if (g.sub === 'qa') {
       const b = bots.find(q => q.id === g.target); if (!b) return null;
-      return { d: 3500 + rnd(3500), fn() { if (r.g === g && g.sub === 'qa' && g.target === b.id) GAMES.outside.act(r, b, { t: 'done' }); } };
+      return { d: 2500 + rnd(2500), fn() { if (r.g === g && g.sub === 'qa' && g.target === b.id) { botSay(r, b, OUT_ANS[rnd(OUT_ANS.length)]); GAMES.outside.act(r, b, { t: 'done' }); } } };
     }
     if (g.sub === 'vote') {
       const b = bots.find(q => !g.votes[q.id]); if (!b) return null;
-      return { d: 2500 + rnd(5000), fn() { if (r.g !== g || g.sub !== 'vote' || g.votes[b.id]) return; const o = r.players.filter(q => q.id !== b.id); GAMES.outside.act(r, b, { t: 'vote', id: o[rnd(o.length)].id }); } };
+      // التصويت: أول بوت ياخذ وقته، والباقين ورا بعض بسرعة — ولو كل اللاعبين الحقيقيين صوّتوا نخلص على طول
+      const humansVoted = r.players.filter(q => !q.bot && q.online).every(q => g.votes[q.id]);
+      const anyBotVoted = bots.some(q => g.votes[q.id]);
+      return { d: humansVoted ? 500 + rnd(500) : anyBotVoted ? 800 + rnd(1400) : 2000 + rnd(2500), fn() { if (r.g !== g || g.sub !== 'vote' || g.votes[b.id]) return; const o = r.players.filter(q => q.id !== b.id), t = o[rnd(o.length)]; if (Math.random() < .45) botSay(r, b, OUT_SUS(t.name)); GAMES.outside.act(r, b, { t: 'vote', id: t.id }); } };
     }
     if (g.sub === 'guess') {
       const b = bots.find(q => q.id === g.spy); if (!b) return null;
@@ -450,8 +451,11 @@ function botPlay(r, p, c) {
   play(r, p, c.id, color);
 }
 function botTurn(r) {
-  if (r.botT || r.phase !== 'play') return;
+  if (r.phase !== 'play') return;
   const a = botAction(r); if (!a) return;
+  // لو فيه حركة بوت مجدولة بس الحين صار لازم أسرع (مثلاً الكل صوّت)، نقدّمها
+  if (r.botT) { if (Date.now() + a.d >= r.botAt - 300) return; clearTimeout(r.botT); }
+  r.botAt = Date.now() + a.d;
   r.botT = setTimeout(() => { r.botT = null; if (rooms.get(r.code) !== r || r.phase !== 'play') return; a.fn(); after(r); }, a.d);
 }
 

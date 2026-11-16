@@ -8,9 +8,19 @@ module.exports = H => {
     const g = r.g; g.round++; g.sub = 'wait'; g.last = null;
     let t; do { t = TEXTS[Math.random() * TEXTS.length | 0]; } while (g.used.has(t) && g.used.size < TEXTS.length);
     g.used.add(t); g.text = t;
-    H.setTimer(r, WAIT_MS, () => { g.sub = 'go'; g.startAt = Date.now(); H.setTimer(r, GO_MS, () => { g.sub = 'between'; g.last = null; H.log(r, 'ما أحد كتبها في الوقت'); H.setTimer(r, BETWEEN_MS, () => nextRound(r)); }); });
+    H.setTimer(r, WAIT_MS, () => { g.sub = 'go'; g.startAt = Date.now(); botsRace(r); H.setTimer(r, GO_MS, () => { g.sub = 'between'; g.last = null; H.log(r, 'ما أحد كتبها في الوقت'); H.setTimer(r, BETWEEN_MS, () => nextRound(r)); }); });
   }
-  return {
+  // كل بوت له سرعة كتابة خاصة فيه (حروف بالثانية)، والوقت يعتمد على طول النص — النصوص القصيرة سريعة والطويلة أبطأ
+  function botsRace(r) {
+    const g = r.g, len = [...g.text].length, round = g.round;
+    r.players.filter(p => p.bot).forEach(b => {
+      if (!g.cps) g.cps = {};
+      if (!g.cps[b.id]) g.cps[b.id] = 2 + Math.random() * 2;
+      const ms = 1400 + Math.random() * 1200 + (len / (g.cps[b.id] * (.85 + Math.random() * .3))) * 1000;
+      setTimeout(() => { if (!H.alive(r) || r.g !== g || g.round !== round || g.sub !== 'go' || r.phase !== 'play') return; api.act(r, b, { t: 'type', text: g.text }); H.push(r); }, ms);
+    });
+  }
+  const api = {
     min: 2, max: 10,
     start(r) {
       const target = Math.max(3, Math.min(15, +(r.opts.target || 5)));
@@ -22,7 +32,7 @@ module.exports = H => {
     },
     act(r, p, m) {
       const g = r.g; if (!g || r.phase !== 'play' || m.t !== 'type' || g.sub !== 'go') return;
-      if (!H.rate(p, 'ty', 250)) return;
+      if (!p.bot && !H.rate(p, 'ty', 250)) return;
       if (clean(m.text) !== clean(g.text)) return;
       const ms = Date.now() - g.startAt;
       g.scores[p.id] = (g.scores[p.id] || 0) + 1; g.sub = 'between'; g.last = { id: p.id, ms };
@@ -36,4 +46,5 @@ module.exports = H => {
     },
     leave(r, p) { if (r.g) delete r.g.scores[p.id]; }
   };
+  return api;
 };

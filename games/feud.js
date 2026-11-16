@@ -33,7 +33,7 @@ module.exports = H => {
     g.faceIds = [0, 1].map(t => g.T[t][g.fi[t] % g.T[t].length]); g.fi[0]++; g.fi[1]++;
     g.sub = 'face';
     H.setTimer(r, FACE_MS * SCALE, () => faceEnd(r));
-    g.faceIds.forEach(id => { const b = byId(r, id); if (b && b.bot) later(r, (2500 + rnd(5000)) * SCALE, () => submit(r, b, botGuess(g))); });
+    g.faceIds.forEach(id => { const b = byId(r, id); if (b && b.bot) later(r, (2000 + rnd(2800)) * SCALE, () => submit(r, b, botGuess(g))); });
   }
   function botGuess(g) {
     if (Math.random() < .6) { const open = g.q.a.map((a, i) => i).filter(i => !g.rev[i]); if (open.length) return g.q.a[open[Math.min(open.length - 1, rnd(3))]][0]; }
@@ -59,7 +59,7 @@ module.exports = H => {
     const g = r.g; g.who = curAnswerer(r); g.turnN++;
     H.setTimer(r, TURN_MS * SCALE, () => { say(g, g.who, '⏰', 'x'); strike(r); });
     const b = byId(r, g.who), n = g.turnN;
-    if (b && b.bot) later(r, (3000 + rnd(4000)) * SCALE, () => { if (g.turnN === n && g.sub === 'play') submit(r, b, botGuess(g)); });
+    if (b && b.bot) later(r, (2300 + rnd(2700)) * SCALE, () => { if (g.turnN === n && g.sub === 'play') submit(r, b, botGuess(g)); });
   }
   function strike(r) {
     const g = r.g; g.strikes++;
@@ -67,7 +67,7 @@ module.exports = H => {
       g.sub = 'steal'; g.stealBy = 1 - g.ctrl; g.who = null;
       H.setTimer(r, STEAL_MS * SCALE, () => { say(g, null, '⏰', 'x'); roundWin(r, g.ctrl); });
       const bots = team(g, g.stealBy).map(id => byId(r, id)).filter(p => p && p.bot);
-      if (bots.length) later(r, (7000 + rnd(5000)) * SCALE, () => { if (g.sub === 'steal') submit(r, bots[0], botGuess(g)); });
+      if (bots.length) later(r, (4000 + rnd(3500)) * SCALE, () => { if (g.sub === 'steal') submit(r, bots[0], botGuess(g)); });
       return;
     }
     g.ti[g.ctrl]++; turn(r);
