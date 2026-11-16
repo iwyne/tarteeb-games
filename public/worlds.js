@@ -14,16 +14,16 @@
     ['notebook', 'دفتر الشخبطة', '✏️', '#fdfbf4', '#ef4b4b', '#1f2a7a', 'ورق دفتر وشخبطة']
   ];
   const KICK = {
-    sadu: '☕ مجلس ترتيب · حيّ الله الربع', arcade: '🕹️ PLAYER 1 · جاهز؟', news: '📰 جريدة ترتيب · العدد ٢١ · تصدر من الديسكورد',
+    sadu: '☕ مجلس ترتيب · حيّ الله الربع', arcade: '🕹️ PLAYER 1 · جاهز؟', news: '📰 جريدة ترتيب · العدد ٢٢ · تصدر من الديسكورد',
     toybox: '♠ طاولة الليلة جاهزة', bakala: 'مفتوح ٢٤ ساعة · ألعاب طازجة كل يوم', tv: 'على الهوا · قناة ترتيب',
-    airport: '✈️ مطار ترتيب الدولي · الصالة ٢١', notebook: '✏️ دفتر ألعاب الشلّة الرسمي'
+    airport: '✈️ مطار ترتيب الدولي · الصالة ٢٢', notebook: '✏️ دفتر ألعاب الشلّة الرسمي'
   };
-  const TICK = '⚡ عاجل: جوابك الترتيب نزلت رسمياً · المافيا تضرب من جديد · المندس ما زال طليق · رقم قياسي في سبّاق الكتابة · ٢١ لعبة بدون تحميل ⚡';
+  const TICK = '⚡ عاجل: جوابك الترتيب نزلت رسمياً · المافيا تضرب من جديد · المندس ما زال طليق · رقم قياسي في سبّاق الكتابة · ٢٢ لعبة بدون تحميل ⚡';
   const GC = { uno: '#d8342b', codes: '#d6452f', hive: '#d99a1e', liars: '#7a4ee0', flip: '#c2367a', chess: '#7a5434', mimic: '#c93c78', auction: '#8a5a1c', jwb: '#0f8b8d',
     feud: '#1c3f8f', flags: '#2a5bd7', phone: '#13a3b5', fib: '#b8281f', bomb: '#c48a12', mafia: '#5b1b2a', haunt: '#3a2140', sus: '#2b3a8f', outside: '#1f8f52',
-    typing: '#e0761a', jackaroo: '#1a8a4c', draw: '#2a5bd7' };
+    typing: '#e0761a', jackaroo: '#1a8a4c', draw: '#2a5bd7', baloot: '#1d6b47' };
   const FLIGHT = { uno: 'UNO7', codes: 'CODE', hive: 'HIVE', liars: 'LIAR', flip: 'FLIP', chess: 'CHSS', mimic: 'VOIC', auction: 'BIDS', jwb: 'JWB1', feud: 'FAML',
-    flags: 'FLAG', phone: 'TELE', fib: 'LIES', bomb: 'BOOM', mafia: 'MFIA', haunt: 'GHST', sus: 'SUS4', outside: 'OUTS', typing: 'TYPE', jackaroo: 'JACK', draw: 'DRAW' };
+    flags: 'FLAG', phone: 'TELE', fib: 'LIES', bomb: 'BOOM', mafia: 'MFIA', haunt: 'GHST', sus: 'SUS4', outside: 'OUTS', typing: 'TYPE', jackaroo: 'JACK', draw: 'DRAW', baloot: 'BLOT' };
   const get = () => { try { return JSON.parse(localStorage.getItem('tarteeb-world')) || 'classic'; } catch { return 'classic'; } };
   const save = w => { try { localStorage.setItem('tarteeb-world', JSON.stringify(w)); } catch {} };
 

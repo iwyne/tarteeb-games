@@ -17,6 +17,7 @@ const GTI = {
   fib: { s: 'ding', t: 'صدّقني', html: () => `<div class="bulbs">${Array.from({ length: 14 }, (_, i) => `<i style="--k:${i}"></i>`).join('')}</div><div class="pg"><svg viewBox="0 0 200 60" preserveAspectRatio="none"><path d="M0 30h30l8-18 8 34 8-26 6 14h20l6-24 10 44 8-30 6 10h20l8-14 8 22 6-8h28"/></svg></div><em class="lie">كذّاب؟</em>` },
   bomb: { s: 'tick', t: 'القنبلة', html: () => `<div class="hz"></div><div class="bm"><i class="cap"></i><i class="fz"></i><i class="sp"></i><i class="sh"></i></div><div class="kb"></div>` },
   auction: { s: 'bell', t: 'المزاد', html: () => `<div class="pod"></div><div class="lot">🏺<small>قطعة رقم ١</small></div><div class="gv">🔨</div><em class="sold">بيع!</em>` },
+  baloot: { s: 'card', t: 'بلوت', html: () => `<i class="b1">A♥</i><i class="b2">J♠</i><i class="b3">9♦</i>` },
   jwb: { s: 'pop', t: 'جوابك الترتيب', html: () => `<i class="jb1">🍚 دجاج؟</i><i class="jb2">لحم! 🥩</i><i class="jb3">🤝 +٥</i>` },
   feud: { s: 'ding', t: 'العائلة الترتيب', html: () => `<div class="bd">${[0, 1, 2, 3, 4, 5].map(i => `<i style="--k:${i}"><b>${i + 1}</b></i>`).join('')}</div><em class="xx">✖</em>` },
   flags: { s: 'whoosh', t: 'أعلام ودول', html: () => `<div class="gl">🌍</div>${['sa', 'br', 'jp', 'eg', 'ca', 'it'].map((c, i) => `<img class="fg" src="flags/${c}.svg" style="--k:${i}" alt="">`).join('')}` },

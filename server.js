@@ -122,8 +122,8 @@ const H = {
   }
 };
 const GAMES = { uno: { min: 2, max: 8 } };
-for (const k of ['codes', 'hive', 'liars', 'outside', 'typing', 'jackaroo', 'draw', 'flip', 'sus', 'haunt', 'mafia', 'phone', 'fib', 'bomb', 'auction', 'feud', 'flags', 'mimic', 'chess', 'jwb']) GAMES[k] = require('./games/' + k)(H);
-const META = { uno: { bots: true }, codes: { teams: true }, hive: { teams: true, bots: true }, liars: { bots: true }, outside: { bots: true }, typing: { bots: true }, jackaroo: { teams: true, bots: true }, draw: {}, flip: { bots: true }, sus: { bots: true }, haunt: { bots: true }, mafia: { bots: true }, phone: {}, fib: { bots: true }, bomb: { bots: true }, auction: { bots: true }, feud: { teams: true, bots: true }, flags: { bots: true }, mimic: {}, chess: { bots: true }, jwb: { bots: true } };
+for (const k of ['codes', 'hive', 'liars', 'outside', 'typing', 'jackaroo', 'draw', 'flip', 'sus', 'haunt', 'mafia', 'phone', 'fib', 'bomb', 'auction', 'feud', 'flags', 'mimic', 'chess', 'jwb', 'baloot']) GAMES[k] = require('./games/' + k)(H);
+const META = { uno: { bots: true }, codes: { teams: true }, hive: { teams: true, bots: true }, liars: { bots: true }, outside: { bots: true }, typing: { bots: true }, jackaroo: { teams: true, bots: true }, draw: {}, flip: { bots: true }, sus: { bots: true }, haunt: { bots: true }, mafia: { bots: true }, phone: {}, fib: { bots: true }, bomb: { bots: true }, auction: { bots: true }, feud: { teams: true, bots: true }, flags: { bots: true }, mimic: {}, chess: { bots: true }, jwb: { bots: true }, baloot: { teams: true, bots: true } };
 const AVATARS = ['😎', '🦁', '🐪', '🦅', '🐺', '🦊', '🐯', '🐼', '🦄', '🐸', '👑', '🔥', '⚡', '🌙', '🎩', '🤠'];
 const cleanAv = a => AVATARS.includes(a) ? a : '';
 // شكل الشخصية بالبيت المسكون: جسم، بشرة، شعر، لون الشعر، اللبس، لونين، لحية

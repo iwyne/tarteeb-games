@@ -5,10 +5,10 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>ترتيب — ألعاب</title>
 <meta name="theme-color" content="#f3ead8">
-<meta name="description" content="ألعاب ترتيب — ٢١ لعبة جماعية: أونو، شطرنج، القنبلة، صدّقني، المافيا وغيرها مع ربعك بكود غرفة">
+<meta name="description" content="ألعاب ترتيب — ٢٢ لعبة جماعية: أونو، شطرنج، القنبلة، صدّقني، المافيا وغيرها مع ربعك بكود غرفة">
 <meta property="og:type" content="website">
 <meta property="og:title" content="ترتيب — ألعاب">
-<meta property="og:description" content="أونو، جوابك الترتيب، شطرنج، القنبلة، صدّقني وغيرها — ٢١ لعبة. سوّ غرفة وعطّ الكود لربعك.">
+<meta property="og:description" content="بلوت، أونو، جوابك الترتيب، شطرنج، القنبلة، صدّقني وغيرها — ٢٢ لعبة. سوّ غرفة وعطّ الكود لربعك.">
 <meta property="og:image" content="icons/og.png">
 <meta name="twitter:card" content="summary_large_image">
 <script>try{var w=JSON.parse(localStorage.getItem("tarteeb-world"));if(w&&w!=="classic")document.documentElement.dataset.world=w}catch(e){}try{var t=JSON.parse(localStorage.getItem("tarteeb-theme"));if(t&&t!=="paper")document.documentElement.dataset.theme=t}catch(e){}try{if(JSON.parse(localStorage.getItem("tarteeb-lang"))==="en"){document.documentElement.lang="en";document.documentElement.dir="ltr"}}catch(e){}try{if(sessionStorage.getItem("tarteeb-splash")||/frame_id/.test(location.search))document.documentElement.classList.add("nosplash")}catch(e){}</script>
@@ -26,7 +26,7 @@
   <button id="spLang" class="splang" type="button">EN</button>
   <div class="sp-cards"><i class="c1">+2</i><i class="c2">7</i><i class="c3">⇄</i><i class="c4">★</i></div>
   <h1 class="sp-title">ترتيب<span>.</span></h1>
-  <p class="sp-tag">٢١ لعبة جماعية مع ربعك</p>
+  <p class="sp-tag">٢٢ لعبة جماعية مع ربعك</p>
   <button id="spGo" class="sp-go" type="button">ابدأ ▶</button>
   <div class="sp-worlds"><p>🌍 اختر جو الموقع (تقدر تغيّره بعدين)</p><div id="spW" class="sp-wgrid"></div></div>
   <p class="sp-credit"><span>تم التطوير من قبل</span> <bdi dir="ltr" class="team">TRTB TEAM</bdi></p>
@@ -50,9 +50,9 @@
     <div class="home-top">
       <div class="hero">
         <h1><span class="ln">جمّع ربعك</span><br><span class="ln">والسهرة علينا<span class="dot">.</span></span></h1>
-        <p>٢١ لعبة جماعية تشتغل من المتصفح وداخل الديسكورد. سوّ غرفة، عطهم الكود، وابدأوا.</p>
+        <p>٢٢ لعبة جماعية تشتغل من المتصفح وداخل الديسكورد. سوّ غرفة، عطهم الكود، وابدأوا.</p>
         <ul class="hstats" aria-label="مميزات">
-          <li>٢١ لعبة</li>
+          <li>٢٢ لعبة</li>
           <li>بدون تحميل</li>
           <li>لين ١٦ لاعب</li>
           <li>بوتات تكمّل العدد</li>
@@ -168,6 +168,18 @@
           <path d="M70 62l6-4M74 70h8M70 78l6 4" stroke="#ffd34d" stroke-width="4" stroke-linecap="round"/>
         </svg>
         <h3>المزاد</h3><span class="tag">من ٢ إلى ١٠ لاعبين</span>
+      </article>
+      <article class="game play" data-game="baloot" tabindex="0">
+        <svg class="logo" viewBox="0 0 100 100" aria-hidden="true">
+          <rect x="9" y="9" width="86" height="86" rx="20" fill="#16130f"/>
+          <rect x="5" y="5" width="86" height="86" rx="20" fill="#1d6b47" stroke="#16130f" stroke-width="5"/>
+          <rect x="18" y="22" width="34" height="50" rx="6" fill="#fffaf0" stroke="#16130f" stroke-width="4" transform="rotate(-14 35 47)"/>
+          <rect x="42" y="18" width="34" height="50" rx="6" fill="#fffaf0" stroke="#16130f" stroke-width="4" transform="rotate(10 59 43)"/>
+          <text x="27" y="56" font-family="Tajawal" font-weight="800" font-size="20" fill="#d42a20" transform="rotate(-14 35 47)">♥</text>
+          <text x="52" y="50" font-family="Tajawal" font-weight="800" font-size="20" fill="#16130f" transform="rotate(10 59 43)">♠</text>
+          <text x="48" y="86" text-anchor="middle" font-family="Tajawal" font-weight="800" font-size="13" fill="#ffd166">صن · حكم</text>
+        </svg>
+        <h3>بلوت</h3><span class="tag">٤ لاعبين، فريقين</span><span class="newtag">جديد</span>
       </article>
       <article class="game play" data-game="jwb" tabindex="0">
         <svg class="logo" viewBox="0 0 100 100" aria-hidden="true">
@@ -489,6 +501,7 @@
 <script src="auction.js"></script>
 <script src="feud.js"></script>
 <script src="jwb.js"></script>
+<script src="baloot.js"></script>
 <script src="flags.js"></script>
 <script src="mimic.js"></script>
 <script src="chess.js"></script>

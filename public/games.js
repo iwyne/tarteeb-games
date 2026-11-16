@@ -1,8 +1,9 @@
 // واجهات الألعاب الثانية: كلمة السر، خلية الحروف، الكذابين الترتيب
-const GNAME = { uno: 'أونو', codes: 'كلمة السر', hive: 'خلية الحروف', liars: 'الكذابين الترتيب', outside: 'برا السالفة', typing: 'سبّاق الكتابة', jackaroo: 'جاكارو', draw: 'رسم وخمّن', flip: 'أونو فليب', sus: 'المندس', haunt: 'البيت المسكون', mafia: 'المافيا', phone: 'التلفون الترتيب', fib: 'صدّقني', bomb: 'القنبلة', auction: 'المزاد', feud: 'العائلة الترتيب', flags: 'أعلام ودول', mimic: 'الأصوات الترتيب', chess: 'شطرنج', jwb: 'جوابك الترتيب' };
-const GINFO = { chess: 'لاعبين، أو أنت ضد بوت (والباقين يتفرجون)', jwb: 'من ٢ إلى ١٢ لاعب (والبوتات تكمّل)', mimic: 'من ١ إلى ٨ لاعبين (يحتاج مايك)', auction: 'من ٢ إلى ١٠ لاعبين (والبوتات تكمّل)', feud: 'من ٢ إلى ١٢، فريقين (والبوتات تكمّل)', flags: 'من ١ إلى ١٢ لاعب (والبوتات تكمّل)', phone: 'من ٣ إلى ١٢ لاعب', fib: 'من ٣ إلى ١٠ لاعبين (والبوتات تكمّل)', bomb: 'من ٢ إلى ١٢ لاعب (والبوتات تكمّل)', mafia: 'من ٥ إلى ١٦ لاعب (والبوتات تكمّل)', haunt: 'من ٢ إلى ١٠ لاعبين (ثري دي، والبوتات تكمّل)', sus: 'من ٤ إلى ١٢ لاعب (والبوتات تكمّل العدد)', flip: 'من ٢ إلى ٨ لاعبين', uno: 'من ٢ إلى ٨ لاعبين', codes: 'من ٤ إلى ١٠ لاعبين، فريقين', hive: 'من ٢ إلى ١٠ لاعبين، فريقين', liars: 'من ٢ إلى ٨ لاعبين', outside: 'من ٣ إلى ١٠ لاعبين', typing: 'من ٢ إلى ١٠ لاعبين', jackaroo: '٤ لاعبين بالضبط، فريقين (شريكك قبالتك)', draw: 'من ٢ إلى ١٠ لاعبين' };
-const BOTGAMES = ['jwb', 'chess', 'auction', 'feud', 'flags', 'fib', 'bomb', 'mafia', 'uno', 'hive', 'liars', 'jackaroo', 'outside', 'typing', 'flip', 'sus', 'haunt'];
+const GNAME = { uno: 'أونو', codes: 'كلمة السر', hive: 'خلية الحروف', liars: 'الكذابين الترتيب', outside: 'برا السالفة', typing: 'سبّاق الكتابة', jackaroo: 'جاكارو', draw: 'رسم وخمّن', flip: 'أونو فليب', sus: 'المندس', haunt: 'البيت المسكون', mafia: 'المافيا', phone: 'التلفون الترتيب', fib: 'صدّقني', bomb: 'القنبلة', auction: 'المزاد', feud: 'العائلة الترتيب', flags: 'أعلام ودول', mimic: 'الأصوات الترتيب', chess: 'شطرنج', jwb: 'جوابك الترتيب', baloot: 'بلوت' };
+const GINFO = { chess: 'لاعبين، أو أنت ضد بوت (والباقين يتفرجون)', jwb: 'من ٢ إلى ١٢ لاعب (والبوتات تكمّل)', baloot: '٤ لاعبين، فريقين (والبوتات تكمّل)', mimic: 'من ١ إلى ٨ لاعبين (يحتاج مايك)', auction: 'من ٢ إلى ١٠ لاعبين (والبوتات تكمّل)', feud: 'من ٢ إلى ١٢، فريقين (والبوتات تكمّل)', flags: 'من ١ إلى ١٢ لاعب (والبوتات تكمّل)', phone: 'من ٣ إلى ١٢ لاعب', fib: 'من ٣ إلى ١٠ لاعبين (والبوتات تكمّل)', bomb: 'من ٢ إلى ١٢ لاعب (والبوتات تكمّل)', mafia: 'من ٥ إلى ١٦ لاعب (والبوتات تكمّل)', haunt: 'من ٢ إلى ١٠ لاعبين (ثري دي، والبوتات تكمّل)', sus: 'من ٤ إلى ١٢ لاعب (والبوتات تكمّل العدد)', flip: 'من ٢ إلى ٨ لاعبين', uno: 'من ٢ إلى ٨ لاعبين', codes: 'من ٤ إلى ١٠ لاعبين، فريقين', hive: 'من ٢ إلى ١٠ لاعبين، فريقين', liars: 'من ٢ إلى ٨ لاعبين', outside: 'من ٣ إلى ١٠ لاعبين', typing: 'من ٢ إلى ١٠ لاعبين', jackaroo: '٤ لاعبين بالضبط، فريقين (شريكك قبالتك)', draw: 'من ٢ إلى ١٠ لاعبين' };
+const BOTGAMES = ['baloot', 'jwb', 'chess', 'auction', 'feud', 'flags', 'fib', 'bomb', 'mafia', 'uno', 'hive', 'liars', 'jackaroo', 'outside', 'typing', 'flip', 'sus', 'haunt'];
 const GHELP = {
+  baloot: '٤ لاعبين فريقين، وشريكك قبالك. كل واحد ياخذ ٥ أوراق وتنكشف ورقة بالنص. بالدور: «حكم» يعني نوع الورقة المكشوفة هو الحكم، «صن» بدون حكم، أو «بس». لو محد اشترى تصير جولة ثانية تختار فيها أي نوع ثاني. بعدها تكمل الأوراق ٨ لكل واحد. لازم تنزل من نفس النوع لو عندك، وبالحكم لو ما عندك لازم تقطع بالحكم (إلا لو شريكك ماسك الأكلة). بالحكم: الولد ثم التسعة أقوى شي. المشاريع (سرا، خمسين، مية، أربعمية، بلوت) تنحسب تلقائي. لو الفريق المشتري ما جاب أكثر من النص تصير «خسرانة» وتروح كل النقاط للخصم. أول فريق يوصل ١٥٢ يفوز.',
   jwb: 'كل جولة يطلع سؤال مثل «شي تاكله مع الرز». الكل يكتب أجوبته بنفس الوقت (لين ٣ أجوبة). بعدها تنكشف أشهر ٦ أجوبة من استبيان: لو جوابك منها تاخذ نقاطه، وكل ما كان أشهر نقاطه أكثر. ولو لاعب ثاني كتب نفس جوابك تاخذون +٥ عن كل واحد (جوابك جوابهم 🤝). آخر جولة النقاط دبل، واللي يجمع أكثر يفوز.',
   chess: 'شطرنج بالقوانين الكاملة: التبييت (القلعة)، الأكل بالمرور، ترقية العسكري، كش وكش مات، والتعادلات. اضغط على قطعتك وتطلع لك النقاط اللي تقدر تروح لها، أو اسحبها. تقدر تلعب ضد صاحبك، أو ضد البوت (أضف بوت باللوبي واختر صعوبته). فيه ساعة اختيارية (٣+٢، ٥ دقايق، ١٠ دقايق)، وتقدر تعرض تعادل أو تستسلم.',
   mimic: 'يطلع صوت (رياكشن مشهور أو صوت غريب). اسمعه زين، وبعد ٣… ٢… ١ الكل يقلّده بالمايك بنفس الوقت. التقييم على إيقاعك ولحن صوتك (طلوع ونزول الصوت) وطوله، مو على خشونة صوتك. بعدها عجلة الحظ تختار واحد: دبل، أو +٢٥، أو تقليده يصير فسوة 💨! وبعدين تنعاد كل التقليدات وحدة وحدة. الأعلى نقاط يفوز. لازم تسمح للموقع يستخدم المايك.',
@@ -43,10 +44,10 @@ pickGame('uno');
 // ---- تصنيف الألعاب بالرئيسية ----
 const GCAT = {
   bots: BOTGAMES,
-  teams: ['codes', 'hive', 'jackaroo', 'feud'],
+  teams: ['baloot', 'codes', 'hive', 'jackaroo', 'feud'],
   big: ['jwb', 'mafia', 'sus', 'bomb', 'flags', 'phone', 'feud', 'haunt', 'codes', 'hive', 'outside', 'typing', 'draw', 'fib', 'auction'],
   words: ['jwb', 'codes', 'hive', 'outside', 'typing', 'draw', 'fib', 'feud', 'flags', 'bomb', 'phone'],
-  cards: ['uno', 'flip', 'liars', 'jackaroo', 'chess', 'auction']
+  cards: ['baloot', 'uno', 'flip', 'liars', 'jackaroo', 'chess', 'auction']
 };
 $$('.gfilter button').forEach(b => b.onclick = () => {
   const f = b.dataset.f, L = GCAT[f];
@@ -115,7 +116,7 @@ function renderOther() {
   const body = $('#g2body');
   if (body.dataset.built && body.dataset.built !== S.game) { body.innerHTML = ''; body.dataset.built = ''; }
   body.className = 'g2body ' + S.game;
-  keep(body, () => ({ codes: renderCodes, hive: renderHive, liars: renderLiars, outside: renderOutside, typing: renderTyping, jackaroo: renderJack, draw: renderDraw, flip: renderFlip, sus: renderSus, haunt: renderHaunt, mafia: renderMafia, phone: renderPhone, fib: renderFib, bomb: renderBomb, auction: renderAuction, feud: renderFeud, jwb: renderJwb, flags: renderFlags, mimic: renderMimic, chess: renderChess })[S.game](body, mt));
+  keep(body, () => ({ codes: renderCodes, hive: renderHive, liars: renderLiars, outside: renderOutside, typing: renderTyping, jackaroo: renderJack, draw: renderDraw, flip: renderFlip, sus: renderSus, haunt: renderHaunt, mafia: renderMafia, phone: renderPhone, fib: renderFib, bomb: renderBomb, auction: renderAuction, feud: renderFeud, jwb: renderJwb, baloot: renderBaloot, flags: renderFlags, mimic: renderMimic, chess: renderChess })[S.game](body, mt));
   // نهاية الجولة
   const over = S.phase === 'over';
   $('#over2').hidden = !over;
@@ -424,7 +425,7 @@ function renderTyping(body) {
 
 // ================= إعدادات الغرفة (اللوبي) =================
 let lsSig = '', lsOpen = false;
-const GEMO = { uno: '🃏', codes: '🕵️', hive: '🐝', liars: '🤥', outside: '🕶️', typing: '🏁', jackaroo: '🎱', draw: '✏️', flip: '🔄', sus: '🚀', haunt: '👻', mafia: '🎩', phone: '☎️', fib: '🤫', bomb: '💣', auction: '🔨', feud: '👨‍👩‍👧', flags: '🌍', mimic: '🎙️', chess: '♞', jwb: '🗣️' };
+const GEMO = { uno: '🃏', codes: '🕵️', hive: '🐝', liars: '🤥', outside: '🕶️', typing: '🏁', jackaroo: '🎱', draw: '✏️', flip: '🔄', sus: '🚀', haunt: '👻', mafia: '🎩', phone: '☎️', fib: '🤫', bomb: '💣', auction: '🔨', feud: '👨‍👩‍👧', flags: '🌍', mimic: '🎙️', chess: '♞', jwb: '🗣️', baloot: '🂡' };
 function renderLobbySet(isHost) {
   const gh = $('#ghelp'); if (gh) { gh.hidden = !S || S.spec; $('#ghelpTxt').textContent = GHELP[S.game] || ''; }
   const box = $('#lobbyset'); if (!S || S.spec) { box.hidden = true; return; }
