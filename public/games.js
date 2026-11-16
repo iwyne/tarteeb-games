@@ -39,6 +39,44 @@ function pickGame(g) {
 $$('.game[data-game]').forEach(a => a.onclick = () => pickGame(a.dataset.game));
 pickGame('uno');
 
+// ---- تصنيف الألعاب بالرئيسية ----
+const GCAT = {
+  bots: BOTGAMES,
+  teams: ['codes', 'hive', 'jackaroo', 'feud'],
+  big: ['mafia', 'sus', 'bomb', 'flags', 'phone', 'feud', 'haunt', 'codes', 'hive', 'outside', 'typing', 'draw', 'fib', 'auction'],
+  words: ['codes', 'hive', 'outside', 'typing', 'draw', 'fib', 'feud', 'flags', 'bomb', 'phone'],
+  cards: ['uno', 'flip', 'liars', 'jackaroo', 'chess', 'auction']
+};
+$$('.gfilter button').forEach(b => b.onclick = () => {
+  const f = b.dataset.f, L = GCAT[f];
+  $$('.gfilter button').forEach(x => x.classList.toggle('on', x === b));
+  $$('.game[data-game]').forEach(a => a.hidden = !!L && !L.includes(a.dataset.game));
+});
+
+// ---- لعبة عشوائية: تقليب سريع بين الكروت ثم يوقف على وحدة ----
+$('#rndGame').onclick = () => {
+  const btn = $('#rndGame'); if (btn.disabled) return; btn.disabled = true;
+  const cards = $$('.game[data-game]').filter(a => !a.hidden), n = cards.length;
+  if (!n) { btn.disabled = false; return; }
+  const end = Math.floor(Math.random() * n), steps = n + end;
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  let i = reduce ? steps : 0;
+  const tick = () => {
+    cards.forEach(c => c.classList.remove('flash'));
+    const c = cards[i % n];
+    if (i >= steps) {
+      btn.disabled = false; pickGame(c.dataset.game);
+      c.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'center' });
+      c.classList.add('picked'); setTimeout(() => c.classList.remove('picked'), 900);
+      try { sfx('pop'); } catch (e) {}
+      return;
+    }
+    c.classList.add('flash'); i++; try { sfx('tick'); } catch (e) {}
+    setTimeout(tick, 28 + Math.pow(i / steps, 3) * 180);
+  };
+  tick();
+};
+
 // ---- اللوبي ----
 function renderTeamsOther(isHost) {
   $('#teamrow').hidden = !isHost || !S.teams;

@@ -46,8 +46,15 @@
   <section id="home">
     <div class="home-top">
       <div class="hero">
-        <h1>الألعاب<br>صارت عندنا<span class="dot">.</span></h1>
-        <p>اختر لعبة، سوّ غرفة، عطّ الكود لربعك، وابدأوا.</p>
+        <h1><span class="ln">جمّع ربعك</span><br><span class="ln">والسهرة علينا<span class="dot">.</span></span></h1>
+        <p>٢٠ لعبة جماعية تشتغل من المتصفح وداخل الديسكورد. سوّ غرفة، عطهم الكود، وابدأوا.</p>
+        <ul class="hstats" aria-label="مميزات">
+          <li>٢٠ لعبة</li>
+          <li>بدون تحميل</li>
+          <li>لين ١٦ لاعب</li>
+          <li>بوتات تكمّل العدد</li>
+        </ul>
+        <button id="rndGame" class="btn rnd" type="button"><span class="dice" aria-hidden="true">🎲</span> ما تدري وش تلعبون؟</button>
       </div>
       <div class="panel">
         <div class="avrow"><button id="avBtn" class="avbtn" type="button" title="اختر صورتك">🙂</button><label>اسمك<input id="name" maxlength="14" placeholder="اكتب اسمك" autocomplete="off"></label></div>
@@ -62,7 +69,17 @@
       </div>
     </div>
 
-    <h2 class="sect">الألعاب</h2>
+    <div class="sectrow">
+      <h2 class="sect">الألعاب</h2>
+      <div class="gfilter" role="tablist" aria-label="تصنيف الألعاب">
+        <button class="on" data-f="all" type="button">الكل</button>
+        <button data-f="bots" type="button">🤖 مع بوتات</button>
+        <button data-f="teams" type="button">⚔️ فرق</button>
+        <button data-f="big" type="button">👥 للشلة الكبيرة</button>
+        <button data-f="words" type="button">💬 كلمات وأسئلة</button>
+        <button data-f="cards" type="button">🃏 كروت وألواح</button>
+      </div>
+    </div>
     <div class="games">
       <article class="game uno sel" data-game="uno" tabindex="0">
         <div class="fan"><i class="y">7</i><i class="b">+2</i><i class="g">⇄</i></div>

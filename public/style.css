@@ -2339,3 +2339,44 @@ html.tt-lock,html.tt-lock body{overflow:hidden}
   .game.sel{outline-width:4px}
   .game.sel::after{width:24px;height:24px;top:8px;right:8px;font-size:.8rem}
 }
+
+/* ---------- الهيرو: أرقام سريعة + لعبة عشوائية ---------- */
+.hstats{list-style:none;padding:0;margin:18px 0 0;display:flex;flex-wrap:wrap;gap:8px}
+.hstats li{border:2.5px solid var(--ink);border-radius:99px;padding:5px 14px 4px;background:var(--surf);font:700 .92rem Tajawal,sans-serif;box-shadow:2px 2px 0 var(--ink)}
+.hstats li:nth-child(1){transform:rotate(-2deg);background:var(--yellow);color:var(--on-y)}
+.hstats li:nth-child(3){transform:rotate(1.5deg)}
+.hstats b{font:400 1.15rem/1 Lalezar,sans-serif;margin-inline:2px}
+.btn.rnd{margin-top:18px;display:inline-flex;align-items:center;gap:10px;background:var(--surf2)}
+.btn.rnd .dice{display:inline-block;font-size:1.3rem;transition:transform .3s}
+.btn.rnd:hover .dice{transform:rotate(-25deg) scale(1.15)}
+.btn.rnd[disabled]{opacity:1}
+.btn.rnd[disabled] .dice{animation:rndSpin .35s linear infinite}
+@keyframes rndSpin{to{transform:rotate(360deg)}}
+
+/* ---------- تصنيف الألعاب ---------- */
+.sectrow{display:flex;align-items:center;justify-content:space-between;gap:12px 20px;flex-wrap:wrap;margin:46px 0 16px}
+.sectrow .sect{margin:0}
+.gfilter{display:flex;gap:8px;flex-wrap:wrap}
+.gfilter button{font:700 .9rem Tajawal,sans-serif;border:2.5px solid var(--ink);background:var(--surf);color:var(--ink);border-radius:99px;padding:6px 14px 5px;cursor:pointer;transition:transform .1s,background .15s}
+.gfilter button:hover{transform:translateY(-2px)}
+.gfilter button.on{background:var(--ink);color:var(--paper)}
+.game[hidden]{display:none!important}
+.game.flash{outline:5px solid var(--yellow);outline-offset:3px;transform:scale(1.03)}
+.game.picked{animation:gPicked .8s cubic-bezier(.3,1.6,.5,1)}
+@keyframes gPicked{0%{transform:scale(.9) rotate(-2deg)}55%{transform:scale(1.07) rotate(1deg)}100%{transform:none}}
+@media (max-width:560px){
+  .gfilter{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;margin-inline:-16px;padding:2px 16px 6px;width:calc(100% + 32px)}
+  .gfilter::-webkit-scrollbar{display:none}
+  .gfilter button{flex:none}
+  .hstats li{font-size:.82rem;padding:4px 11px 3px}
+}
+@media (prefers-reduced-motion:reduce){.game.picked{animation:none}.btn.rnd[disabled] .dice{animation:none}}
+.hero h1 .ln{white-space:nowrap}
+.hero h1{font-size:clamp(3rem,min(9.5vw,6.2rem),6.2rem)}
+@media (min-width:761px){.hero h1{font-size:clamp(3rem,6.4vw,5.6rem)}}
+@media (max-width:560px){
+  .hero p{font-size:1.05rem}
+  .hstats{margin-top:12px;gap:6px}
+  .hstats li:nth-child(4){display:none}
+  .btn.rnd{margin-top:12px;padding:9px 16px;font-size:.95rem}
+}
