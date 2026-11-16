@@ -502,10 +502,11 @@ function admit(ws, r, name, extra = {}) {
 function join(ws, m) {
   const r = rooms.get(String(m.code || '').toUpperCase().trim());
   if (!r) return send(ws, { t: 'err', msg: 'الغرفة غير موجودة', reset: true });
-  const known = m.token && r.players.some(q => q.token === m.token);
-  if (!known && r.banned.has('ip:' + ws.ip)) return send(ws, { t: 'err', msg: 'تم طردك من هذي الغرفة' });
+  const known = m.token && (r.players.some(q => q.token === m.token) || r.specs.some(q => q.token === m.token));
+  const dev = String(m.dev || '').slice(0, 40);
+  if (!known && dev && r.banned.has('dev:' + dev)) return send(ws, { t: 'err', msg: 'تم طردك من هذي الغرفة' });
   if (!known && r.opts.pass && String(m.pass || '') !== r.opts.pass) return send(ws, { t: 'err', msg: m.pass ? 'كلمة السر غلط' : 'الغرفة محمية بكلمة سر', needpass: true });
-  let p = m.token && r.players.find(q => q.token === m.token);
+  let p = m.token && (r.players.find(q => q.token === m.token) || r.specs.find(q => q.token === m.token));
   if (p) {
     if (p.ws && p.ws !== ws) { p.ws.ctx = null; try { p.ws.close(); } catch {} }
     p.ws = ws; p.online = true;
@@ -513,6 +514,7 @@ function join(ws, m) {
     p = admit(ws, r, cleanName(m.name), { av: cleanAv(m.av) });
     if (!p) return;
   }
+  if (dev) p.dev = dev;
   ws.ctx = { r, p };
   send(ws, { t: 'joined', code: r.code, token: p.token, name: p.name });
   send(ws, { t: 'chathist', list: r.chat });
@@ -566,7 +568,7 @@ wss.on('connection', (ws, req) => {
     if (m.t === 'create') {
       const r = newRoom(newCode(), GAMES[m.game] ? m.game : 'uno');
       rooms.set(r.code, r);
-      const p = addPlayer(r, cleanName(m.name), cleanAv(m.av)); p.ws = ws; ws.ctx = { r, p };
+      const p = addPlayer(r, cleanName(m.name), cleanAv(m.av)); p.ws = ws; ws.ctx = { r, p }; if (m.dev) p.dev = String(m.dev).slice(0, 40);
       send(ws, { t: 'joined', code: r.code, token: p.token, name: p.name });
       return after(r);
     }
@@ -683,7 +685,7 @@ wss.on('connection', (ws, req) => {
         const sp = r.specs.find(q => q.id === m.id);
         const t = sp || r.players.find(q => q.id === m.id);
         if (!t || t === p) return;
-        if (t.ws && t.ws.ip) r.banned.add('ip:' + t.ws.ip);
+        if (t.dev) r.banned.add('dev:' + t.dev); // نحظر الجهاز مو الـIP (بيت واحد أو شبكة جوال وحدة فيها ناس كثير)
         if (t.uid) r.banned.add('uid:' + t.uid);
         if (t.ws) { const tw = t.ws; tw.ctx = null; send(tw, { t: 'kicked' }); }
         if (sp) { r.specs = r.specs.filter(q => q !== sp); break; }
@@ -697,8 +699,15 @@ wss.on('connection', (ws, req) => {
     const c = ws.ctx; if (!c || c.p.ws !== ws) return;
     const { r, p } = c;
     p.online = false; p.ws = null;
-    if (p.spec) { r.specs = r.specs.filter(q => q !== p); return broadcast(r); }
-    if (r.phase === 'lobby') return removePlayer(r, p);
+    if (p.spec) { // المتفرج ياخذ مهلة يرجع فيها بنفس مكانه
+      broadcast(r);
+      return setTimeout(() => { if (!p.online && r.specs.includes(p)) { r.specs = r.specs.filter(q => q !== p); broadcast(r); } }, 60000);
+    }
+    if (r.phase === 'lobby') {
+      // قبل كان ينشال من اللوبي على طول — فلو الجوال قطع ثانية (طلع من التطبيق مثلاً) يرجع متفرج أو يطلب كلمة السر
+      broadcast(r);
+      return setTimeout(() => { if (!p.online && r.phase === 'lobby' && r.players.includes(p) && rooms.get(r.code) === r) removePlayer(r, p); }, 60000);
+    }
     if (r.players.every(q => !q.online)) setTimeout(() => { if (r.players.every(q => !q.online)) rooms.delete(r.code); }, 10 * 60 * 1000);
     after(r);
   });

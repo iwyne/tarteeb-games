@@ -194,7 +194,7 @@ function renderHive(body, mt) {
   }
   const team = t => `<div class="hteam t${t}"><b>فريق ${TN[t]}</b> ${S.players.filter(p => p.tm === t).map(p => `<span class="pchip" data-id="${p.id}">${p.av ? esc(p.av) + ' ' : ''}${esc(p.name)}${p.w ? ` <i>🏆${p.w}</i>` : ''}</span>`).join('')}</div>`;
   body.innerHTML = `${team(0)}${team(1)}
-    <svg class="hboard" viewBox="0 0 ${W.toFixed(0)} ${H.toFixed(0)}">${edges}${cells}</svg>
+    <svg class="hboard" viewBox="-12 -12 ${(W + 24).toFixed(0)} ${(H + 24).toFixed(0)}">${edges}${cells}</svg>
     <div class="hint2">🔴 الأحمر يوصل بالطول (من فوق لتحت) &nbsp;•&nbsp; 🔵 الأزرق يوصل بالعرض (من اليمين لليسار) &nbsp;•&nbsp; اللي يكسب خلية يكمّل</div>
     ${panel}${logHtml()}`;
   body.querySelectorAll('.hx.go').forEach(el => el.onclick = () => send({ t: 'pick', i: +el.dataset.i }));
@@ -588,8 +588,13 @@ function renderDraw(body) {
   else if (g.sub === 'reveal') info = `الكلمة كانت: <b class="oword nt">${esc(g.word || '')}</b>`;
   else info = isD ? `ارسم: <b class="oword nt">${esc(g.word)}</b> <span class="cd2"></span>` : `${esc(dn)} يرسم — <b class="dhint nt">${esc(g.hint)}</b> <span class="cd2"></span>`;
   $('#dInfo').innerHTML = `<span class="muted">الدور ${g.turn} من ${g.turns}</span><div>${info}</div>`;
-  $('#dChoose').innerHTML = g.choices ? g.choices.map(w => `<button type="button" class="vb nt" data-w="${esc(w)}">${esc(w)}</button>`).join('') : '';
-  $$('#dChoose .vb').forEach(b => b.onclick = () => send({ t: 'pickword', word: b.dataset.w }));
+  // نبني أزرار الكلمات بس لما تتغير الخيارات — قبل كانت تنبني مع كل تحديث، فلو جا تحديث وسط الضغطة بالجوال تضيع الضغطة ويختار السيرفر كلمة ثانية بعد ما يخلص الوقت
+  const dc = $('#dChoose'), ck = g.choices ? g.choices.join('|') : '';
+  if (dc.dataset.k !== ck) {
+    dc.dataset.k = ck; dc.dataset.sent = '';
+    dc.innerHTML = g.choices ? g.choices.map(w => `<button type="button" class="vb nt" data-w="${esc(w)}">${esc(w)}</button>`).join('') : '';
+    $$('#dChoose .vb').forEach(b => b.onclick = () => { if (dc.dataset.sent) return; dc.dataset.sent = '1'; b.classList.add('on'); $$('#dChoose .vb').forEach(x => x.disabled = true); send({ t: 'pickword', word: b.dataset.w }); });
+  }
   const showTools = isD && g.sub === 'draw';
   $('#dTools').hidden = !showTools; if (showTools && !$('#dTools').children.length) drawTools();
   $('#dcv').classList.toggle('mine', showTools);

@@ -30,16 +30,21 @@ let tt;
 function toast(msg) { const t = $('#toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(tt); tt = setTimeout(() => t.classList.remove('show'), 2400); }
 
 // ---------- الاتصال ----------
+// معرّف ثابت للجهاز (للطرد بس، بدال حظر الـIP اللي كان يطرد كل اللي على نفس الشبكة)
+const DEV = (() => { let d = store.get('tarteeb-dev'); if (!d || typeof d !== 'string') { d = Math.random().toString(36).slice(2) + Date.now().toString(36); store.set('tarteeb-dev', d); } return d; })();
 function connect() {
   ws = new WebSocket(IN_DISCORD ? `wss://${location.host}/.proxy/ws` : (location.protocol === 'https:' ? 'wss://' : 'ws://') + location.host);
   ws.onopen = () => {
     if (activityHello) ws.send(JSON.stringify(activityHello));
-    else if (session.code && session.token) ws.send(JSON.stringify({ t: 'join', ...session }));
+    else if (session.code && session.token) ws.send(JSON.stringify({ t: 'join', ...session, dev: DEV }));
     while (queue.length) ws.send(JSON.stringify(queue.shift()));
   };
   ws.onmessage = e => on(JSON.parse(e.data));
-  ws.onclose = () => { if (S) toast('انقطع الاتصال… نرجع نتصل'); setTimeout(connect, 1500); };
+  const me = ws;
+  ws.onclose = () => { if (me !== ws) return; if (S) toast('انقطع الاتصال… نرجع نتصل'); clearTimeout(window.__rc); window.__rc = setTimeout(connect, 1500); };
 }
+// لما يرجع للتطبيق من الخلفية (بالجوال) نتأكد إن الاتصال شغّال ونرجع نتصل على طول
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible' && ws && ws.readyState > 1) { clearTimeout(window.__rc); connect(); } });
 function send(o) { ws && ws.readyState === 1 ? ws.send(JSON.stringify(o)) : queue.push(o); }
 
 function on(m) {
@@ -74,8 +79,22 @@ function on(m) {
   } else if (m.t === 'react') {
     showReact(m.from, m.e);
   } else if (m.t === 'state') {
-    m.t0 = Date.now(); flipAdapt(m); prevS = S; S = m; render(); notifyTurn();
+    m.t0 = Date.now(); flipAdapt(m); prevS = S; S = m; renderSoon(); notifyTurn();
   }
+}
+// لو اللاعب ضاغط بإصبعه على زر، نأجل إعادة الرسم لين يرفع إصبعه (أقصى شي ٦٠٠ms)
+// قبل: لو وصل تحديث وسط الضغطة ينبني الزر من جديد وتضيع الضغطة (خصوصاً بالجوال)
+let PDOWN = 0, RPEND = false;
+const flushR = () => { if (RPEND) { RPEND = false; render(); } };
+addEventListener('pointerdown', () => { PDOWN = Date.now(); }, true);
+addEventListener('pointerup', () => { PDOWN = 0; setTimeout(flushR, 0); }, true);
+addEventListener('pointercancel', () => { PDOWN = 0; setTimeout(flushR, 0); }, true);
+function renderSoon() {
+  if (PDOWN && Date.now() - PDOWN < 600) {
+    if (!RPEND) { RPEND = true; setTimeout(() => { if (RPEND) flushR(); }, 650 - (Date.now() - PDOWN)); }
+    return;
+  }
+  RPEND = false; render();
 }
 function reset() { session = {}; store.set('tarteeb-session', {}); S = null; prevS = null; render(); }
 
@@ -96,13 +115,13 @@ const face = p => p.av ? esc(p.av) : esc([...p.name][0] || '?');
 function myName() { const n = nameEl.value.trim(); if (n) store.set('tarteeb-name', n); return n; }
 $('#create').onclick = () => {
   const name = myName(); if (!name) { toast('اكتب اسمك أول'); return nameEl.focus(); }
-  session = {}; lastJoin = null; send({ t: 'create', name, game: SEL, av: myAv });
+  session = {}; lastJoin = null; send({ t: 'create', name, game: SEL, av: myAv, dev: DEV });
 };
 $('#join').onclick = () => {
   const name = myName(); if (!name) { toast('اكتب اسمك أول'); return nameEl.focus(); }
   const code = codeEl.value.trim().toUpperCase();
   if (code.length !== 4) { toast('الكود أربع خانات'); return codeEl.focus(); }
-  session = {}; lastJoin = { t: 'join', name, code, av: myAv }; send(lastJoin);
+  session = {}; lastJoin = { t: 'join', name, code, av: myAv, dev: DEV }; send(lastJoin);
 };
 codeEl.addEventListener('keydown', e => e.key === 'Enter' && $('#join').click());
 nameEl.addEventListener('keydown', e => e.key === 'Enter' && (codeEl.value.trim() ? $('#join') : $('#create')).click());
@@ -558,3 +577,10 @@ installBtn.onclick = async () => {
   if (deferredInstall) { deferredInstall.prompt(); await deferredInstall.userChoice.catch(() => {}); deferredInstall = null; installBtn.hidden = true; }
   else { toast('في سفاري: اضغط زر المشاركة ثم «إضافة إلى الشاشة الرئيسية»'); store.set('tarteeb-ioshint', 1); installBtn.hidden = true; }
 };
+
+// زر «⋯» بالجوال: يجمع أزرار الثيم والتنبيه والتفاعل عشان ما تغطي اللعبة
+(() => {
+  const fm = document.getElementById('fabMore'), box = document.getElementById('chatfab'); if (!fm || !box) return;
+  fm.onclick = e => { e.stopPropagation(); const o = box.classList.toggle('open'); fm.setAttribute('aria-expanded', o); fm.textContent = o ? '✕' : '⋯'; };
+  document.addEventListener('pointerdown', e => { if (box.classList.contains('open') && !box.contains(e.target)) { box.classList.remove('open'); fm.textContent = '⋯'; fm.setAttribute('aria-expanded', false); } }, true);
+})();

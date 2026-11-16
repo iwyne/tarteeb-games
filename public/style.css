@@ -2462,3 +2462,17 @@ body[data-gt]:is([data-gt=flip],[data-gt=liars],[data-gt=jackaroo],[data-gt=sus]
   .ls-cur b{font-size:1.35rem}
   .ls-cur #lsToggle{padding:6px 10px;font-size:.8rem}
 }
+
+/* ---------- أزرار الشات والتفاعل بالجوال: أصغر، فوق بعض، والباقي داخل «⋯» ---------- */
+#fabMore{display:none}
+@media (max-width:560px){
+  .fabs{flex-direction:column-reverse;gap:8px;left:8px;bottom:10px}
+  .fab{width:44px;height:44px;font-size:1.2rem;border-width:2.5px;box-shadow:2px 2px 0 var(--ink)}
+  #fabMore{display:block;font:900 1.3rem/1 Tajawal,sans-serif}
+  .fabs:not(.open) .fab:not(#chatBtn):not(#fabMore){display:none}
+  .fabs.open .fab:not(#chatBtn):not(#fabMore){animation:fabIn .18s ease-out}
+  @keyframes fabIn{from{opacity:0;transform:translateY(8px) scale(.8)}}
+  body.ingame .fabs{bottom:214px}
+  /* مساحة تحت عشان آخر الأزرار ما تتغطى */
+  #game{padding-bottom:64px}
+}
