@@ -66,7 +66,8 @@
   };
   document.getElementById('spGo').onclick = hide;
   sp.addEventListener('keydown', e => { if (e.key === 'Enter' && !e.target.closest('.sp-w')) hide(); });
-  const open = () => { cur = get(); apply(cur); sp.hidden = false; sp.classList.add('reopen', 'out'); requestAnimationFrame(() => requestAnimationFrame(() => sp.classList.remove('out'))); sp.scrollTop = 0; };
+  // ملاحظة: .nosplash تخفي الشاشة بالـCSS (لو انفتحت قبل بنفس الجلسة) فلازم نشيلها
+  const open = () => { html.classList.remove('nosplash'); cur = get(); apply(cur); sp.hidden = false; sp.classList.add('reopen', 'out'); requestAnimationFrame(() => requestAnimationFrame(() => sp.classList.remove('out'))); sp.scrollTop = 0; };
   const wb = document.getElementById('worldBtn'); if (wb) wb.onclick = open;
   // داخل الديسكورد أو رابط دعوة لغرفة: ما نوقف اللاعب
   const skip = html.classList.contains('nosplash') || new URLSearchParams(location.search).get('room');
