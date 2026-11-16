@@ -11,7 +11,7 @@
 <meta property="og:description" content="أونو، جوابك الترتيب، شطرنج، القنبلة، صدّقني وغيرها — ٢١ لعبة. سوّ غرفة وعطّ الكود لربعك.">
 <meta property="og:image" content="icons/og.png">
 <meta name="twitter:card" content="summary_large_image">
-<script>try{var t=JSON.parse(localStorage.getItem("tarteeb-theme"));if(t&&t!=="paper")document.documentElement.dataset.theme=t}catch(e){}try{if(JSON.parse(localStorage.getItem("tarteeb-lang"))==="en"){document.documentElement.lang="en";document.documentElement.dir="ltr"}}catch(e){}try{if(sessionStorage.getItem("tarteeb-splash")||/frame_id/.test(location.search))document.documentElement.classList.add("nosplash")}catch(e){}</script>
+<script>try{var w=JSON.parse(localStorage.getItem("tarteeb-world"));if(w&&w!=="classic")document.documentElement.dataset.world=w}catch(e){}try{var t=JSON.parse(localStorage.getItem("tarteeb-theme"));if(t&&t!=="paper")document.documentElement.dataset.theme=t}catch(e){}try{if(JSON.parse(localStorage.getItem("tarteeb-lang"))==="en"){document.documentElement.lang="en";document.documentElement.dir="ltr"}}catch(e){}try{if(sessionStorage.getItem("tarteeb-splash")||/frame_id/.test(location.search))document.documentElement.classList.add("nosplash")}catch(e){}</script>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icons/icon-192.png" type="image/png">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
@@ -19,14 +19,16 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="ترتيب">
 <link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="worlds.css">
 </head>
 <body>
-<div id="splash" aria-hidden="true">
+<div id="splash">
   <button id="spLang" class="splang" type="button">EN</button>
   <div class="sp-cards"><i class="c1">+2</i><i class="c2">7</i><i class="c3">⇄</i><i class="c4">★</i></div>
   <h1 class="sp-title">ترتيب<span>.</span></h1>
-  <p class="sp-tag">أونو • جاكارو • رسم وخمّن • برا السالفة</p>
-  <div class="sp-bar"><i></i></div>
+  <p class="sp-tag">٢١ لعبة جماعية مع ربعك</p>
+  <button id="spGo" class="sp-go" type="button">ابدأ ▶</button>
+  <div class="sp-worlds"><p>🌍 اختر جو الموقع (تقدر تغيّره بعدين)</p><div id="spW" class="sp-wgrid"></div></div>
   <p class="sp-credit"><span>تم التطوير من قبل</span> <bdi dir="ltr" class="team">TRTB TEAM</bdi></p>
 </div>
 
@@ -34,6 +36,7 @@
   <a class="logo" href="/"><span>ترتيب</span><small>ألعاب</small></a>
   <div class="hb">
     <button id="langBtn" class="btn sm" type="button" title="Language">EN</button>
+    <button id="worldBtn" class="btn sm" type="button" title="جو الموقع">🌍</button>
     <button id="themeTop" class="btn sm themebtn" title="الثيم">🎨</button>
     <button id="install" class="btn sm yellow" hidden>ثبّت التطبيق</button>
     <a class="btn sm" data-support target="_blank" rel="noopener">الدعم</a>
@@ -493,5 +496,6 @@
 <script src="themes.js"></script>
 <script src="tutor.js"></script>
 <script src="i18n.js"></script>
+<script src="worlds.js"></script>
 </body>
 </html>

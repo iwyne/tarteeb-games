@@ -408,6 +408,7 @@ function fx() {
 function render() {
   const ph = !S ? (IN_DISCORD ? 'connecting' : 'home') : S.phase === 'lobby' ? 'lobby' : S.game === 'uno' || S.game === 'flip' ? 'game' : 'game2';
   ['home', 'connecting', 'lobby', 'game', 'game2'].forEach(id => $('#' + id).hidden = id !== ph);
+  document.body.classList.toggle('onhome', ph === 'home');
   document.body.classList.toggle('ingame', ph === 'game');
   document.body.classList.toggle('ingame2', ph === 'game2');
   $('#chatfab').hidden = !S; drawBell();
