@@ -1,7 +1,7 @@
 // واجهات الألعاب الثانية: كلمة السر، خلية الحروف، الكذابين الترتيب
-const GNAME = { uno: 'أونو', codes: 'كلمة السر', hive: 'خلية الحروف', liars: 'الكذابين الترتيب', outside: 'برا السالفة', typing: 'سبّاق الكتابة', jackaroo: 'جاكارو', draw: 'رسم وخمّن', flip: 'أونو فليب', sus: 'المندس', haunt: 'البيت المسكون', mafia: 'المافيا', phone: 'التلفون الترتيب', fib: 'صدّقني', bomb: 'القنبلة', auction: 'المزاد', feud: 'العائلة الترتيب', flags: 'أعلام ودول', mimic: 'الأصوات الترتيب', chess: 'شطرنج', jwb: 'جوابك الترتيب', baloot: 'بلوت' };
-const GINFO = { chess: 'لاعبين، أو أنت ضد بوت (والباقين يتفرجون)', jwb: 'من ٢ إلى ١٢ لاعب (والبوتات تكمّل)', baloot: '٤ لاعبين، فريقين (والبوتات تكمّل)', mimic: 'من ١ إلى ٨ لاعبين (يحتاج مايك)', auction: 'من ٢ إلى ١٠ لاعبين (والبوتات تكمّل)', feud: 'من ٢ إلى ١٢، فريقين (والبوتات تكمّل)', flags: 'من ١ إلى ١٢ لاعب (والبوتات تكمّل)', phone: 'من ٣ إلى ١٢ لاعب', fib: 'من ٣ إلى ١٠ لاعبين (والبوتات تكمّل)', bomb: 'من ٢ إلى ١٢ لاعب (والبوتات تكمّل)', mafia: 'من ٥ إلى ١٦ لاعب (والبوتات تكمّل)', haunt: 'من ٢ إلى ١٠ لاعبين (ثري دي، والبوتات تكمّل)', sus: 'من ٤ إلى ١٢ لاعب (والبوتات تكمّل العدد)', flip: 'من ٢ إلى ٨ لاعبين', uno: 'من ٢ إلى ٨ لاعبين', codes: 'من ٤ إلى ١٠ لاعبين، فريقين', hive: 'من ٢ إلى ١٠ لاعبين، فريقين', liars: 'من ٢ إلى ٨ لاعبين', outside: 'من ٣ إلى ١٠ لاعبين', typing: 'من ٢ إلى ١٠ لاعبين', jackaroo: '٤ لاعبين بالضبط، فريقين (شريكك قبالتك)', draw: 'من ٢ إلى ١٠ لاعبين' };
-const BOTGAMES = ['baloot', 'jwb', 'chess', 'auction', 'feud', 'flags', 'fib', 'bomb', 'mafia', 'uno', 'hive', 'liars', 'jackaroo', 'outside', 'typing', 'flip', 'sus', 'haunt'];
+const GNAME = { uno: 'أونو', codes: 'كلمة السر', hive: 'خلية الحروف', liars: 'الكذابين الترتيب', outside: 'برا السالفة', typing: 'سبّاق الكتابة', jackaroo: 'جاكارو', draw: 'رسم وخمّن', flip: 'أونو فليب', sus: 'المندس', haunt: 'البيت المسكون', mafia: 'المافيا', phone: 'التلفون الترتيب', fib: 'صدّقني', bomb: 'القنبلة', auction: 'المزاد', feud: 'العائلة الترتيب', flags: 'أعلام ودول', mimic: 'الأصوات الترتيب', chess: 'شطرنج', jwb: 'جوابك الترتيب', baloot: 'بلوت', cars: 'مطاردة' };
+const GINFO = { cars: 'من ٢ إلى ١٠ لاعبين (والبوتات تكمّل)', chess: 'لاعبين، أو أنت ضد بوت (والباقين يتفرجون)', jwb: 'من ٢ إلى ١٢ لاعب (والبوتات تكمّل)', baloot: '٤ لاعبين، فريقين (والبوتات تكمّل)', mimic: 'من ١ إلى ٨ لاعبين (يحتاج مايك)', auction: 'من ٢ إلى ١٠ لاعبين (والبوتات تكمّل)', feud: 'من ٢ إلى ١٢، فريقين (والبوتات تكمّل)', flags: 'من ١ إلى ١٢ لاعب (والبوتات تكمّل)', phone: 'من ٣ إلى ١٢ لاعب', fib: 'من ٣ إلى ١٠ لاعبين (والبوتات تكمّل)', bomb: 'من ٢ إلى ١٢ لاعب (والبوتات تكمّل)', mafia: 'من ٥ إلى ١٦ لاعب (والبوتات تكمّل)', haunt: 'من ٢ إلى ١٠ لاعبين (ثري دي، والبوتات تكمّل)', sus: 'من ٤ إلى ١٢ لاعب (والبوتات تكمّل العدد)', flip: 'من ٢ إلى ٨ لاعبين', uno: 'من ٢ إلى ٨ لاعبين', codes: 'من ٤ إلى ١٠ لاعبين، فريقين', hive: 'من ٢ إلى ١٠ لاعبين، فريقين', liars: 'من ٢ إلى ٨ لاعبين', outside: 'من ٣ إلى ١٠ لاعبين', typing: 'من ٢ إلى ١٠ لاعبين', jackaroo: '٤ لاعبين بالضبط، فريقين (شريكك قبالتك)', draw: 'من ٢ إلى ١٠ لاعبين' };
+const BOTGAMES = ['cars', 'baloot', 'jwb', 'chess', 'auction', 'feud', 'flags', 'fib', 'bomb', 'mafia', 'uno', 'hive', 'liars', 'jackaroo', 'outside', 'typing', 'flip', 'sus', 'haunt'];
 const GHELP = {
   baloot: '٤ لاعبين فريقين، وشريكك قبالك. كل واحد ياخذ ٥ أوراق وتنكشف ورقة بالنص. بالدور: «حكم» يعني نوع الورقة المكشوفة هو الحكم، «صن» بدون حكم، أو «بس». لو محد اشترى تصير جولة ثانية تختار فيها أي نوع ثاني. بعدها تكمل الأوراق ٨ لكل واحد. لازم تنزل من نفس النوع لو عندك، وبالحكم لو ما عندك لازم تقطع بالحكم (إلا لو شريكك ماسك الأكلة). بالحكم: الولد ثم التسعة أقوى شي. المشاريع (سرا، خمسين، مية، أربعمية، بلوت) تنحسب تلقائي. لو الفريق المشتري ما جاب أكثر من النص تصير «خسرانة» وتروح كل النقاط للخصم. أول فريق يوصل ١٥٢ يفوز.',
   jwb: 'كل جولة يطلع سؤال مثل «شي تاكله مع الرز». الكل يكتب أجوبته بنفس الوقت (لين ٣ أجوبة). بعدها تنكشف أشهر ٦ أجوبة من استبيان: لو جوابك منها تاخذ نقاطه، وكل ما كان أشهر نقاطه أكثر. ولو لاعب ثاني كتب نفس جوابك تاخذون +٥ عن كل واحد (جوابك جوابهم 🤝). آخر جولة النقاط دبل، واللي يجمع أكثر يفوز.',
@@ -23,6 +23,7 @@ const GHELP = {
   liars: 'كل واحد يلعب ١–٣ أوراق مقلوبة ويقول إنها الورقة المطلوبة (ملك أو ملكة أو آص). اللي بعده يصدّق أو يقول «كذّاب!». اللي يخسر يسحب زناد المسدس (روليت: ٦ خانات وفيها رصاصة وحدة)، وآخر واحد ينجو يفوز.',
   outside: 'الكل يعرف الفئة والكلمة السرية إلا واحد (برا السالفة). كل واحد يسأل لاعب ثاني سؤال بصوته عن الكلمة بدون ما يقولها، والمسؤول يجاوب ثم يسأل غيره. بعد ما يخلص الكل تصوّتون على مين برا السالفة. لو انكشف يختار الكلمة من ٨ خيارات.',
   typing: 'يطلع نص وأسرع واحد يكتبه صح ياخذ نقطة. أول واحد يوصل الهدف يفوز. ما يهم التشكيل.',
+  cars: 'مطاردة سيارات بالمدينة 🚓 الصياد عليه سيارة بإنارة شرطة ويصدم الهاربين، واللي ينصاد يصير صياد معه. امشِ بالأسهم/WASD أو اسحب على الشاشة أو بيد التحكم، والمسافة (أو زر ⚡) نيترو. الهارب ياخذ نقطة كل ثانية و٢٠ لو نجا للنهاية، والصياد ١٥ عن كل صيدة. أكثر نقاط بعد الجولات يفوز.',
   jackaroo: 'أنت وشريكك (قبالتك) تدخلون الـ٨ كرات للبيت. آص/شايب يطلّعون كرة، الباقي يحرّك بعدده، الولد يبدّل، الـ٤ رجوع، الـ٥ تحرّك أي كرة، الـ٧ تقسّمها. اللي تنزل عليه كرتك ينأكل.',
   draw: 'كل لاعب يرسم كلمة سرية والباقي يخمّنون بالكتابة. كل ما خمّنت أسرع ياخذ نقاط أكثر، والرسّام ياخذ نقاط على كل واحد يخمّن. الأعلى نقاط يفوز.'
 };
@@ -45,15 +46,36 @@ pickGame('uno');
 const GCAT = {
   bots: BOTGAMES,
   teams: ['baloot', 'codes', 'hive', 'jackaroo', 'feud'],
-  big: ['jwb', 'mafia', 'sus', 'bomb', 'flags', 'phone', 'feud', 'haunt', 'codes', 'hive', 'outside', 'typing', 'draw', 'fib', 'auction'],
+  big: ['cars', 'jwb', 'mafia', 'sus', 'bomb', 'flags', 'phone', 'feud', 'haunt', 'codes', 'hive', 'outside', 'typing', 'draw', 'fib', 'auction'],
   words: ['jwb', 'codes', 'hive', 'outside', 'typing', 'draw', 'fib', 'feud', 'flags', 'bomb', 'phone'],
   cards: ['baloot', 'uno', 'flip', 'liars', 'jackaroo', 'chess', 'auction']
 };
+// البحث: يطابق الاسم العربي والإنجليزي وأسماء ثانية معروفة، ويتجاهل الهمزات والتشكيل
+const GALIAS = { sus: 'among us امونق اس امنق المندس impostor', haunt: 'haunted house البيت المسكون رعب horror', uno: 'uno اونو', flip: 'uno flip اونو فليب', jackaroo: 'jackaroo جاكارو', baloot: 'baloot بلوت ورق', chess: 'chess شطرنج', mafia: 'mafia مافيا', codes: 'codenames كود نيمز', hive: 'hex حروف خلية', liars: 'liars bar roulette رولت كذابين', typing: 'typing race سباق كتابه', draw: 'draw guess skribbl رسم', outside: 'spyfall برا السالفه', bomb: 'bomb party قنبله', flags: 'flags countries اعلام دول', feud: 'family feud عائله', fib: 'fibbage صدقني', phone: 'gartic phone تلفون', auction: 'auction مزاد', mimic: 'voices اصوات', jwb: 'جوابك', cars: 'cars chase tag سيارات مطارده صيد' };
+const gNorm = s => String(s || '').toLowerCase().replace(/[\u064B-\u0652\u0640]/g, '').replace(/[أإآٱ]/g, 'ا').replace(/ة/g, 'ه').replace(/ى/g, 'ي').replace(/ؤ/g, 'و').replace(/ئ/g, 'ي').replace(/\s+/g, ' ').trim();
+let gFilt = 'all';
+function gApply() {
+  const L = GCAT[gFilt], q = gNorm(($('#gSearch') || {}).value);
+  let n = 0;
+  $$('.game[data-game]').forEach(a => {
+    const k = a.dataset.game, h = a.querySelector('h3');
+    const hay = gNorm([k, h && h.textContent, GNAME[k], GALIAS[k]].join(' '));
+    const show = (!L || L.includes(k)) && (!q || q.split(' ').every(w => hay.includes(w)));
+    a.hidden = !show; if (show) n++;
+  });
+  const none = $('#gNone'); if (none) none.hidden = n > 0;
+  const x = $('#gSearchX'); if (x) x.hidden = !q;
+}
 $$('.gfilter button').forEach(b => b.onclick = () => {
-  const f = b.dataset.f, L = GCAT[f];
+  gFilt = b.dataset.f;
   $$('.gfilter button').forEach(x => x.classList.toggle('on', x === b));
-  $$('.game[data-game]').forEach(a => a.hidden = !!L && !L.includes(a.dataset.game));
+  gApply();
 });
+if ($('#gSearch')) {
+  $('#gSearch').addEventListener('input', gApply);
+  $('#gSearch').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); const f = $$('.game[data-game]').find(a => !a.hidden); if (f) { f.scrollIntoView({ block: 'center', behavior: 'smooth' }); f.focus({ preventScroll: true }); } } else if (e.key === 'Escape') { e.target.value = ''; gApply(); } });
+  $('#gSearchX').onclick = () => { $('#gSearch').value = ''; gApply(); $('#gSearch').focus(); };
+}
 
 // ---- لعبة عشوائية: تقليب سريع بين الكروت ثم يوقف على وحدة ----
 $('#rndGame').onclick = () => {
@@ -116,7 +138,7 @@ function renderOther() {
   const body = $('#g2body');
   if (body.dataset.built && body.dataset.built !== S.game) { body.innerHTML = ''; body.dataset.built = ''; }
   body.className = 'g2body ' + S.game;
-  keep(body, () => ({ codes: renderCodes, hive: renderHive, liars: renderLiars, outside: renderOutside, typing: renderTyping, jackaroo: renderJack, draw: renderDraw, flip: renderFlip, sus: renderSus, haunt: renderHaunt, mafia: renderMafia, phone: renderPhone, fib: renderFib, bomb: renderBomb, auction: renderAuction, feud: renderFeud, jwb: renderJwb, baloot: renderBaloot, flags: renderFlags, mimic: renderMimic, chess: renderChess })[S.game](body, mt));
+  keep(body, () => ({ codes: renderCodes, hive: renderHive, liars: renderLiars, outside: renderOutside, typing: renderTyping, jackaroo: renderJack, draw: renderDraw, flip: renderFlip, sus: renderSus, haunt: renderHaunt, mafia: renderMafia, phone: renderPhone, fib: renderFib, bomb: renderBomb, auction: renderAuction, feud: renderFeud, jwb: renderJwb, baloot: renderBaloot, cars: renderCars, flags: renderFlags, mimic: renderMimic, chess: renderChess })[S.game](body, mt));
   // نهاية الجولة
   const over = S.phase === 'over';
   $('#over2').hidden = !over;
@@ -425,7 +447,7 @@ function renderTyping(body) {
 
 // ================= إعدادات الغرفة (اللوبي) =================
 let lsSig = '', lsOpen = false;
-const GEMO = { uno: '🃏', codes: '🕵️', hive: '🐝', liars: '🤥', outside: '🕶️', typing: '🏁', jackaroo: '🎱', draw: '✏️', flip: '🔄', sus: '🚀', haunt: '👻', mafia: '🎩', phone: '☎️', fib: '🤫', bomb: '💣', auction: '🔨', feud: '👨‍👩‍👧', flags: '🌍', mimic: '🎙️', chess: '♞', jwb: '🗣️', baloot: '🂡' };
+const GEMO = { uno: '🃏', codes: '🕵️', hive: '🐝', liars: '🤥', outside: '🕶️', typing: '🏁', jackaroo: '🎱', draw: '✏️', flip: '🔄', sus: '🚀', haunt: '👻', mafia: '🎩', phone: '☎️', fib: '🤫', bomb: '💣', auction: '🔨', feud: '👨‍👩‍👧', flags: '🌍', mimic: '🎙️', chess: '♞', jwb: '🗣️', baloot: '🂡', cars: '🚓' };
 function renderLobbySet(isHost) {
   const gh = $('#ghelp'); if (gh) { gh.hidden = !S || S.spec; $('#ghelpTxt').textContent = GHELP[S.game] || ''; }
   const box = $('#lobbyset'); if (!S || S.spec) { box.hidden = true; return; }
@@ -436,7 +458,7 @@ function renderLobbySet(isHost) {
   const sum = [o.lock ? '🔒 مقفلة بدون متفرجين' : '', o.hasPass ? '🔑 بكلمة سر' : '', S.game === 'uno' && o.stack ? 'تراكم +٢/+٤' : '', S.game === 'uno' && o.turn !== 15 ? `مهلة الدور ${o.turn} ث` : '', S.game === 'sus' ? (o.map === 'forest' ? '🌲 الغابة الملعونة' : '🚀 السفينة') : '', S.game === 'sus' ? `${o.imps || 1} ${(o.imps || 1) > 1 ? 'مندسين' : 'مندس'}` : '', S.game === 'sus' && o.doctor ? 'طور الدكتور 🩺' : '', S.game === 'typing' ? `الهدف ${o.target} نقاط` : '', S.game === 'codes' && o.nwords ? `كلمات مخصصة (${o.nwords})` : ''].filter(Boolean);
   if (S.game === 'chess') sum.push({ none: 'بدون ساعة', '3+2': '⚡ ٣+٢', '5': '٥ دقايق', '10': '١٠ دقايق' }[o.ctime] || 'بدون ساعة', 'البوت ' + ({ easy: 'سهل', mid: 'متوسط', hard: 'صعب' }[o.clevel] || 'متوسط'));
   if (S.game === 'mimic') sum.push(`${o.mrounds || 5} جولات`, { all: 'كل الأصوات', react: '🎭 رياكشنات', basic: '🎵 منوّعة' }[o.mpack] || 'كل الأصوات');
-  if (S.game === 'auction') sum.push(`${o.aitems || 8} قطع`); else if (S.game === 'feud') sum.push(`${o.drounds || 4} جولات`); else if (S.game === 'jwb') sum.push(`${o.jrounds || 7} جولات`, `${o.jtime || 30} ثانية`, `${o.jn || 3} أجوبة`); else if (S.game === 'flags') sum.push({ flags: '🚩 أعلام', cap: '🏛️ عواصم', mix: '🌍 منوّع' }[o.fmode] || '🚩 أعلام', o.fdiff === 'all' ? 'كل الدول' : 'المشهورة', `${o.fcount || 10} سؤال`);
+  if (S.game === 'auction') sum.push(`${o.aitems || 8} قطع`); else if (S.game === 'feud') sum.push(`${o.drounds || 4} جولات`); else if (S.game === 'cars') sum.push(`${o.krounds || 3} جولات`, `${o.ktime || 75} ثانية`); else if (S.game === 'jwb') sum.push(`${o.jrounds || 7} جولات`, `${o.jtime || 30} ثانية`, `${o.jn || 3} أجوبة`); else if (S.game === 'flags') sum.push({ flags: '🚩 أعلام', cap: '🏛️ عواصم', mix: '🌍 منوّع' }[o.fmode] || '🚩 أعلام', o.fdiff === 'all' ? 'كل الدول' : 'المشهورة', `${o.fcount || 10} سؤال`);
   if (S.game === 'bomb') sum.push('❤️'.repeat(o.blives || 3), { easy: 'سهل', mid: 'عادي', hard: 'صعب' }[o.bdiff] || 'عادي'); else if (S.game === 'fib') sum.push(`${o.frounds || 7} جولات`); else if (S.game === 'phone') sum.push(o.psteps ? `${o.psteps} خطوات` : 'تلف على الكل', `الرسم ${o.pdraw || 90} ث`);
   if (!isHost) { box.innerHTML = sum.length ? `<div class="lsum">${sum.map(x => `<span>${x}</span>`).join('')}</div>` : ''; box.hidden = !sum.length; return; }
   const gm = Object.keys(GNAME).map(k => `<button type="button" class="gsw${k === S.game ? ' on' : ''}" data-g="${k}"><i>${GEMO[k] || '🎲'}</i><span>${GNAME[k]}</span></button>`).join('');
@@ -457,6 +479,8 @@ function renderLobbySet(isHost) {
   else if (S.game === 'mimic') extra = `<label class="chk">الجولات <select id="oMr">${[5, 8, 10].map(n => `<option value="${n}"${o.mrounds === n ? ' selected' : ''}>${n}</option>`).join('')}</select></label>
     <label class="chk">الأصوات <select id="oMp">${[['all', 'الكل'], ['react', '🎭 رياكشنات'], ['basic', '🎵 أصوات منوّعة']].map(([k, n]) => `<option value="${k}"${o.mpack === k ? ' selected' : ''}>${n}</option>`).join('')}</select></label>`;
   else if (S.game === 'auction') extra = `<label class="chk">عدد القطع <select id="oAi">${[6, 8, 10].map(n => `<option value="${n}"${o.aitems === n ? ' selected' : ''}>${n}</option>`).join('')}</select></label>`;
+  else if (S.game === 'cars') extra = `<label class="chk">عدد الجولات <select id="oKr">${[1, 3, 5].map(n => `<option value="${n}"${(o.krounds || 3) === n ? ' selected' : ''}>${n}</option>`).join('')}</select></label>
+    <label class="chk">وقت الجولة <select id="oKt">${[60, 75, 90].map(n => `<option value="${n}"${(o.ktime || 75) === n ? ' selected' : ''}>${n} ثانية</option>`).join('')}</select></label>`;
   else if (S.game === 'jwb') extra = `<label class="chk">عدد الجولات <select id="oJr">${[5, 7, 10].map(n => `<option value="${n}"${(o.jrounds || 7) === n ? ' selected' : ''}>${n}</option>`).join('')}</select></label>
     <label class="chk">وقت الكتابة <select id="oJt">${[20, 30, 45].map(n => `<option value="${n}"${(o.jtime || 30) === n ? ' selected' : ''}>${n} ثانية</option>`).join('')}</select></label>
     <label class="chk">أجوبة كل لاعب <select id="oJn">${[1, 3, 5].map(n => `<option value="${n}"${(o.jn || 3) === n ? ' selected' : ''}>${n}</option>`).join('')}</select></label>`;
@@ -501,6 +525,8 @@ function renderLobbySet(isHost) {
   bind('oMp', 'onchange', e => send({ t: 'opt', k: 'mpack', v: e.target.value }));
   bind('oAi', 'onchange', e => send({ t: 'opt', k: 'aitems', v: +e.target.value }));
   bind('oDr', 'onchange', e => send({ t: 'opt', k: 'drounds', v: +e.target.value }));
+  bind('oKr', 'onchange', e => send({ t: 'opt', k: 'krounds', v: +e.target.value }));
+  bind('oKt', 'onchange', e => send({ t: 'opt', k: 'ktime', v: +e.target.value }));
   bind('oJr', 'onchange', e => send({ t: 'opt', k: 'jrounds', v: +e.target.value }));
   bind('oJt', 'onchange', e => send({ t: 'opt', k: 'jtime', v: +e.target.value }));
   bind('oJn', 'onchange', e => send({ t: 'opt', k: 'jn', v: +e.target.value }));
@@ -623,70 +649,158 @@ function jlabel(k) {
   if (t[0] === 'f') return '+' + t.slice(1);
   return t;
 }
+// ---- لوح الجاكارو: مسار مربّع بزوايا مدوّرة، كل لاعب على ضلع، وأنت دايم تحت ----
+const JB = { C: 360, h: 316, rc: 74 };
+JB.L = JB.h - JB.rc; JB.Q = Math.PI * JB.rc / 2; JB.P = 8 * JB.L + 4 * JB.Q;
+function jPerim(u) {
+  const { C, h, rc, L, Q } = JB; let d = (((u % 1) + 1) % 1) * JB.P;
+  const segs = [['l', C, C + h, -1, 0, L], ['a', C - L, C + L, Math.PI / 2], ['l', C - h, C + L, 0, -1, 2 * L], ['a', C - L, C - L, Math.PI], ['l', C - L, C - h, 1, 0, 2 * L], ['a', C + L, C - L, Math.PI * 1.5], ['l', C + h, C - L, 0, 1, 2 * L], ['a', C + L, C + L, 0], ['l', C + L, C + h, -1, 0, L]];
+  for (const s of segs) {
+    const len = s[0] === 'l' ? s[5] : Q;
+    if (d <= len + 1e-6) return s[0] === 'l' ? [s[1] + s[3] * d, s[2] + s[4] * d] : [s[1] + rc * Math.cos(s[3] + d / rc), s[2] + rc * Math.sin(s[3] + d / rc)];
+    d -= len;
+  }
+  return [C, C + h];
+}
+// يدوّر نقطة (نسبة للمركز) ربع لفّة k مرات — عشان كل لاعب ياخذ ضلعه
+const jRot = (dx, dy, k) => { for (let i = 0; i < k; i++) [dx, dy] = [-dy, dx]; return [JB.C + dx, JB.C + dy]; };
+const jCellXY = (cell, my) => jPerim(((cell - my * 20 + 80) % 80) / 80);
+function jXY(s, p, k, my) {
+  const q = (s - my + 4) % 4;
+  if (p < 0) return jRot(-158 + (k % 2) * 40 - 20, 200 + (k > 1 ? 40 : 0) - 20, q);
+  if (p <= 79) return jCellXY((s * 20 + p) % 80, my);
+  return jRot(0, JB.h - 46 - 40 * (p - 80), q);
+}
+const jNum = n => String(n).replace(/\d/g, d => '٠١٢٣٤٥٦٧٨٩'[d]);
+function jMoveLabel(l, my) {
+  const t = l.k.split('|')[1], who = S.players[l.s], mine = l.s === (S.g.ctl >= 0 ? S.g.ctl : my);
+  const ball = `${mine ? '' : esc(who ? who.name : '') + ' '}كرة ${jNum(l.i + 1)}`;
+  if (l.x) { const o = S.players[l.x[0]]; return `${ball} ⇄ ${esc(o ? o.name : '')}`; }
+  if (t === 'out') return `${ball}: طلّعها`;
+  if (t === 'b4') return `${ball}: رجوع ٤`;
+  return `${ball}: +${jNum(t.slice(1))}${l.np >= 80 ? ' 🏠' : ''}${l.kill ? ' 💥' : ''}`;
+}
 function renderJack(body) {
-  const g = S.g, over = S.phase === 'over', my = g.seat >= 0 ? g.seat : 0, mineTurn = g.turn === g.seat && !over;
-  const C = 320, R = 235, TAU = Math.PI * 2;
-  const ang = cell => ((cell - my * 20) / 80) * TAU + Math.PI / 2;
-  const cellXY = (cell, r = R) => [C + r * Math.cos(ang(cell)), C + r * Math.sin(ang(cell))];
+  const g = S.g, over = S.phase === 'over', my = g.seat >= 0 ? g.seat : 0, mineTurn = g.turn === g.seat && !over && !S.spec;
+  const C = JB.C;
   if (g.split) jsel = g.split.card;
+  if (jsel !== null && !g.split && !g.hand.some(c => c.id === jsel)) { jsel = null; jm = null; }
+  if (!mineTurn) { jsel = null; jm = null; }
   const legal = jsel === null ? [] : g.legal.filter(l => l.c === jsel);
-  if (jsel !== null && !g.hand.some(c => c.id === jsel)) { jsel = null; jm = null; }
-  const movers = new Set(legal.map(l => l.s + '-' + l.i));
-  const targets = jm && legal.some(l => l.x && l.s + '-' + l.i === jm) ? new Set(legal.filter(l => l.x && l.s + '-' + l.i === jm).map(l => l.x.join('-'))) : new Set();
-  const xy = (s, p, k) => {
-    if (p < 0) { const a = ang(s * 20) + (k - 1.5) * .09, rr = 290; return [C + rr * Math.cos(a), C + rr * Math.sin(a)]; }
-    if (p <= 79) return cellXY((s * 20 + p) % 80);
-    return cellXY((s * 20 + 79) % 80, R - 27 * (p - 79));
-  };
+  const byM = {}; legal.forEach(l => { (byM[l.s + '-' + l.i] = byM[l.s + '-' + l.i] || []).push(l); });
+  const movers = Object.keys(byM);
+  if (jm && !byM[jm]) jm = null;
+  if (!jm && movers.length === 1 && byM[movers[0]].length > 1) jm = movers[0]; // كرة وحدة تقدر تتحرك: نختارها لك
+  const mOpts = jm ? byM[jm] : [];
+  const targets = new Set(mOpts.filter(l => l.x).map(l => l.x.join('-')));
+  // الأشباح: وين بتروح الكرة. نعرضها للكرة المختارة، وللكرات اللي عندها خيار واحد بس
+  const ghosts = [];
+  movers.forEach(k => { const L = byM[k]; if (k === jm || (!jm && L.length === 1)) L.forEach(l => { if (!l.x) ghosts.push(l); }); });
+  const xy = (s, p, k) => jXY(s, p, k, my);
+  const f1 = n => n.toFixed(1);
+  // المسار والخانات
   let cells = '';
-  for (let c = 0; c < 80; c++) { const [x, y] = cellXY(c); const st = c % 20 === 0; cells += `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${st ? 9.5 : 6.5}" class="jcell${st ? ' st' : ''}"${st ? ` style="stroke:${JCOL[c / 20]};stroke-width:4"` : ''}/>`; }
-  for (let s = 0; s < 4; s++) { for (let k = 1; k <= 4; k++) { const [x, y] = cellXY((s * 20 + 79) % 80, R - 27 * k); cells += `<rect x="${(x - 8).toFixed(1)}" y="${(y - 8).toFixed(1)}" width="16" height="16" rx="4" class="jlane" style="stroke:${JCOL[s]}"/>`; } for (let k = 0; k < 4; k++) { const [x, y] = xy(s, -1, k); cells += `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="12" class="jbase" style="stroke:${JCOL[s]}"/>`; } }
-  const dest = jm ? legal.filter(l => l.s + '-' + l.i === jm && !l.x).map(l => { const [x, y] = xy(l.s, l.np, 0); return `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="13" class="jdest"/>`; }).join('') : '';
+  for (let c = 0; c < 80; c++) {
+    const [x, y] = jCellXY(c, my), st = c % 20 === 0, own = st ? c / 20 : -1;
+    cells += `<circle cx="${f1(x)}" cy="${f1(y)}" r="${st ? 15 : 11.5}" class="jcell${st ? ' st' : ''}"${st ? ` style="stroke:${JCOL[own]}"` : ''}/>`;
+  }
+  for (let s = 0; s < 4; s++) {
+    const q = (s - my + 4) % 4;
+    for (let k = 0; k < 4; k++) { const [x, y] = jRot(0, JB.h - 46 - 40 * k, q); cells += `<rect x="${f1(x - 15)}" y="${f1(y - 15)}" width="30" height="30" rx="8" class="jlane" style="stroke:${JCOL[s]};fill:color-mix(in srgb,${JCOL[s]} 22%,#fbf3e2)"/>`; }
+    const [bx, by] = jRot(-158, 200, q);
+    cells += `<rect x="${f1(bx - 46)}" y="${f1(by - 46)}" width="92" height="92" rx="26" class="jpocket" style="stroke:${JCOL[s]}"/>`;
+    for (let k = 0; k < 4; k++) { const [x, y] = xy(s, -1, k); cells += `<circle cx="${f1(x)}" cy="${f1(y)}" r="14" class="jbase"/>`; }
+  }
+  // الأشباح
+  const gh = ghosts.map(l => {
+    const [x, y] = xy(l.s, l.np, 0), t = l.k.split('|')[1];
+    const lab = t === 'out' ? '⬆' : t === 'b4' ? '-٤' : '+' + jNum(t.slice(1));
+    return `<g class="jgh${l.kill ? ' kill' : ''}" data-k="${esc(l.k)}" tabindex="0"><circle cx="${f1(x)}" cy="${f1(y)}" r="17"/><text x="${f1(x)}" y="${f1(y + 5)}">${l.kill ? '💥' : lab}</text></g>`;
+  }).join('');
+  // الكرات
+  const ctlS = g.ctl >= 0 ? g.ctl : my;
   let marbles = '';
   for (let s = 0; s < 4; s++) g.marb[s].forEach((p, i) => {
-    const [x, y] = xy(s, p, i), key = s + '-' + i, go = movers.has(key), tg = targets.has(key);
-    marbles += `<g class="jm${go ? ' go' : ''}${tg ? ' tg' : ''}${jm === key ? ' sel' : ''}" data-m="${key}"><circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="10" fill="${JCOL[s]}"/><circle cx="${(x - 3).toFixed(1)}" cy="${(y - 3.5).toFixed(1)}" r="3" fill="#fff" opacity=".55"/></g>`;
+    const [x, y] = xy(s, p, i), key = s + '-' + i, go = !!byM[key], tg = targets.has(key);
+    const num = s === ctlS && !S.spec ? `<text x="${f1(x)}" y="${f1(y + 5)}" class="jmn">${jNum(i + 1)}</text>` : '';
+    marbles += `<g class="jm${go ? ' go' : ''}${tg ? ' tg' : ''}${jm === key ? ' sel' : ''}${g.last && g.last.cell && g.last.cell.s === s && g.last.cell.i === i ? ' lastm' : ''}" data-m="${key}"${go || tg ? ' tabindex="0"' : ''}><circle class="hit" cx="${f1(x)}" cy="${f1(y)}" r="24"/><circle class="ring" cx="${f1(x)}" cy="${f1(y)}" r="20"/><circle class="ball" cx="${f1(x)}" cy="${f1(y)}" r="14" fill="${JCOL[s]}"/><circle cx="${f1(x - 4.5)}" cy="${f1(y - 5)}" r="4.5" fill="#fff" opacity=".55"/>${num}</g>`;
   });
+  // أسماء اللاعبين جنب قواعدهم
   const lab = [0, 1, 2, 3].map(s => {
-    const a = ang(s * 20 + 10), x = C + 150 * Math.cos(a), y = C + 150 * Math.sin(a), p = S.players[s];
-    return `<foreignObject x="${(x - 52).toFixed(0)}" y="${(y - 20).toFixed(0)}" width="104" height="40"><div class="jlab${g.turn === s && !over ? ' cur' : ''}" style="border-color:${JCOL[s]}"><b>${esc(p ? pn(p.id) : '؟')}</b><small>🃏${g.cnt[s]} · 🏠${g.home[s]}/4</small></div></foreignObject>`;
+    const q = (s - my + 4) % 4, [x, y] = [[-158, 112], [-205, -72], [158, -112], [205, 72]][q].map(v => JB.C + v), p = S.players[s];
+    const tag = s === g.seat ? 'أنت' : g.seat >= 0 && s === (g.seat + 2) % 4 ? 'شريكك' : g.seat >= 0 ? 'خصم' : '';
+    return `<foreignObject x="${f1(x - 92)}" y="${f1(y - 30)}" width="184" height="60"><div class="jlab${g.turn === s && !over ? ' cur' : ''}" style="--jc:${JCOL[s]}"><i>${p ? bmFace(p.id) : '؟'}</i><span><b>${esc(p ? p.name : '؟')}</b><small>${tag ? `<em>${tag}</em> ` : ''}🃏${jNum(g.cnt[s])} 🏠${jNum(g.home[s])}</small></span></div></foreignObject>`;
   }).join('');
-  const centre = `<text x="${C}" y="${C - 6}" class="jtxt">${over ? '' : mineTurn ? 'دورك!' : 'دور ' + esc(pn((S.players[g.turn] || {}).id))}</text><text x="${C}" y="${C + 16}" class="jtxt sm">${g.last ? esc(pn((S.players[g.last.who] || {}).id) + ' ' + g.last.text) : ''}</text>`;
+  // الوسط: آخر ورقة انلعبت ومين دوره
+  const dc = g.discard, dred = dc && (dc.s === '♥' || dc.s === '♦');
+  const centre = `<foreignObject x="${C - 130}" y="${C - 118}" width="260" height="236"><div class="jmid">
+    <div class="jturn${mineTurn ? ' me' : ''}">${over ? 'انتهت 🏁' : mineTurn ? 'دورك!' : 'دور ' + esc((S.players[g.turn] || {}).name || '')}</div>
+    ${dc ? `<div class="jdisc${dred ? ' red' : ''}"><b>${dc.r}</b><span>${dc.s}</span></div>` : '<div class="jdisc empty">🂠</div>'}
+    <div class="jlast">${g.last ? esc(((S.players[g.last.who] || {}).name || '') + ' ' + g.last.text) : 'طلّع كراتك بالآص أو الشايب'}</div></div></foreignObject>`;
+  // اليد
   const hand = g.hand.map(c => {
     const has = g.legal.some(l => l.c === c.id), red = c.s === '♥' || c.s === '♦';
-    return `<button type="button" class="jc${red ? ' red' : ''}${jsel === c.id ? ' sel' : ''}${mineTurn && !has ? ' dim' : ''}" data-id="${c.id}"${mineTurn && has ? '' : ' disabled'}><b>${c.r}</b><span>${c.s}</span><small>${JDESC[c.r] || c.r}</small></button>`;
+    return `<button type="button" class="jc${red ? ' red' : ''}${jsel === c.id ? ' sel' : ''}${mineTurn && has ? ' ok' : mineTurn ? ' dim' : ''}" data-id="${c.id}"${mineTurn && has ? '' : ' disabled'}><i class="tl">${c.r}<br>${c.s}</i><span>${c.s}</span><b>${c.r}</b><small>${JDESC[c.r] || c.r}</small></button>`;
   }).join('');
   let hint = '';
   if (over) hint = '';
   else if (S.spec) hint = 'تتفرّج 👁';
-  else if (!mineTurn) hint = 'ننتظر دورك…';
-  else if (g.split) hint = `قسّمت الـ٧: باقي ${g.split.left} خطوات — اختر كرة وحرّكها`;
-  else if (jsel === null) hint = 'اختر ورقة من يدك';
-  else if (jm && legal.some(l => l.x)) hint = 'اختر الكرة اللي تبدّل معها';
-  else hint = 'اضغط على الكرة اللي تبي تحرّكها (المتوهّجة)';
-  const ctlNote = !S.spec && g.ctl !== g.seat ? '<div class="jnote">خلّصت كراتك — تلعب بكرات شريكك 🤝</div>' : '';
-  const opts = jm ? legal.filter(l => l.s + '-' + l.i === jm && !l.x) : [];
-  const optsHtml = opts.length > 1 ? `<div class="jopts">${opts.map(l => `<button type="button" class="btn sm" data-k="${esc(l.k)}">${jlabel(l.k)}</button>`).join('')}</div>` : '';
+  else if (!mineTurn) hint = 'استنى دورك…';
+  else if (g.split) hint = `قسّمت الـ٧ — باقي <b>${jNum(g.split.left)}</b> خطوات`;
+  else if (jsel === null) hint = 'اختر ورقة 👇';
+  else if (jm && targets.size) hint = 'اختر الكرة اللي تبدّل معها ✨';
+  else if (jm) hint = 'اختر وين تروح الكرة';
+  else hint = 'اضغط الكرة المتوهّجة أو مكانها الجديد';
+  const ctlNote = !S.spec && g.ctl >= 0 && g.ctl !== g.seat ? '<div class="jnote">خلّصت كراتك — تلعب بكرات شريكك 🤝</div>' : '';
+  // أزرار الحركات: واضحة على الجوال وتشتغل بيد التحكم
+  const list = jm ? mOpts : legal.length <= 6 ? legal : [];
+  const opts = jsel !== null && list.length ? `<div class="jopts">${list.map(l => `<button type="button" class="jmv" data-k="${esc(l.k)}" data-mk="${l.s}-${l.i}" style="--jc:${JCOL[l.s]}">${jMoveLabel(l, my)}</button>`).join('')}${jm && movers.length > 1 ? '<button type="button" class="jmv back" id="jBack">↩ كرة ثانية</button>' : ''}</div>` : '';
   const oldPos = window.JPOS || {};
-  body.innerHTML = `<div class="jtop"><span class="tc t0${g.turn % 2 === 0 && !over ? ' on' : ''}">فريق أ <b>${g.home[0] + g.home[2]}/8</b></span><span class="muted">${hint} <span class="cd2"></span></span><span class="tc t1${g.turn % 2 === 1 && !over ? ' on' : ''}"><b>${g.home[1] + g.home[3]}/8</b> فريق ب</span></div>
-    <svg class="jboard" viewBox="0 0 640 640"><circle cx="${C}" cy="${C}" r="${R + 22}" class="jtable"/>${cells}${dest}${lab}${centre}${marbles}</svg>
-    ${ctlNote}${optsHtml}<div class="jhand">${hand}</div>${logHtml()}
-    <details class="jhelp"><summary>شرح اللعبة</summary><ul><li><b>الهدف:</b> أنت وشريكك (قبالتك) تدخلون الـ٨ كرات في البيت. لما تخلّص كراتك تلعبون بكرات شريكك.</li><li><b>آص / شايب:</b> يطلّعون كرة من القاعدة. الآص يحرّك ١ أو ١١، والشايب ١٣.</li><li><b>بنت:</b> ١٢ خطوة. <b>ولد:</b> بدّل كرتك مع أي كرة ثانية على الطاولة.</li><li><b>٤:</b> رجوع ٤ خطوات. <b>٥:</b> حرّك أي كرة (حتى كرة خصمك) ٥ خطوات.</li><li><b>٧:</b> تقدر تقسّمها بين كراتك. باقي الأوراق تحرّك بعددها.</li><li>الكرة اللي تنزل عليها كرة غيرها <b>تنأكل</b> وترجع للقاعدة (حتى كرة شريكك!). ما تنزل على كرتك.</li><li>لو ما عندك حركة، أوراقك تنرمي وينتقل الدور.</li></ul></details>`;
+  body.innerHTML = `<div class="jwrap">
+    <div class="jtop"><span class="tc t0${g.turn % 2 === 0 && !over ? ' on' : ''}">فريق أ <b>${jNum(g.home[0] + g.home[2])}/٨</b></span><span class="cd2"></span><span class="tc t1${g.turn % 2 === 1 && !over ? ' on' : ''}"><b>${jNum(g.home[1] + g.home[3])}/٨</b> فريق ب</span></div>
+    <svg class="jboard" viewBox="10 10 700 700"><defs><radialGradient id="jfelt" cx="50%" cy="45%" r="70%"><stop offset="0" stop-color="#2c9563"/><stop offset="1" stop-color="#145234"/></radialGradient><linearGradient id="jwood" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#c58a4c"/><stop offset=".5" stop-color="#9a5f2c"/><stop offset="1" stop-color="#6e4019"/></linearGradient></defs>
+      <rect x="14" y="14" width="692" height="692" rx="110" fill="url(#jwood)" stroke="#16130f" stroke-width="6"/>
+      <rect x="44" y="44" width="632" height="632" rx="92" fill="url(#jfelt)" stroke="#3a2210" stroke-width="5"/>
+      <circle cx="${C}" cy="${C}" r="128" class="jcen"/>
+      ${cells}${lab}${centre}${gh}${marbles}</svg>
+    ${ctlNote}<div class="jhint${mineTurn ? ' me' : ''}">${hint}</div>${opts}
+    <div class="jhand">${hand}</div>${logHtml()}
+    <details class="jhelp"><summary>شرح اللعبة</summary><ul><li><b>الهدف:</b> أنت وشريكك (قبالتك) تدخلون الـ٨ كرات في البيت. لما تخلّص كراتك تلعبون بكرات شريكك.</li><li><b>التحكم:</b> اختر ورقة، بعدين اضغط الكرة المتوهّجة أو المكان اللي بتروح له (الدوائر الصفرا)، أو استخدم الأزرار تحت اللوح.</li><li><b>آص / شايب:</b> يطلّعون كرة من القاعدة. الآص يحرّك ١ أو ١١، والشايب ١٣.</li><li><b>بنت:</b> ١٢ خطوة. <b>ولد:</b> بدّل كرتك مع أي كرة ثانية على الطاولة.</li><li><b>٤:</b> رجوع ٤ خطوات. <b>٥:</b> حرّك أي كرة (حتى كرة خصمك) ٥ خطوات.</li><li><b>٧:</b> تقدر تقسّمها بين كراتك. باقي الأوراق تحرّك بعددها.</li><li>الكرة اللي تنزل عليها كرة غيرها <b>تنأكل</b> وترجع للقاعدة (حتى كرة شريكك!). ما تنزل على كرتك.</li><li>لو ما عندك حركة، أوراقك تنرمي وينتقل الدور.</li></ul></details></div>`;
+  // حركة الكرات: تمشي خانة خانة على المسار بدل ما تطير
   const newPos = {};
-  body.querySelectorAll('.jm').forEach(el => {
-    const c = el.querySelector('circle'), x = +c.getAttribute('cx'), y = +c.getAttribute('cy'), k = el.dataset.m; newPos[k] = [x, y];
-    const o = oldPos[k]; if (o && (Math.abs(o[0] - x) > 1 || Math.abs(o[1] - y) > 1)) el.animate([{ transform: `translate(${o[0] - x}px,${o[1] - y}px)` }, { transform: 'translate(0,0)' }], { duration: 480, easing: 'cubic-bezier(.2,.8,.2,1)' });
+  for (let s = 0; s < 4; s++) g.marb[s].forEach((p, i) => {
+    const k = s + '-' + i, el = body.querySelector(`.jm[data-m="${k}"]`); if (!el) return;
+    const [x, y] = xy(s, p, i); newPos[k] = { p, x, y };
+    const o = oldPos[k]; if (!o || o.p === p) return;
+    let pts;
+    if (o.p >= 0 && p > o.p && p - o.p <= 15) { pts = []; for (let q = o.p; q <= p; q++) pts.push(xy(s, q, i)); }
+    else if (p >= 0 && o.p > p && o.p - p <= 4) { pts = []; for (let q = o.p; q >= p; q--) pts.push(xy(s, q, i)); }
+    else pts = [[o.x, o.y], [(o.x + x) / 2, (o.y + y) / 2 - 40], [x, y]];
+    el.animate(pts.map(([px, py]) => ({ transform: `translate(${px - x}px,${py - y}px)` })), { duration: Math.min(1100, 120 * pts.length + 120), easing: 'ease-in-out' });
   });
   window.JPOS = newPos;
-  body.querySelectorAll('.jc').forEach(b => b.onclick = () => { if (g.split) return; jsel = jsel === +b.dataset.id ? null : +b.dataset.id; jm = null; sfx('pop'); renderJack(body); });
-  body.querySelectorAll('.jopts .btn').forEach(b => b.onclick = () => { send({ t: 'move', id: jsel, key: b.dataset.k }); jsel = null; jm = null; });
+  const play = k => { if (!k) return; send({ t: 'move', id: jsel, key: k }); sfx('pop'); jm = null; if (!g.split) jsel = null; };
+  body.querySelectorAll('.jc').forEach(b => b.onclick = () => {
+    if (g.split) return;
+    const id = +b.dataset.id;
+    if (jsel === id) { const L = g.legal.filter(l => l.c === id); if (L.length === 1) return play(L[0].k); jsel = null; jm = null; }
+    else { jsel = id; jm = null; }
+    sfx('pop'); renderJack(body);
+  });
+  body.querySelectorAll('.jmv[data-k]').forEach(b => {
+    b.onclick = () => play(b.dataset.k);
+    const hl = on => { const m = body.querySelector(`.jm[data-m="${b.dataset.mk}"]`); if (m) m.classList.toggle('hov', on); };
+    b.onmouseenter = b.onfocus = () => hl(true); b.onmouseleave = b.onblur = () => hl(false);
+  });
+  const bk = $('#jBack'); if (bk) bk.onclick = () => { jm = null; renderJack(body); };
+  body.querySelectorAll('.jgh').forEach(el => el.onclick = () => play(el.dataset.k));
   body.querySelectorAll('.jm').forEach(el => el.onclick = () => {
     const key = el.dataset.m;
-    if (jm && targets.has(key)) { const l = legal.find(x => x.s + '-' + x.i === jm && x.x && x.x.join('-') === key); if (l) { send({ t: 'move', id: jsel, key: l.k }); jsel = null; jm = null; } return; }
-    if (!mineTurn || jsel === null || !movers.has(key)) return;
-    const mine = legal.filter(l => l.s + '-' + l.i === key);
-    if (mine.length === 1 && !mine[0].x) { send({ t: 'move', id: jsel, key: mine[0].k }); jsel = null; jm = null; return; }
-    jm = key; renderJack(body);
+    if (jm && targets.has(key)) { const l = mOpts.find(x => x.x && x.x.join('-') === key); if (l) play(l.k); return; }
+    if (!mineTurn || jsel === null || !byM[key]) return;
+    const L = byM[key];
+    if (L.length === 1 && !L[0].x) return play(L[0].k);
+    jm = jm === key && movers.length > 1 ? null : key; sfx('pop'); renderJack(body);
   });
 }
 

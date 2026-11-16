@@ -339,6 +339,7 @@ function susFrame(t) {
     if (K.arrowleft || K.a || K['ش']) vx--; if (K.arrowright || K.d || K['ي']) vx++;
     if (K.arrowup || K.w || K['ص']) vy--; if (K.arrowdown || K.s || K['س']) vy++;
     if (SU.joy && Math.hypot(SU.joy.dx, SU.joy.dy) > 8) { vx = SU.joy.dx / 60; vy = SU.joy.dy / 60; }
+    if (window.PAD && PAD.mode === 'sus' && (PAD.lx || PAD.ly)) { vx = PAD.lx; vy = PAD.ly; }
     const l = Math.hypot(vx, vy);
     if (l > 0) {
       if (l > 1) { vx /= l; vy /= l; }

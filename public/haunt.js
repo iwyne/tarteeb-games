@@ -718,6 +718,7 @@ function hFrame(t) {
     if (K.d || K['ي']) s++; if (K.a || K['ش']) s--;
     if (K.arrowleft) HU.yaw += dt * 2.4; if (K.arrowright) HU.yaw -= dt * 2.4;
     let jr = false; if (HU.joy && Math.hypot(HU.joy.dx, HU.joy.dy) > 6) { s = HU.joy.dx / 60; f = -HU.joy.dy / 60; jr = Math.hypot(HU.joy.dx, HU.joy.dy) > 56; }
+    if (window.PAD && PAD.mode === 'haunt') { if (PAD.lx || PAD.ly) { s = PAD.lx; f = -PAD.ly; } if (PAD.rx || PAD.ry) hTurn(PAD.rx * dt * 2.6 * (hset.sens || 1), PAD.ry * dt * 1.8 * (hset.sens || 1)); }
     const l = Math.hypot(f, s); if (l > 1) { f /= l; s /= l; }
     const stunned = ghost && HU.stun - (now - (HU.ghAt || 0)) > 0;
     const asleep = ghost && (HU.wakeIn || 0) - (now - HU.wakeAt) > 0;
