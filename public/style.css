@@ -2957,8 +2957,8 @@ body.stf-on{overflow:hidden}
 @keyframes rDiceIn{from{transform:rotate(-540deg) scale(.2)}to{transform:none}}
 /* التيم: صفين بدل صف واحد عشان الكروت ما تضيق لما يزيد العدد */
 @media (min-width:761px){
-  .tt-stage{flex-wrap:wrap;row-gap:38px;max-width:1080px;margin:0 auto}
-  .tt-card{flex:0 0 clamp(150px,17%,190px);height:clamp(280px,27vw,360px)}
+  .tt-stage{flex-wrap:wrap;row-gap:38px;max-width:1120px;margin:0 auto}
+  .tt-card{flex:0 0 clamp(128px,14.6%,172px);height:clamp(270px,25vw,340px)}
 }
 
 /* مليونير: نرد أكبر + قائمة الأملاك */
