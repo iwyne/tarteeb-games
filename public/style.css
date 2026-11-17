@@ -2603,7 +2603,7 @@ body[data-gt=baloot] #lobbyTitle{color:#ffd166;text-shadow:3px 3px 0 #0a1d14}
 .blseat .bmav{width:42px;height:42px;border-radius:50%;background:#fffaf0;color:#16130f;border:3px solid #16130f;display:grid;place-items:center;font-size:1.2rem;overflow:hidden}
 .blseat.tus .bmav{box-shadow:0 0 0 3px #ffd166}.blseat.tthem .bmav{box-shadow:0 0 0 3px #ff8a8a}
 .blseat b{background:rgba(0,0,0,.45);border-radius:8px;padding:0 8px;max-width:110px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.blseat.turn .bmav{animation:blTurn 1s ease-in-out infinite alternate}
+.blseat.blturn .bmav{animation:blTurn 1s ease-in-out infinite alternate}
 @keyframes blTurn{to{transform:scale(1.12);box-shadow:0 0 0 5px #fff,0 0 18px #fff}}
 .bldl,.blby{font-style:normal;font-size:.7rem;background:#16130f;border:2px solid #fffaf0;border-radius:99px;padding:0 7px}.blby{background:#e8362d}
 .blsaid{background:#fffaf0;color:#16130f;border:2.5px solid #16130f;border-radius:12px;padding:1px 10px;font-weight:800;animation:jwIn .25s cubic-bezier(.3,1.6,.5,1)}
@@ -2626,7 +2626,7 @@ body[data-gt=baloot] #lobbyTitle{color:#ffd166;text-shadow:3px 3px 0 #0a1d14}
 .blc.big{width:84px;height:120px}.blc.big em{font-size:2.8rem}
 .blme{display:flex;justify-content:center}.blme .bmav{display:none}
 .blme{font-size:.85rem;gap:6px;align-items:center}
-.blme.turn b{background:#ffd166;color:#16130f}
+.blme.blturn b{background:#ffd166;color:#16130f}
 .blme b{background:rgba(0,0,0,.35);border-radius:8px;padding:0 8px}
 .blme .blbacks{display:none}
 .blbid{text-align:center;min-height:10px}.blbid p{margin:0 0 6px;font-weight:800}.blbid .blwait{opacity:.8}
@@ -3052,3 +3052,69 @@ body.stf-on{overflow:hidden}
 @media(max-width:500px){.rboard{border-width:4px;border-radius:12px;gap:1px;padding:1px;box-shadow:0 0 0 3px #16130f,5px 5px 0 3px #16130f}.rt .rpr{font-size:6px;padding:0 3px}.rt em{font-size:11px}.rt.corner em{font-size:18px}.rt.corner b{font-size:9px}.rlogo b{font-size:1.5rem}.rtray{padding:6px 12px}}
 .rcard{inset:6% 8% auto 8%;pointer-events:none}
 .rt:not(.owned) .rown{display:none}
+/* ===== بلوت — تصميم كبير يتمدد مع الشاشة (كل المقاسات بـ em) ===== */
+.blw{--W:min(1180px,calc(100vw - 16px));width:var(--W);max-width:none;margin-inline:calc((100% - var(--W)) / 2);font-size:clamp(13px,min(1.7dvh,1.75vw),23px);gap:.6em}
+.bltop{gap:.6em}
+.blsc span{font-size:1.05em;border-radius:.7em;padding:.2em .8em;box-shadow:.2em .2em 0 #16130f}
+.blsc span b{font-size:1.6em}
+.blsc small{font-weight:800;font-size:.95em}
+.blcon span{font-size:1.25em;padding:.2em .9em;border-radius:.7em;box-shadow:.2em .2em 0 rgba(0,0,0,.3)}
+.bltbl{height:clamp(20em,calc(100dvh - 23.5em),44em);margin:1.3em 1.3em .4em;border:0;border-radius:42%/50%;
+  background:radial-gradient(ellipse at 50% 40%,rgba(255,255,255,.1),transparent 55%),repeating-linear-gradient(45deg,rgba(255,255,255,.025) 0 2px,transparent 2px 18px),repeating-linear-gradient(-45deg,rgba(255,255,255,.025) 0 2px,transparent 2px 18px),radial-gradient(ellipse at 50% 45%,#1f8a58,#145a3a 75%,#0f4129);
+  box-shadow:0 0 0 .3em #d8b24a,0 0 0 1em #6b4426,0 0 0 1.12em #3a2210,0 0 0 1.3em #16130f,.5em .7em 0 1.3em rgba(22,19,15,.3),inset 0 0 4em rgba(0,0,0,.55)}
+.bltbl::before{content:'بلوت';position:absolute;left:50%;top:50%;transform:translate(-50%,-50%) rotate(-8deg);font:400 7em/1 Lalezar,sans-serif;color:rgba(255,255,255,.045);pointer-events:none;white-space:nowrap}
+/* المقاعد */
+.blseat{gap:.25em;font-size:1em}
+.blseat.s2{top:.8em}.blseat.s1{right:1.2em}.blseat.s3{left:1.2em}
+.blseat .bmav,.blme .bmav{width:3.3em;height:3.3em;font-size:1.25em;border-width:.17em;box-shadow:0 .25em .5em rgba(0,0,0,.4)}
+.blseat .bmav{font-size:1em}
+.blseat.tus .bmav{box-shadow:0 0 0 .22em #ffd166,0 .25em .5em rgba(0,0,0,.4)}.blseat.tthem .bmav{box-shadow:0 0 0 .22em #ff8a8a,0 .25em .5em rgba(0,0,0,.4)}
+.blseat b{font-size:.95em;padding:.1em .7em;border-radius:.6em;max-width:8em;background:rgba(10,20,14,.7);border:.1em solid rgba(255,255,255,.25)}
+.blseat.blturn b,.blme.blturn b{background:#ffd166;color:#16130f;border-color:#16130f}
+.bldl,.blby{font-size:.75em;padding:0 .6em}
+.blsaid{font-size:1em;padding:.05em .7em;border-radius:.7em;box-shadow:.15em .15em 0 #16130f}
+.blproj{font-size:.8em}
+.blbacks{margin-bottom:.2em}
+.blbacks i{width:1.5em;height:2.2em;margin-inline-start:-.95em;border-radius:.25em;border:.12em solid #fffaf0;background:radial-gradient(circle at 50% 50%,#fffaf0 0 .18em,transparent .2em),repeating-linear-gradient(45deg,#c8281f 0 .22em,#9e1d16 .22em .44em);box-shadow:.1em .1em .2em rgba(0,0,0,.4)}
+.blbacks i:first-child{margin-inline-start:0}
+/* مقعدي داخل الطاولة تحت */
+.blme{position:absolute;bottom:.9em;left:50%;transform:translateX(-50%);z-index:2;display:flex;gap:.4em;align-items:center;font-size:1em}
+.blme b{font-size:1em;padding:.1em .8em;border-radius:.6em;background:rgba(10,20,14,.7);border:.1em solid rgba(255,255,255,.25);color:#fffaf0}
+/* الأوراق */
+.blc{width:4.5em;height:6.4em;border-radius:.55em;border:.13em solid #16130f;background:linear-gradient(160deg,#fffefa,#f3ead6);box-shadow:.15em .2em 0 rgba(0,0,0,.3),0 .4em .8em rgba(0,0,0,.25)}
+.blc b{top:.25em;left:.35em;font:800 1.25em/1 Tajawal,sans-serif}
+.blc i{top:1.45em;left:.4em;font-size:.95em}
+.blc em{left:50%;top:50%;right:auto;bottom:auto;transform:translate(-50%,-45%);font-size:2.8em}
+.blc u{position:absolute;right:.35em;bottom:.25em;transform:rotate(180deg);text-decoration:none;font:800 .85em/1 Tajawal,sans-serif;text-align:center}
+.blc.big{width:6em;height:8.5em}.blc.big em{font-size:3.8em}.blc.big b{font-size:1.6em}
+.blup{gap:.5em}.blup small{font-size:.95em;padding:.1em .7em}
+.blt.p0{transform:translate(-50%,8%)}.blt.p2{transform:translate(-50%,-108%)}.blt.p1{transform:translate(28%,-50%) rotate(8deg)}.blt.p3{transform:translate(-128%,-50%) rotate(-8deg)}
+.blt .blc{width:5em;height:7.1em}.blt .blc em{font-size:3.1em}
+.blt.win .blc{box-shadow:0 0 0 .25em #ffd166,0 .4em 1em rgba(0,0,0,.4)}
+.blwin{bottom:4.9em;font-size:1em;padding:.15em .9em}
+.blbar{left:22%;right:22%;bottom:.35em;height:.35em}
+/* الشراء */
+.blbid p{font-size:1.15em}
+.blbtns{gap:.6em}
+.blbtns .btn{font-size:1.15em;min-width:6.5em;padding:.45em 1.1em;border-radius:.8em}
+/* يدي */
+.blhand{min-height:8.6em;padding:.3em .4em .2em}
+.blhand .blc{width:5.4em;height:7.7em;margin-inline-start:-1.5em;transform:rotate(calc(var(--i) * 3.5deg)) translateY(calc(var(--i) * var(--i) * .12em))}
+.blhand .blc em{font-size:3.4em}.blhand .blc b{font-size:1.4em}
+.blhand.myturn .blc.ok{transform:rotate(calc(var(--i) * 3.5deg)) translateY(-.6em);box-shadow:0 0 0 .2em #ffd166,0 .4em .8em rgba(0,0,0,.3)}
+.blhand .blc.ok:hover{transform:rotate(0) translateY(-1.5em)!important}
+@media(max-width:600px){.blw{font-size:clamp(11px,3.3vw,15px)}.bltbl{height:clamp(19em,calc(100dvh - 21em),34em);margin:1em .9em .3em;border-radius:34%/30%}.blseat.s1{right:.5em}.blseat.s3{left:.5em}.blhand .blc{width:4.6em;height:6.6em;margin-inline-start:-1.6em}.blhand .blc em{font-size:2.8em}}
+/* الشراء داخل الطاولة فوق مقعدي */
+.bltbl .blbid{position:absolute;left:50%;bottom:2.9em;transform:translateX(-50%);z-index:3;min-height:0;color:#fffaf0}
+.bltbl .blbid:empty{display:none}
+.bltbl .blbid p{margin:0 0 .4em;text-shadow:0 2px 0 rgba(0,0,0,.5)}
+.bltbl .blbid .blbtns{background:rgba(10,20,14,.55);border:.1em solid rgba(255,216,77,.5);border-radius:1em;padding:.5em .7em;backdrop-filter:blur(2px)}
+.bltbl .blbid .blwait{margin:0;background:rgba(10,20,14,.55);border-radius:99px;padding:.15em .9em;opacity:1}
+.bltbl .blbid{width:max-content;max-width:94%}
+.bltbl .blbid .blbtns{flex-wrap:wrap;justify-content:center}
+@media(max-width:600px){
+  .bltbl{height:clamp(19em,calc(100dvh - 19.5em),40em)}
+  .bltbl .blbid{bottom:2.6em}
+  .bltbl .blbid .blbtns{gap:.35em;padding:.4em .45em}
+  .bltbl .blbid .btn{min-width:0;font-size:1em;padding:.4em .75em}
+}

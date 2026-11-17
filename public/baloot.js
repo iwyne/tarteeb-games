@@ -2,7 +2,7 @@
 const BL = { sig: '', tsig: '', hsig: '' };
 const BL_RED = s => s === '♥' || s === '♦';
 const BL_SN = { '♠': 'سبيت', '♥': 'هاص', '♣': 'شريا', '♦': 'ديمن' };
-const blCard = (c, cls = '') => `<span class="blc ${BL_RED(c.s) ? 'red' : ''} ${cls}" data-id="${c.id}"><b>${c.r}</b><i>${c.s}</i><em>${c.s}</em></span>`;
+const blCard = (c, cls = '') => `<span class="blc ${BL_RED(c.s) ? 'red' : ''} ${cls}" data-id="${c.id}"><b>${c.r}</b><i>${c.s}</i><em>${c.s}</em><u>${c.r}<br>${c.s}</u></span>`;
 function renderBaloot(body) {
   const g = S.g, over = S.phase === 'over', me = g.seat >= 0 ? g.seat : 0;
   const P = S.players, rel = s => (s - me + 4) % 4, nm = s => P[s] ? P[s].name : '';
@@ -14,10 +14,10 @@ function renderBaloot(body) {
       <div class="bltbl" id="blTbl">
         <div class="blseat s1" id="blS1"></div><div class="blseat s2" id="blS2"></div><div class="blseat s3" id="blS3"></div>
         <div class="blmid" id="blMid"></div>
+        <div class="blme" id="blS0"></div>
+        <div class="blbid" id="blBid"></div>
         <div class="blbar"><i id="blBar"></i></div>
       </div>
-      <div class="blme" id="blS0"></div>
-      <div class="blbid" id="blBid"></div>
       <div class="blhand" id="blHand"></div>
       <div class="blres" id="blRes" hidden></div>
     </div>`;
@@ -37,7 +37,7 @@ function renderBaloot(body) {
     const pr = g.proj && g.proj.list[s] && g.proj.list[s].length ? `<span class="blproj">📜 ${g.proj.list[s].join(' + ')}</span>` : '';
     const bl = g.proj && g.proj.bloot === s ? '<span class="blproj">👑 بلوت</span>' : '';
     const backs = r === 0 ? '' : `<span class="blbacks">${'<i></i>'.repeat(Math.min(8, g.cnt[s] || 0))}</span>`;
-    el.className = `${r === 0 ? 'blme' : 'blseat'} s${r}${g.turn === s && !over && (g.sub === 'play' || g.sub === 'bid') ? ' turn' : ''} t${s % 2 === myT ? 'us' : 'them'}`;
+    el.className = `${r === 0 ? 'blme' : 'blseat'} s${r}${g.turn === s && !over && (g.sub === 'play' || g.sub === 'bid') ? ' blturn' : ''} t${s % 2 === myT ? 'us' : 'them'}`;
     el.innerHTML = `${backs}<span class="bmav">${bmFace(p.id)}</span><b class="nt">${esc(p.name)}</b>${g.dealer === s ? '<em class="bldl">موزّع</em>' : ''}${g.buyer === s ? '<em class="blby">مشتري</em>' : ''}${said}${pr}${bl}`;
   }
   // المنتصف: الورقة المكشوفة أو الأكلة
