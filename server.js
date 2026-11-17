@@ -78,6 +78,7 @@ function getBody(f, st, tag, origin, ext, cb) {
 
 const wss = new WebSocketServer({ server, maxPayload: 1024 * 1024 }); // أكبر رسالة ١ ميغا (تسجيل الأصوات تحت ٤٠٠ كيلو)
 const rooms = new Map();
+let STAFF = null; // مكان التيم (staff.js) — يتجهّز تحت قبل ما نستقبل اتصالات
 const COLORS = ['red', 'yellow', 'green', 'blue'];
 const AR = { red: 'أحمر', yellow: 'أصفر', green: 'أخضر', blue: 'أزرق' };
 const MAXSPEC = 30;
@@ -133,7 +134,7 @@ const randLook = () => { const l = Object.fromEntries(Object.entries(LOOKMAX).ma
 const optsView = (r, p) => ({ stack: !!r.opts.stack, turn: r.opts.turn || 15, lock: !!r.opts.lock, hasPass: !!r.opts.pass, pass: r.host === p.id ? (r.opts.pass || '') : null, target: r.opts.target || 5, imps: r.opts.imps || 1, doctor: !!r.opts.doctor, map: r.opts.map || 'ship', nwords: r.opts.words ? r.opts.words.length : 0, wordsText: r.host === p.id ? (r.opts.wordsText || '') : '', mcount: r.opts.mcount || 0, dayT: r.opts.dayT || 90, reveal: r.opts.reveal !== false, mroles: Object.assign({ doc: 1, det: 1, sniper: 1, god: 1, jester: 1, mayor: 1 }, r.opts.mroles), blives: r.opts.blives || 3, bdiff: r.opts.bdiff || 'mid', frounds: r.opts.frounds || 7, psteps: r.opts.psteps || 0, pdraw: r.opts.pdraw || 90, aitems: r.opts.aitems || 8, drounds: r.opts.drounds || 4, fcount: r.opts.fcount || 10, fmode: r.opts.fmode || 'flags', fdiff: r.opts.fdiff || 'easy', mrounds: r.opts.mrounds || 5, mpack: r.opts.mpack || 'all', ctime: r.opts.ctime || 'none', clevel: r.opts.clevel || 'mid', ccolor: r.opts.ccolor || 'rand' , jrounds: r.opts.jrounds || 7, jtime: r.opts.jtime || 30, jn: r.opts.jn || 3, krounds: r.opts.krounds || 3, ktime: r.opts.ktime || 75 });
 const maxOf = r => GAMES[r.game].max;
 
-const newRoom = (code, game = 'uno') => ({ code, game, g: null, opts: {}, owed: 0, botT: null, phase: 'lobby', players: [], host: null, deck: [], discard: [], color: null, dir: 1, turn: 0, pending: null, catchable: null, log: [], winner: null, chat: [], teams: false, score: [0, 0], winTeam: null, specs: [], recorded: false, banned: new Set(), turnSeq: 0, armed: -1, timer: null, deadline: 0 });
+const newRoom = (code, game = 'uno') => ({ code, game, g: null, opts: {}, owed: 0, botT: null, phase: 'lobby', players: [], host: null, deck: [], discard: [], color: null, dir: 1, turn: 0, pending: null, catchable: null, log: [], winner: null, chat: [], teams: false, score: [0, 0], winTeam: null, specs: [], recorded: false, banned: new Set(), turnSeq: 0, armed: -1, timer: null, deadline: 0, created: Date.now(), teamOnly: false });
 const cur = r => r.players[r.turn];
 const log = (r, s) => { r.log.push(s); if (r.log.length > 30) r.log.shift(); };
 
@@ -297,6 +298,18 @@ function armTurn(r) {
 }
 
 // لاعب يطلع (أو ينطرد) أثناء اللعب: أوراقه ترجع للكومة والدور يتعدّل
+// طرد لاعب (من المضيف أو من لوحة التيم)
+function kickPlayer(r, id) {
+  const sp = r.specs.find(q => q.id === id);
+  const t = sp || r.players.find(q => q.id === id);
+  if (!t) return;
+  if (t.dev) r.banned.add('dev:' + t.dev); // نحظر الجهاز مو الـIP (بيت واحد أو شبكة جوال وحدة فيها ناس كثير)
+  if (t.uid) r.banned.add('uid:' + t.uid);
+  if (t.ws) { const tw = t.ws; tw.ctx = null; send(tw, { t: 'kicked' }); }
+  if (sp) { r.specs = r.specs.filter(q => q !== sp); return after(r); }
+  if (r.phase === 'lobby') return removePlayer(r, t);
+  leaveGame(r, t); after(r);
+}
 function closeRoom(r) {
   clearTimeout(r.timer); clearTimeout(r.botT); rooms.delete(r.code);
   r.specs.forEach(s => { if (s.ws) { const w = s.ws; w.ctx = null; send(w, { t: 'left' }); } });
@@ -323,9 +336,11 @@ function leaveOther(r, p) {
   if (r.phase === 'play' && r.players.length < G.min) { r.phase = 'over'; r.winner = r.winner || 'انتهت اللعبة'; clearTimeout(r.timer); r.deadline = 0; }
 }
 function startGame(r) {
+  statStart(r);
   if (r.game === 'uno') return start(r);
   fixTeams(r); r.log = []; r.recorded = false; GAMES[r.game].start(r);
 }
+const statStart = r => { try { if (STAFF) STAFF.onStart(r); } catch (e) { console.error('stats', e); } };
 
 function leaveGame(r, p) {
   if (r.game !== 'uno') return leaveOther(r, p);
@@ -509,6 +524,7 @@ function join(ws, m) {
   const known = m.token && (r.players.some(q => q.token === m.token) || r.specs.some(q => q.token === m.token));
   const dev = String(m.dev || '').slice(0, 40);
   if (!known && dev && r.banned.has('dev:' + dev)) return send(ws, { t: 'err', msg: 'تم طردك من هذي الغرفة' });
+  if (!known && r.teamOnly && !(STAFF && STAFF.check(m.teamTok))) return send(ws, { t: 'err', msg: 'هذي غرفة خاصة بتيم ترتيب 🔐', reset: true });
   if (!known && r.opts.pass && String(m.pass || '') !== r.opts.pass) return send(ws, { t: 'err', msg: m.pass ? 'كلمة السر غلط' : 'الغرفة محمية بكلمة سر', needpass: true });
   let p = m.token && (r.players.find(q => q.token === m.token) || r.specs.find(q => q.token === m.token));
   if (p) {
@@ -552,6 +568,8 @@ async function activity(ws, m) {
   after(r);
 }
 
+STAFF = require('./staff')({ rooms, wss, send, rate, closeRoom, kick: kickPlayer });
+
 wss.on('connection', (ws, req) => {
   ws.ip = String(req.headers['x-forwarded-for'] || req.socket.remoteAddress || '').split(',')[0].trim();
   ws.dead = false;
@@ -571,11 +589,13 @@ wss.on('connection', (ws, req) => {
     }
     if (m.t === 'create') {
       const r = newRoom(newCode(), GAMES[m.game] ? m.game : 'uno');
+      if (m.teamOnly && STAFF && STAFF.check(m.teamTok)) r.teamOnly = true;
       rooms.set(r.code, r);
       const p = addPlayer(r, cleanName(m.name), cleanAv(m.av)); p.ws = ws; ws.ctx = { r, p }; if (m.dev) p.dev = String(m.dev).slice(0, 40);
       send(ws, { t: 'joined', code: r.code, token: p.token, name: p.name });
       return after(r);
     }
+    if (m.t === 'staff') return STAFF && STAFF.handle(ws, m);
     if (m.t === 'join') return join(ws, m);
     if (m.t === 'activity') return activity(ws, m);
     const c = ws.ctx; if (!c) return;
@@ -690,21 +710,14 @@ wss.on('connection', (ws, req) => {
         if (r.phase === 'lobby') return removePlayer(r, p);
         leaveGame(r, p); break;
       case 'kick': {
-        if (r.host !== p.id) return;
-        const sp = r.specs.find(q => q.id === m.id);
-        const t = sp || r.players.find(q => q.id === m.id);
-        if (!t || t === p) return;
-        if (t.dev) r.banned.add('dev:' + t.dev); // نحظر الجهاز مو الـIP (بيت واحد أو شبكة جوال وحدة فيها ناس كثير)
-        if (t.uid) r.banned.add('uid:' + t.uid);
-        if (t.ws) { const tw = t.ws; tw.ctx = null; send(tw, { t: 'kicked' }); }
-        if (sp) { r.specs = r.specs.filter(q => q !== sp); break; }
-        if (r.phase === 'lobby') return removePlayer(r, t);
-        leaveGame(r, t); break;
+        if (r.host !== p.id || m.id === p.id) return;
+        return kickPlayer(r, m.id);
       }
     }
     after(r);
   }
   ws.on('close', () => {
+    if (STAFF) STAFF.onClose(ws);
     const c = ws.ctx; if (!c || c.p.ws !== ws) return;
     const { r, p } = c;
     p.online = false; p.ws = null;

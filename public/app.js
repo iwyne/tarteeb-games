@@ -36,7 +36,7 @@ function connect() {
   ws = new WebSocket(IN_DISCORD ? `wss://${location.host}/.proxy/ws` : (location.protocol === 'https:' ? 'wss://' : 'ws://') + location.host);
   ws.onopen = () => {
     if (activityHello) ws.send(JSON.stringify(activityHello));
-    else if (session.code && session.token) ws.send(JSON.stringify({ t: 'join', ...session, dev: DEV }));
+    else if (session.code && session.token) ws.send(JSON.stringify({ t: 'join', ...session, dev: DEV, teamTok: window.teamTok && teamTok() }));
     while (queue.length) ws.send(JSON.stringify(queue.shift()));
   };
   ws.onmessage = e => on(JSON.parse(e.data));
@@ -57,6 +57,10 @@ function on(m) {
     toast(m.msg);
     if (m.needpass && lastJoin) { const pw = prompt(T('كلمة سر الغرفة:')); if (pw) send({ ...lastJoin, pass: pw }); }
     if (m.reset) reset();
+  } else if (m.t === 'staff') {
+    if (window.onStaff) onStaff(m);
+  } else if (m.t === 'announce') {
+    if (window.onAnnounce) onAnnounce(m);
   } else if (m.t === 'left') {
     reset();
   } else if (m.t === 'kicked') {
@@ -121,7 +125,7 @@ $('#join').onclick = () => {
   const name = myName(); if (!name) { toast('اكتب اسمك أول'); return nameEl.focus(); }
   const code = codeEl.value.trim().toUpperCase();
   if (code.length !== 4) { toast('الكود أربع خانات'); return codeEl.focus(); }
-  session = {}; lastJoin = { t: 'join', name, code, av: myAv, dev: DEV }; send(lastJoin);
+  session = {}; lastJoin = { t: 'join', name, code, av: myAv, dev: DEV, teamTok: window.teamTok && teamTok() }; send(lastJoin);
 };
 codeEl.addEventListener('keydown', e => e.key === 'Enter' && $('#join').click());
 nameEl.addEventListener('keydown', e => e.key === 'Enter' && (codeEl.value.trim() ? $('#join') : $('#create')).click());
