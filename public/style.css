@@ -2883,7 +2883,7 @@ body.stf-on{overflow:hidden}
 .rlogo{font:400 clamp(1.1rem,3.6vmin,2.6rem)/1 Lalezar,sans-serif;text-align:center;color:#16130f;transform:rotate(-6deg);text-shadow:3px 3px 0 #ffc928}
 .rlogo span{color:#1fa35c;text-shadow:3px 3px 0 #16130f}
 .rdice{display:flex;gap:10px}
-.rd{width:clamp(30px,6vmin,52px);aspect-ratio:1;background:#fffaf0;border:3px solid #16130f;border-radius:10px;box-shadow:3px 3px 0 #16130f;display:grid;padding:14%;grid-template-areas:"p1 p2 p3" "p4 p5 p6" "p7 p8 p9";font-style:normal}
+.rd{width:clamp(48px,10vmin,84px);aspect-ratio:1;background:#fffaf0;border:3px solid #16130f;border-radius:10px;box-shadow:3px 3px 0 #16130f;display:grid;padding:14%;grid-template-areas:"p1 p2 p3" "p4 p5 p6" "p7 p8 p9";font-style:normal}
 .rd b{width:70%;aspect-ratio:1;border-radius:50%;background:#16130f;place-self:center}
 .rdice.roll .rd{animation:rRoll .14s linear infinite}
 .rdice.dbl .rd{background:#ffc928}
@@ -2960,3 +2960,27 @@ body.stf-on{overflow:hidden}
   .tt-stage{flex-wrap:wrap;row-gap:38px;max-width:1080px;margin:0 auto}
   .tt-card{flex:0 0 clamp(150px,17%,190px);height:clamp(280px,27vw,360px)}
 }
+
+/* مليونير: نرد أكبر + قائمة الأملاك */
+.rdice{gap:14px}.rd{border-width:4px;border-radius:14px;box-shadow:4px 4px 0 #16130f}
+.racts .rman{background:#fff3c4;color:#16130f}.racts .rman i{font-style:normal;background:#1fa35c;color:#fff;border-radius:99px;padding:0 7px;font-size:.75rem;margin-inline-start:4px}
+.rmanbtn{border:2px solid var(--ink);background:var(--surf);color:var(--ink);border-radius:99px;padding:1px 10px;font:800 .78rem Tajawal,sans-serif;cursor:pointer;vertical-align:middle}
+.rmanb{width:min(620px,100%);text-align:start}
+.rmanb h3{text-align:center}
+.rmsum{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin:4px 0}
+.rmsum span{background:#f3e7cc;border:2px solid #16130f;border-radius:99px;padding:2px 12px;font-weight:700}.rmsum b{font:400 1.05rem Lalezar,sans-serif}
+.rmtip{text-align:center;background:#1fa35c;color:#fff;border-radius:10px;padding:4px;font-weight:800}.rmtip.off{background:#e6e0d4;color:#16130f}
+.rmg{margin-top:10px}
+.rmg h4{margin:0 0 6px;font:400 1.05rem Lalezar,sans-serif;border-inline-start:8px solid var(--gc);padding-inline-start:8px}
+.rmg h4 em{font:800 .75rem Tajawal,sans-serif;font-style:normal;background:#1fa35c;color:#fff;border-radius:99px;padding:1px 8px}
+.rmr{display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center;justify-content:space-between;border:2.5px solid #16130f;border-inline-start:10px solid var(--gc);border-radius:12px;padding:7px 10px;margin-bottom:6px;background:#fff}
+.rmr.mort{background:repeating-linear-gradient(45deg,#f1ece2 0 6px,#fff 6px 12px)}
+.rmn{display:grid;gap:1px;min-width:150px;flex:1}
+.rmn b{font-size:.98rem}.rmn span{font-size:.85rem;letter-spacing:-1px}.rmn span em{font-style:normal;letter-spacing:0;background:#16130f;color:#fff;border-radius:6px;padding:0 6px;font-size:.72rem}
+.rmn small{font-weight:700;opacity:.7;font-size:.75rem}.rmn small i{font-style:normal;color:#b5532a}
+.rmbs{display:flex;flex-wrap:wrap;gap:5px}
+.rmb{border:2.5px solid #16130f;border-radius:10px;background:#fffaf0;color:#16130f;padding:5px 9px;font:800 .82rem Tajawal,sans-serif;cursor:pointer;box-shadow:2px 2px 0 #16130f}
+.rmb small{font-weight:700;opacity:.75;margin-inline-start:3px}
+.rmb.go{background:#1fa35c;color:#fff}.rmb.warn{background:#ffe1dc}
+.rmb:active{transform:translate(2px,2px);box-shadow:none}
+@media(max-width:500px){.rd{width:clamp(44px,13vw,60px)}.rmb{font-size:.76rem;padding:4px 7px}}

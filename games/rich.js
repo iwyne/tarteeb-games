@@ -46,6 +46,7 @@ module.exports = H => {
     return GROUP[t.g].every(j => (g.houses[j] || 0) <= h);
   }
   const canMort = (g, id, i) => g.own[i] === id && !g.mort[i] && (T[i].k !== 'p' || GROUP[T[i].g].every(j => !(g.houses[j] || 0)));
+  const canSellP = (g, id, i) => g.own[i] === id && !g.mort[i] && (T[i].k !== 'p' || GROUP[T[i].g].every(j => !(g.houses[j] || 0)));
   const canUnmort = (g, id, i) => g.own[i] === id && g.mort[i] && g.cash[id] >= Math.ceil(T[i].pr * .55);
   const worth = (g, id) => g.cash[id] + Object.keys(g.own).filter(i => g.own[i] === id).reduce((a, i) => a + (g.mort[i] ? T[i].pr / 2 : T[i].pr) + (g.houses[i] || 0) * (T[i].hc || 0), 0);
 
@@ -241,6 +242,7 @@ module.exports = H => {
       g.boff[k] = (g.boff[k] || 0) + 1; offer(r, id, i, amt); return;
     }
   }
+  function sellP(r, id, i) { const g = r.g; if (!canSellP(g, id, i)) return false; delete g.own[i]; g.cash[id] += T[i].pr / 2; H.log(r, `${name(r, id)} باع ${T[i].n} للبنك بـ${T[i].pr / 2}`); g.ev = { k: 'sellp', id, i, n: ++g.evN }; return true; }
   function payJail(r, id) { const g = r.g; if (!(g.jail[id] > 0) || g.cash[id] < JAIL_FEE) return false; g.cash[id] -= JAIL_FEE; g.jail[id] = 0; H.log(r, `${name(r, id)} دفع ${JAIL_FEE} وطلع من التوقيف`); return true; }
   function useFree(r, id) { const g = r.g; if (!(g.jail[id] > 0) || !g.jfree[id]) return false; g.jfree[id]--; g.jail[id] = 0; H.log(r, `${name(r, id)} استخدم كرت الخروج 🎫`); return true; }
 
@@ -271,10 +273,12 @@ module.exports = H => {
       else if (m.t === 'msell' && mine) ok = sell(r, id, i);
       else if (m.t === 'mmort' && mine) ok = mort(r, id, i);
       else if (m.t === 'munmort' && mine) ok = unmort(r, id, i);
+      else if (m.t === 'msellp' && mine && g.sub !== 'buy') ok = sellP(r, id, i);
+      else if (m.t === 'mhold' && mine && g.sub === 'act' && H.rate(p, 'mho', 4000)) { H.setTimer(r, TURN_MS, () => auto(r, false)); return; }
       else if (m.t === 'moffer' && mine) ok = offer(r, id, i, m.amt);
       else if (m.t === 'mreply') ok = reply(r, id, !!m.ok);
       if (!ok) return 'quiet';
-      if (m.t === 'mbuild' || m.t === 'msell' || m.t === 'mmort' || m.t === 'munmort') arm(r);
+      if (['mbuild', 'msell', 'mmort', 'munmort', 'msellp'].includes(m.t)) H.setTimer(r, TURN_MS, () => auto(r, false)); // يدير أملاكه: نعطيه وقت كامل
     },
     view(r, p) {
       const g = r.g; if (!g) return null;
@@ -284,7 +288,7 @@ module.exports = H => {
         own: g.own, houses: g.houses, mort: g.mort, out: g.out, dice: g.dice, rollN: g.rollN, moveN: g.moveN, offer: g.offer, card: g.card, trade: g.trade, ev: g.ev, again: g.again, final: g.final,
         net: Object.fromEntries(g.order.map(q => [q, g.out.includes(q) ? 0 : worth(g, q)])),
         rents: Object.fromEntries(Object.keys(g.own).map(i => [i, rentOf(g, +i, 7)])),
-        can: me ? { build: Object.keys(g.own).map(Number).filter(i => canBuild(g, id, i)), sell: Object.keys(g.own).map(Number).filter(i => canSell(g, id, i)), mort: Object.keys(g.own).map(Number).filter(i => canMort(g, id, i)), unmort: Object.keys(g.own).map(Number).filter(i => canUnmort(g, id, i)) } : null
+        can: me ? { build: Object.keys(g.own).map(Number).filter(i => canBuild(g, id, i)), sell: Object.keys(g.own).map(Number).filter(i => canSell(g, id, i)), mort: Object.keys(g.own).map(Number).filter(i => canMort(g, id, i)), unmort: Object.keys(g.own).map(Number).filter(i => canUnmort(g, id, i)), sellp: Object.keys(g.own).map(Number).filter(i => canSellP(g, id, i)) } : null
       };
     },
     leave(r, p) {

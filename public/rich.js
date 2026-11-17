@@ -36,10 +36,11 @@ function rBuild(body) {
         <div class="rcard" id="rCard" hidden></div></div>
       <div class="rtoks" id="rToks"></div></div></div>
     <aside class="rside"><div class="rround" id="rRound"></div><div class="rplayers" id="rPlayers"></div>
-      <h4>أملاكي</h4><div class="rmine" id="rMine"></div>${logHtml()}</aside>
-    <div class="rpop" id="rPop" hidden></div><div class="rpop" id="rTrade" hidden></div><div class="rpop" id="rOver" hidden></div>
+      <h4>أملاكي <button type="button" class="rmanbtn" id="rManBtn">إدارة ⚙️</button></h4><div class="rmine" id="rMine"></div>${logHtml()}</aside>
+    <div class="rpop" id="rPop" hidden></div><div class="rpop" id="rMan" hidden></div><div class="rpop" id="rTrade" hidden></div><div class="rpop" id="rOver" hidden></div>
   </div>`;
   body.querySelectorAll('.rt').forEach(b => b.onclick = () => { RI.detail = +b.dataset.i; rDetail(); sfx('pop'); });
+  $('#rManBtn').onclick = () => { RI.man = true; rManage(); sfx('pop'); };
   RI.built = true;
 }
 function rDice(a, b) {
@@ -106,9 +107,11 @@ function renderRich(body) {
     acts = `<div class="roffer"><i style="background:${t.k === 'p' ? B.G[t.g] : '#16130f'}"></i><b>${rTileIcon(t)} ${esc(t.n)}</b><span>${rNum(t.pr)}</span></div><button type="button" class="btn rbig" data-a="mbuy"${g.cash[me] < t.pr ? ' disabled' : ''}>اشترِ 💰</button><button type="button" class="btn rsm ghost" data-a="mskip">لا، كمّل</button>`;
   } else if (mine && g.sub === 'act') {
     acts = `<button type="button" class="btn rbig" data-a="mend">${g.again ? '🎲 ارمِ مرة ثانية' : 'خلّص دورك ➡'}</button>`;
-    if (g.can && g.can.build.length) acts += `<small class="rhint">تقدر تبني في ${rNum(g.can.build.length)} عقار — من «أملاكي» 👉</small>`;
   }
-  const ab = $('#rActs'); if (ab.dataset.k !== acts) { ab.dataset.k = acts; ab.innerHTML = acts; ab.querySelectorAll('[data-a]').forEach(b => b.onclick = () => { send({ t: b.dataset.a, k: b.dataset.k }); sfx('pop'); }); }
+  const ownN = Object.keys(g.own).filter(i => g.own[i] === me).length;
+  if (mine && g.sub !== 'buy' && ownN) acts += `<button type="button" class="btn rsm rman" data-man="1">🏘️ أملاكي (${rNum(ownN)})${g.can && g.can.build.length ? ' <i>تقدر تبني!</i>' : ''}</button>`;
+  const ab = $('#rActs'); if (ab.dataset.k !== acts) { ab.dataset.k = acts; ab.innerHTML = acts; ab.querySelectorAll('[data-a]').forEach(b => b.onclick = () => { send({ t: b.dataset.a, k: b.dataset.k }); sfx('pop'); }); const mb = ab.querySelector('[data-man]'); if (mb) mb.onclick = () => { RI.man = true; rManage(); sfx('pop'); }; }
+  if (RI.man) rManage();
   if (mine && g.sub === 'roll' && RI.turnSnd !== g.rollN + ':' + cur) { RI.turnSnd = g.rollN + ':' + cur; sfx('turn'); }
   // ---- اللاعبين ----
   $('#rRound').textContent = `الجولة ${rNum(g.round)}${g.lim ? ` من ${rNum(g.lim)}` : ''}`;
@@ -177,6 +180,7 @@ function rDetail() {
     if ((can.sell || []).includes(i)) acts += `<button type="button" class="btn ghost" data-a="msell">بع بيت (+${rNum(t.hc / 2)})</button>`;
     if ((can.mort || []).includes(i)) acts += `<button type="button" class="btn ghost" data-a="mmort">ارهنها (+${rNum(t.pr / 2)})</button>`;
     if ((can.unmort || []).includes(i)) acts += `<button type="button" class="btn ghost" data-a="munmort">فك الرهن (−${rNum(Math.ceil(t.pr * .55))})</button>`;
+    if ((can.sellp || []).includes(i)) acts += `<button type="button" class="btn ghost" data-a="msellp">بع للبنك (+${rNum(t.pr / 2)})</button>`;
     if (t.k === 'p' && !(can.build || []).includes(i) && h < 5 && !acts.includes('mbuild')) acts += `<small class="rhint">تبني لما تملك المجموعة كاملة (وبالتساوي)</small>`;
   } else if (mineTurn && o != null && o !== me && !g.out.includes(o) && !g.trade && g.sub !== 'buy' && !(t.k === 'p' && B.GROUP[t.g].some(j => (g.houses[j] || 0) > 0))) {
     acts = `<div class="rofr"><input id="rAmt" type="number" inputmode="numeric" min="1" max="${g.cash[me]}" value="${Math.min(g.cash[me], Math.round(t.pr * 1.5))}"><button type="button" class="btn" id="rOfr">🤝 اعرض عليه</button></div>`;
@@ -186,6 +190,51 @@ function rDetail() {
   pop.hidden = false;
   pop.querySelector('.rx').onclick = () => { RI.detail = null; pop.hidden = true; };
   pop.onclick = e => { if (e.target === pop) { RI.detail = null; pop.hidden = true; } };
-  pop.querySelectorAll('[data-a]').forEach(b => b.onclick = () => { send({ t: b.dataset.a, i }); sfx('pop'); });
+  pop.querySelectorAll('[data-a]').forEach(b => b.onclick = () => { if (b.dataset.a === 'msellp' && !confirm('تبيع العقار للبنك بنص سعره؟')) return; send({ t: b.dataset.a, i }); sfx('pop'); });
   const of = $('#rOfr'); if (of) of.onclick = () => { const v = +$('#rAmt').value; if (!(v >= 1)) return; send({ t: 'moffer', i, amt: v }); RI.detail = null; pop.hidden = true; toast('أرسلت العرض 🤝'); };
+}
+
+// قائمة إدارة الأملاك: كل عقاراتك مرتبة بالمجموعات، ولما يكون دورك تبني/تبيع/ترهن منها
+function rManage() {
+  const pop = $('#rMan'), g = S.g; if (!pop || !g) return;
+  if (!RI.man) { pop.hidden = true; return; }
+  const B = RICHB, me = S.me, mine = g.turn === me && S.phase === 'play' && !S.spec && g.sub !== 'buy', can = g.can || {};
+  const has = (k, i) => mine && (can[k] || []).includes(i);
+  const myT = Object.keys(g.own).map(Number).filter(i => g.own[i] === me);
+  // نرتّب: المجموعات بالترتيب، وبعدها المواصلات والخدمات
+  const groups = {};
+  myT.forEach(i => { const t = B.T[i], k = t.k === 'p' ? 'g' + t.g : t.k; (groups[k] = groups[k] || []).push(i); });
+  const order = Object.keys(B.GROUP).map(n => 'g' + n).concat(['t', 'u']).filter(k => groups[k]);
+  const gname = k => k === 't' ? '🚆 المواصلات' : k === 'u' ? '⚡ الخدمات' : `المجموعة ${rNum(+k.slice(1))}`;
+  const row = i => {
+    const t = B.T[i], h = g.houses[i] || 0, m = g.mort[i];
+    const bt = (k, a, label, cls = '') => has(k, i) ? `<button type="button" class="rmb ${cls}" data-a="${a}" data-i="${i}">${label}</button>` : '';
+    const btns = [
+      bt('build', 'mbuild', `🏠＋ ابنِ <small>−${rNum(t.hc)}</small>`, 'go'),
+      bt('sell', 'msell', `🏠− بع بيت <small>+${rNum((t.hc || 0) / 2)}</small>`),
+      bt('mort', 'mmort', `🏦 ارهن <small>+${rNum(t.pr / 2)}</small>`),
+      bt('unmort', 'munmort', `🔓 فك الرهن <small>−${rNum(Math.ceil(t.pr * .55))}</small>`),
+      bt('sellp', 'msellp', `💰 بع للبنك <small>+${rNum(t.pr / 2)}</small>`, 'warn')
+    ].join('');
+    let why = '';
+    if (mine && t.k === 'p' && !has('build', i) && h < 5 && !m) why = B.GROUP[t.g].every(j => g.own[j] === me) ? (g.cash[me] < t.hc ? 'ما يكفي كاش للبناء' : 'ابنِ بالتساوي على المجموعة') : `تحتاج ${rNum(B.GROUP[t.g].filter(j => g.own[j] !== me).length)} عقار ثاني من نفس اللون عشان تبني`;
+    return `<div class="rmr${m ? ' mort' : ''}" style="--gc:${t.k === 'p' ? B.G[t.g] : '#16130f'}"><div class="rmn"><b>${rTileIcon(t)} ${esc(t.n)}</b><span>${h === 5 ? '🏨 فندق' : h ? '🏠'.repeat(h) : ''}${m ? ' <em>مرهون</em>' : ''}</span><small>الإيجار الحين: ${rNum(g.rents[i] || 0)}${why ? ` · <i>${why}</i>` : ''}</small></div><div class="rmbs">${btns}</div></div>`;
+  };
+  const html = `<div class="rpb rmanb"><button type="button" class="rx" aria-label="سكّر">✕</button><h3>🏘️ أملاكي</h3>
+    <div class="rmsum"><span>💰 الكاش <b>${rNum(g.cash[me] || 0)}</b></span><span>📈 الثروة <b>${rNum(g.net[me] || 0)}</b></span><span>🏠 ${rNum(myT.length)} عقار</span></div>
+    ${mine ? '<p class="rmtip">دورك — تقدر تبني أو تبيع أو ترهن الحين 👇</p>' : '<p class="rmtip off">تقدر تدير أملاكك لما يجي دورك</p>'}
+    ${myT.length ? order.map(k => `<div class="rmg"><h4 style="--gc:${k[0] === 'g' ? B.G[k.slice(1)] : '#16130f'}">${gname(k)}${k[0] === 'g' && B.GROUP[k.slice(1)].every(j => g.own[j] === me) ? ' <em>✔ كاملة</em>' : ''}</h4>${groups[k].sort((a, b) => a - b).map(row).join('')}</div>`).join('') : '<p class="rnone">لسا ما عندك عقار — اشترِ لما تنزل على مكان للبيع</p>'}
+  </div>`;
+  if (pop.dataset.h !== html) {
+    pop.dataset.h = html; pop.innerHTML = html;
+    pop.querySelector('.rx').onclick = () => { RI.man = false; pop.hidden = true; };
+    pop.onclick = e => { if (e.target === pop) { RI.man = false; pop.hidden = true; } };
+    pop.querySelectorAll('[data-a]').forEach(b => b.onclick = () => {
+      if (b.dataset.a === 'msellp' && !confirm('تبيع العقار للبنك بنص سعره؟ ما تقدر ترجعه.')) return;
+      send({ t: b.dataset.a, i: +b.dataset.i }); sfx(b.dataset.a === 'mbuild' ? 'gclick' : 'coin');
+    });
+  }
+  pop.hidden = false;
+  // ما ينتهي دورك وأنت فاتح القائمة
+  if (mine && g.sub === 'act' && Date.now() - (RI.holdAt || 0) > 15000) { RI.holdAt = Date.now(); send({ t: 'mhold' }); }
 }
