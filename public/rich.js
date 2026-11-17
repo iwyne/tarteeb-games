@@ -16,7 +16,8 @@ function rCenter(i) { // مركز الخانة بالنسبة المئوية
   const [row, col] = rCell(i), f = c => { const st = c === 1 ? 0 : 1.4 + (c - 2), w = c === 1 || c === 9 ? 1.4 : 1; return (st + w / 2) / 9.8 * 100; };
   return [f(col), f(row)];
 }
-function rTileIcon(t) { if (t.k === 't') return t.n.includes('مطار') ? '✈️' : t.n.includes('مترو') ? '🚇' : '🚆'; if (t.k === 'u') return t.n.includes('مياه') ? '💧' : '⚡'; return RICON[t.k] || ''; }
+const RPLACE = { 'الهفوف': '🌴', 'القطيف': '🐟', 'الطائف': '🌹', 'أبها': '⛰️', 'الخبر': '🏖️', 'الظهران': '🛢️', 'ينبع': '⛵', 'تبوك': '🏜️', 'الدرة': '🏝️', 'كورنيش جدة': '🌊', 'الدرعية': '🏰', 'العلا': '🪨', 'نيوم': '🌆', 'البحر الأحمر': '🐠', 'العليا': '🏙️', 'حطين': '🏡' };
+function rTileIcon(t) { if (t.k === 'p') return RPLACE[t.n] || '🏠'; if (t.k === 't') return t.n.includes('مطار') ? '✈️' : t.n.includes('مترو') ? '🚇' : '🚆'; if (t.k === 'u') return t.n.includes('مياه') ? '💧' : '⚡'; return RICON[t.k] || ''; }
 
 function rBuild(body) {
   const B = RICHB;
@@ -26,12 +27,13 @@ function rBuild(body) {
     const [row, col] = rCell(i), side = rSide(i);
     const band = t.k === 'p' ? `<i class="rband" style="background:${B.G[t.g]}"></i>` : '';
     const ic = rTileIcon(t);
-    return `<button type="button" class="rt ${side} k-${t.k}" data-i="${i}" style="grid-row:${row};grid-column:${col}">${band}${ic ? `<em>${ic}</em>` : ''}<b>${esc(t.n)}</b>${t.pr ? `<small class="rpr">${rNum(t.pr)}</small>` : t.amt ? `<small class="rpr">−${rNum(t.amt)}</small>` : ''}<span class="rown"></span><span class="rhs"></span></button>`;
+    const corner = { go: '<em class="cg">⬅</em><b>انطلاق</b><small class="rpr">+٢٠٠ ﷼</small>', jail: '<em class="cj">🚔</em><b>التوقيف</b><small class="rpr">زيارة بس</small>', rest: '<em>☕</em><b>استراحة</b><small class="rpr">قهوة وتمر</small>', tojail: '<em>👮</em><b>روح للتوقيف</b>' }[t.k];
+    return `<button type="button" class="rt ${side} k-${t.k}" data-i="${i}" style="grid-row:${row};grid-column:${col}${t.k === 'p' ? `;--g:${B.G[t.g]}` : ''}">${band}<span class="rti">${corner || `${ic ? `<em>${ic}</em>` : ''}<b>${esc(t.n)}</b>${t.pr ? `<small class="rpr">${rNum(t.pr)} ﷼</small>` : t.amt ? `<small class="rpr">−${rNum(t.amt)} ﷼</small>` : ''}`}</span><span class="rown"></span><span class="rhs"></span></button>`;
   }).join('');
   body.innerHTML = `<div class="rw">
     <div class="rbox"><div class="rboard" dir="ltr">${tiles}
-      <div class="rmid" dir="rtl"><div class="rlogo">مليونير<br><span>الديرة</span></div>
-        <div class="rdice"><i class="rd" id="rD1"></i><i class="rd" id="rD2"></i></div>
+      <div class="rmid" dir="rtl"><div class="rlogo"><i>👑</i><b>مليونير</b><span>الديرة</span></div>
+        <div class="rtray"><div class="rdice"><i class="rd" id="rD1"></i><i class="rd" id="rD2"></i></div></div>
         <div class="rstat" id="rStat"></div><div class="racts" id="rActs"></div>
         <div class="rcard" id="rCard" hidden></div></div>
       <div class="rtoks" id="rToks"></div></div></div>
@@ -55,18 +57,18 @@ function renderRich(body) {
     const i = +el.dataset.i, o = g.own[i], h = g.houses[i] || 0;
     el.style.setProperty('--oc', o != null ? rCol(g, o) : 'transparent');
     el.classList.toggle('owned', o != null); el.classList.toggle('mort', !!g.mort[i]); el.classList.toggle('offer', g.offer === i && g.sub === 'buy');
-    el.querySelector('.rhs').textContent = h === 5 ? '🏨' : '🏠'.repeat(h);
+    const hs = el.querySelector('.rhs'), hk = String(h); if (hs.dataset.h !== hk) { hs.dataset.h = hk; hs.innerHTML = h === 5 ? '<i class="ht"></i>' : '<i class="hh"></i>'.repeat(h); }
   });
   // ---- القطع ----
   const toks = $('#rToks');
   g.order.forEach((id, k) => {
     let t = toks.querySelector(`[data-id="${id}"]`);
-    if (!t) { t = document.createElement('i'); t.className = 'rtok'; t.dataset.id = id; const p = S.players.find(q => q.id === id); t.textContent = p ? (p.av || [...p.name][0] || '?') : '?'; t.style.background = rCol(g, id); toks.appendChild(t); }
+    if (!t) { t = document.createElement('i'); t.className = 'rtok'; t.dataset.id = id; const p = S.players.find(q => q.id === id); t.textContent = p ? (p.av || [...p.name][0] || '?') : '?'; t.style.setProperty('--pc', rCol(g, id)); toks.appendChild(t); }
     t.classList.toggle('out', g.out.includes(id)); t.classList.toggle('cur', g.turn === id && !over);
     t.title = rName(id);
   });
   if (g.moveN !== RI.moveN) { const first = RI.moveN < 0; RI.moveN = g.moveN; rAnimMoves(g, first); }
-  // ---- الزهر ----
+  // ---- النرد ----
   if (g.rollN !== RI.rollN) {
     const first = RI.rollN < 0; RI.rollN = g.rollN;
     if (first || !g.rollN) rDice(g.dice[0], g.dice[1]);
@@ -100,7 +102,7 @@ function renderRich(body) {
   $('#rStat').innerHTML = st;
   let acts = '';
   if (mine && g.sub === 'roll') {
-    acts = `<button type="button" class="btn rbig" data-a="mroll">🎲 ارمِ الزهر</button>`;
+    acts = `<button type="button" class="btn rbig" data-a="mroll">🎲 ارمِ النرد</button>`;
     if (inJail) acts += `<button type="button" class="btn rsm" data-a="mjail" data-k="pay"${g.cash[me] < 50 ? ' disabled' : ''}>ادفع ٥٠ واطلع</button>${g.jfree[me] ? `<button type="button" class="btn rsm" data-a="mjail" data-k="card">🎫 استخدم الكرت</button>` : ''}`;
   } else if (mine && g.sub === 'buy') {
     const t = B.T[g.offer];
@@ -172,7 +174,7 @@ function rDetail() {
   let rows = '';
   if (t.k === 'p') rows = `<table class="rtbl"><tr><td>الإيجار</td><td>${rNum(t.base)}</td></tr><tr><td>المجموعة كاملة</td><td>${rNum(t.base * 2)}</td></tr>${[1, 2, 3, 4].map(n => `<tr${h === n ? ' class="on"' : ''}><td>${'🏠'.repeat(n)}</td><td>${rNum(t.base * B.MULT[n])}</td></tr>`).join('')}<tr${h === 5 ? ' class="on"' : ''}><td>🏨 فندق</td><td>${rNum(t.base * B.MULT[5])}</td></tr><tr><td>سعر البيت</td><td>${rNum(t.hc)}</td></tr></table>`;
   else if (t.k === 't') rows = `<p>الإيجار ٢٥، ويتضاعف مع كل محطة/مطار تملكه (٢٥ · ٥٠ · ١٠٠ · ٢٠٠)</p>`;
-  else if (t.k === 'u') rows = `<p>الإيجار = مجموع الزهر × ٤ (أو × ١٠ لو تملك الكهرباء والمياه)</p>`;
+  else if (t.k === 'u') rows = `<p>الإيجار = مجموع النرد × ٤ (أو × ١٠ لو تملك الكهرباء والمياه)</p>`;
   else rows = `<p>${{ go: 'كل ما تمر من هنا تاخذ ٢٠٠ 💰', jail: 'لو انحجزت: ادفع ٥٠، أو ارمِ دبل، أو استخدم كرت الخروج. لو جيت زيارة عادي ما يصير شي.', rest: 'استراحة، ما يصير شي ☕', tojail: 'تروح للتوقيف على طول 🚔', c: 'تسحب كرت حظ — ممكن يكون حلو وممكن لا 😅', x: `تدفع ${rNum(t.amt || 0)} للبنك` }[t.k] || ''}</p>`;
   let acts = '';
   if (mineTurn && o === me && g.sub !== 'buy') {

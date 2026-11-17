@@ -2984,3 +2984,71 @@ body.stf-on{overflow:hidden}
 .rmb.go{background:#1fa35c;color:#fff}.rmb.warn{background:#ffe1dc}
 .rmb:active{transform:translate(2px,2px);box-shadow:none}
 @media(max-width:500px){.rd{width:clamp(44px,13vw,60px)}.rmb{font-size:.76rem;padding:4px 7px}}
+/* ===== مليونير الديرة — التصميم الفخم ===== */
+.rboard{background:#0b3d26;gap:2px;padding:2px;border:6px solid #c9a227;border-radius:20px;box-shadow:0 0 0 4px #16130f,10px 10px 0 4px #16130f,inset 0 0 0 2px #f5d77a;overflow:hidden}
+.rt{border:0;border-radius:3px;background:linear-gradient(170deg,#fffdf6,#f2e7cb);box-shadow:inset 0 -2px 0 rgba(0,0,0,.08);padding:3px;gap:0;transition:transform .15s,filter .15s}
+.rt:hover{filter:none;transform:scale(1.04);z-index:2;box-shadow:0 4px 14px rgba(0,0,0,.35)}
+.rti{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;width:100%;height:100%;min-height:0}
+.rt em{font-size:calc(var(--fs)*1.9);filter:drop-shadow(0 1px 0 rgba(0,0,0,.25))}
+.rt b{font-weight:800;line-height:1.05;text-shadow:0 1px 0 #fff}
+.rt .rpr{display:inline-block;margin-top:2px;padding:0 5px;border-radius:99px;background:#16130f;color:#f5d77a;opacity:1;font-weight:800;font-size:calc(var(--fs)*.82);line-height:1.5}
+.rt .rband{background:linear-gradient(180deg,rgba(255,255,255,.35),transparent 55%),var(--g) !important;border:0;height:24%;box-shadow:inset 0 -2px 0 rgba(0,0,0,.25)}
+.rt.t .rband{box-shadow:inset 0 2px 0 rgba(0,0,0,.25)}
+.rt.l .rband,.rt.r .rband{width:24%;height:auto;background:linear-gradient(90deg,rgba(255,255,255,.3),transparent 60%),var(--g) !important}
+.rt.b{padding-top:26%}.rt.t{padding-bottom:26%}.rt.l{padding-right:26%}.rt.r{padding-left:26%}
+/* الزوايا */
+.rt.corner{background:radial-gradient(circle at 50% 40%,#fff8e1,#efdcab)}
+.rt.corner em{font-size:calc(var(--fs)*3.2)}
+.rt.corner b{font:400 calc(var(--fs)*1.5)/1 Lalezar,sans-serif}
+.rt.k-go{background:radial-gradient(circle at 50% 40%,#3fd17f,#14874b);color:#fff}.rt.k-go b{text-shadow:2px 2px 0 #0b3d26;color:#fff}
+.rt.k-go .cg{font-style:normal;color:#ffd84d;font-size:calc(var(--fs)*3.6);text-shadow:3px 3px 0 #0b3d26;font-weight:900;filter:none}
+.rt.k-jail{background:repeating-linear-gradient(90deg,#f2e7cb 0 14%,#5a524a 14% 17%),#f2e7cb}
+.rt.k-jail .rti{background:rgba(255,248,225,.85);border-radius:10px;padding:4px}
+.rt.k-tojail{background:radial-gradient(circle at 50% 40%,#ff7b6e,#c8281f);color:#fff}.rt.k-tojail b{color:#fff;text-shadow:2px 2px 0 #6e140f}
+.rt.k-rest{background:radial-gradient(circle at 50% 40%,#e9c99a,#b98a52)}.rt.k-rest b{color:#3a2210;text-shadow:none}
+.rt.corner .rpr{background:rgba(22,19,15,.85)}
+/* الحظ والضرائب والخدمات */
+.rt.k-c{background:linear-gradient(160deg,#ffe58a,#f2b705)}.rt.k-c em{font-size:calc(var(--fs)*2.2)}
+.rt.k-x{background:linear-gradient(160deg,#ffe1dc,#f5b6ab)}
+.rt.k-t{background:linear-gradient(160deg,#eef4ff,#cfdcf7)}.rt.k-u{background:linear-gradient(160deg,#eaf8ff,#c3e6f5)}
+/* الملكية والرهن والبيوت */
+.rt.owned{box-shadow:inset 0 0 0 3px var(--oc),inset 0 -6px 0 var(--oc)}
+.rt .rown{width:9px;height:9px;border:1.5px solid #16130f;bottom:3px;right:3px}
+.rt.mort{background:repeating-linear-gradient(45deg,#ddd5c4 0 5px,#efe8da 5px 10px)!important;filter:grayscale(.6)}
+.rt.mort::after{content:'مرهون';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) rotate(-18deg);background:#16130f;color:#fff;font:800 calc(var(--fs)*.85) Tajawal,sans-serif;padding:0 5px;border-radius:4px}
+.rt .rhs{position:absolute;display:flex;gap:1px;align-items:flex-end;letter-spacing:0}
+.rt.b .rhs{top:2px;left:50%;transform:translateX(-50%)}.rt.t .rhs{bottom:2px;left:50%;transform:translateX(-50%)}
+.rt.l .rhs{right:2px;top:50%;transform:translateY(-50%);flex-direction:column}.rt.r .rhs{left:2px;top:50%;transform:translateY(-50%);flex-direction:column}
+.rhs .hh,.rhs .ht{display:block;font-style:normal;background:#1fa35c;border:1.2px solid #0b3d26;clip-path:polygon(50% 0,100% 40%,100% 100%,0 100%,0 40%)}
+.rhs .hh{width:calc(var(--fs)*1.05);height:calc(var(--fs)*1.05)}
+.rhs .ht{width:calc(var(--fs)*2);height:calc(var(--fs)*1.4);background:#e8362d;border-color:#6e140f}
+/* الوسط */
+.rmid{background:radial-gradient(ellipse at 50% 35%,rgba(245,215,122,.22),transparent 60%),repeating-linear-gradient(45deg,rgba(245,215,122,.07) 0 2px,transparent 2px 22px),repeating-linear-gradient(-45deg,rgba(245,215,122,.07) 0 2px,transparent 2px 22px),linear-gradient(160deg,#126b40,#0b3d26);border-radius:6px;color:#fffaf0;gap:clamp(6px,1.4vmin,14px)}
+.rlogo{transform:rotate(-4deg);display:grid;justify-items:center;text-shadow:none}
+.rlogo i{font-style:normal;font-size:clamp(1rem,3vmin,2rem);line-height:1;filter:drop-shadow(0 2px 0 #16130f)}
+.rlogo b{font:400 clamp(1.6rem,5.4vmin,3.8rem)/1 Lalezar,sans-serif;background:linear-gradient(180deg,#fff3b0,#f5d77a 45%,#c9a227 55%,#f5d77a);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(3px 3px 0 #16130f)}
+.rlogo span{margin-top:-4px;font:400 clamp(.9rem,2.4vmin,1.6rem)/1.3 Lalezar,sans-serif;color:#fffaf0;background:#e8362d;padding:0 16px;border:2.5px solid #16130f;border-radius:6px;box-shadow:3px 3px 0 #16130f;text-shadow:none}
+.rtray{background:radial-gradient(ellipse at 50% 30%,#1a7a4a,#0a3220);border:3px solid #c9a227;border-radius:18px;padding:clamp(8px,1.6vmin,14px) clamp(14px,3vmin,26px);box-shadow:inset 0 4px 12px rgba(0,0,0,.55),0 3px 0 #16130f}
+.rd{background:radial-gradient(circle at 30% 25%,#fff,#f1e9d6 70%,#dccfb0);border:2px solid #16130f;box-shadow:0 5px 0 #b9ab8a,0 7px 10px rgba(0,0,0,.45);border-radius:22%}
+.rd b{background:radial-gradient(circle at 35% 35%,#555,#16130f)}
+.rdice.dbl .rd{background:radial-gradient(circle at 30% 25%,#fff7c2,#f5d77a 70%,#c9a227)}
+.rstat{background:rgba(255,250,240,.95);color:#16130f;border:2.5px solid #16130f;border-radius:99px;padding:3px 16px;box-shadow:3px 3px 0 #16130f}
+.racts .btn.rbig{background:linear-gradient(180deg,#ffe066,#f2b705);color:#16130f;border:3px solid #16130f;box-shadow:0 4px 0 #16130f;border-radius:14px;font-family:Lalezar,sans-serif;font-weight:400;letter-spacing:.3px}
+.racts .btn.rbig:active{transform:translateY(3px);box-shadow:0 1px 0 #16130f}
+.racts .btn.rbig:disabled{filter:grayscale(.8);opacity:.6}
+.roffer{background:linear-gradient(170deg,#fffdf6,#f2e7cb);box-shadow:0 4px 0 #16130f}
+.rcard{background:linear-gradient(160deg,#ffe58a,#f2b705);border:3px solid #16130f;box-shadow:0 6px 0 #16130f,0 12px 24px rgba(0,0,0,.4);overflow:hidden}
+.rcard::before{content:'؟';position:absolute;inset-inline-end:8px;top:-14px;font:400 5rem Lalezar,sans-serif;color:rgba(22,19,15,.12)}
+/* القطع: بيادق لامعة */
+.rtok{border:2.5px solid #fff;box-shadow:0 0 0 2px #16130f,0 5px 6px rgba(0,0,0,.55);background-image:radial-gradient(circle at 32% 28%,rgba(255,255,255,.65),transparent 45%)!important;background-color:var(--pc,#e8362d)}
+.rtok.cur{box-shadow:0 0 0 2px #16130f,0 0 0 5px #f5d77a,0 5px 6px rgba(0,0,0,.55);animation:rBob 1s ease-in-out infinite alternate}
+@keyframes rBob{to{transform:translate(-50%,-62%)}}
+/* اللوحة الجانبية */
+.rp{border-radius:14px;box-shadow:2px 2px 0 var(--ink)}
+.rp em{background:linear-gradient(180deg,#2bbf6f,#14874b);color:#fff;border:2px solid #16130f;font-family:Lalezar,sans-serif;text-shadow:1px 1px 0 #0b3d26}
+.rp em::after{content:' ﷼';font-size:.8em}
+.rp.cur{background:linear-gradient(90deg,#fff3c4,#ffe58a);box-shadow:3px 3px 0 var(--ink)}
+.rround{background:linear-gradient(90deg,#0b3d26,#14874b);color:#f5d77a;border:2.5px solid #16130f;font-family:Lalezar,sans-serif;font-weight:400;letter-spacing:.5px}
+@media(max-width:500px){.rboard{border-width:4px;border-radius:12px;gap:1px;padding:1px;box-shadow:0 0 0 3px #16130f,5px 5px 0 3px #16130f}.rt .rpr{font-size:6px;padding:0 3px}.rt em{font-size:11px}.rt.corner em{font-size:18px}.rt.corner b{font-size:9px}.rlogo b{font-size:1.5rem}.rtray{padding:6px 12px}}
+.rcard{inset:6% 8% auto 8%;pointer-events:none}
+.rt:not(.owned) .rown{display:none}
