@@ -77,7 +77,7 @@
   };
 
   function draw() {
-    inner().innerHTML = `<div class="stf-head"><span class="stf-me" style="--c:${COL[ST.who] || '#16130f'}">${esc(ST.who || '')}</span><h2>🔐 مكان التيم</h2><button type="button" class="stf-out" id="stfOut">طلعة</button></div>
+    inner().innerHTML = `<div class="stf-head"><span class="stf-me" style="--c:${COL[ST.who] || '#16130f'}">${esc(ST.who || '')}</span><h2>🔐 مكان التيم</h2><button type="button" class="stf-out" id="stfOut">تسجيل خروج</button></div>
       <nav class="stf-tabs" id="stfTabs"></nav>
       <div class="stf-acts">
         <div class="stf-act"><select id="stfGame">${Object.entries(GNAME).map(([k, n]) => `<option value="${k}">${esc(n)}</option>`).join('')}</select><button type="button" class="btn" id="stfPriv">➕ غرفة خاصة للتيم</button></div>
