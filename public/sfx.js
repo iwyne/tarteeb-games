@@ -81,10 +81,39 @@ const sfx = (() => {
     win: () => [523, 659, 784, 1047, 784, 1047, 1319].forEach((f, i) => tone(f, i * .11, .22, 'triangle', .2)),
     lose: () => [392, 330, 262].forEach((f, i) => tone(f, i * .16, .28, 'triangle', .16))
   };
-  const api = name => { if (on && bank[name]) bank[name](); };
+  // ---- أصوات حقيقية مسجّلة (CC0: Kenney Casino Audio + freesound) — لو ما تحمّلت نرجع للصوت المركّب ----
+  const SMP = {
+    card: [['card1', 'card2', 'card3'], .9], draw: [['slide1', 'slide2', 'slide3'], .8], shuffle: [['shuffle'], .75], fan: [['fan'], .8], shove: [['shove'], .8],
+    pop: [['pop'], .55], gclick: [['click'], .6], tick: [['tick'], .5], bell: [['bell'], .6], whistle: [['whistle'], .55],
+    coin: [['coin1', 'coin2'], .7], siren: [['siren'], .45], laugh: [['laugh'], .6], catch: [['hit'], .9], scribble: [['scribble'], .6],
+    chime: [['chime'], .45], beep: [['beep'], .45], win: [['../win'], .8], marble: [['click'], .8, .62]
+  };
+  const BUF = {}; let loading = false;
+  function loadAll() {
+    const c = ac(); if (!c || loading) return; loading = true;
+    const files = new Set(); Object.values(SMP).forEach(([L]) => L.forEach(f => files.add(f)));
+    files.forEach(f => fetch('sounds/sfx/' + f + '.mp3').then(r => r.ok ? r.arrayBuffer() : Promise.reject()).then(b => new Promise((ok, no) => c.decodeAudioData(b, ok, no))).then(buf => { BUF[f] = buf; }).catch(() => {}));
+  }
+  function sample(name, o = {}) {
+    const d = SMP[name]; if (!d) return false;
+    const L = d[0].filter(f => BUF[f]); if (!L.length) return false;
+    const c = ac(); if (!c) return false;
+    const s = c.createBufferSource(), g = c.createGain();
+    s.buffer = BUF[L[Math.random() * L.length | 0]];
+    s.playbackRate.value = (o.rate || d[2] || 1) * (1 + (Math.random() - .5) * .08); // تغيير بسيط عشان ما يصير الصوت آلي
+    g.gain.value = (o.gain || 1) * d[1];
+    s.connect(g); g.connect(out(c)); s.start(c.currentTime + (o.at || 0));
+    return true;
+  }
+  const api = (name, o) => { if (!on) return; if (sample(name, o)) return; if (bank[name]) bank[name](); };
+  // توزيع ورق: ورقة ورا ورقة
+  api.deal = (n = 6, gap = .075) => { if (!on) return; for (let i = 0; i < n; i++) if (!sample('draw', { at: i * gap, gain: .8 })) { if (i === 0) bank.draw(); } };
+  // خلط + توزيع (بداية جولة ورق)
+  api.dealRound = (n = 7) => { if (!on) return; if (sample('shuffle')) setTimeout(() => api.deal(n), 650); else api.deal(n); };
   api.on = () => on;
   api.vol = v => { if (v == null) return vol; vol = Math.max(0, Math.min(1, +v)); if (master) master.gain.value = vol; try { localStorage.setItem('tarteeb-vol', vol); } catch {} return vol; };
   api.toggle = () => { on = !on; try { localStorage.setItem('tarteeb-mute', on ? '0' : '1'); } catch {} return on; };
-  addEventListener('pointerdown', () => ac(), { once: true, passive: true });
+  addEventListener('pointerdown', () => { ac(); loadAll(); }, { once: true, passive: true });
+  addEventListener('keydown', () => { ac(); loadAll(); }, { once: true });
   return api;
 })();

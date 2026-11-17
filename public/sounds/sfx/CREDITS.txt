@@ -1,0 +1,13 @@
+Sound effects — all CC0 1.0 (public domain, no attribution required). Thanks to:
+- card*, slide*, shuffle, fan, shove: Kenney "Casino Audio" (kenney.nl / opengameart.org/content/54-casino-sound-effects-cards-dice-chips)
+- siren: blukotek — freesound.org/people/blukotek/sounds/431651
+- coin1, coin2: sorce — freesound.org/people/sorce/sounds/425130
+- bell: Herkules92 — freesound.org/people/Herkules92/sounds/520998
+- laugh: Kinoton — freesound.org/people/Kinoton/sounds/371562
+- tick: dslrguide — freesound.org/people/dslrguide/sounds/321484
+- click: el_boss — freesound.org/people/el_boss/sounds/677861
+- scribble: PDaefaul — freesound.org/people/PDaefaul/sounds/631971
+- whistle: strongbot — freesound.org/people/strongbot/sounds/568995
+- chime: fonografico — freesound.org/people/fonografico/sounds/636113
+- hit, pop, beep: Space Station 14 contributors (CC0)
+Converted to mono MP3 and volume-normalized for this site.

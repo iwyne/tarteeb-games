@@ -1,7 +1,7 @@
 // مكان التيم 🔐 — يفتح بحركة سرية: اضغط «TRTB TEAM» في قسم الفريق ٥ مرات ورا بعض، بعدها الرمز.
 (() => {
   const KEY = 'tarteeb-staff';
-  const COL = { 'بشرى': '#ff4fa3', 'مازن': '#2a5bd7', 'أفراح': '#a66bff', 'سلمان': '#ff8a1f', 'عبدالرحمن': '#19c3d6', 'حميد': '#e8362d', 'علي': '#e0a800', 'هدهد': '#1fa35c' };
+  const COL = { 'بشرى': '#ff4fa3', 'مازن': '#e8362d', 'أفراح': '#a66bff', 'سلمان': '#ff8a1f', 'ايزن': '#19c3d6', 'حميد': '#2a5bd7', 'علي': '#e0a800', 'هدهد': '#1fa35c', 'لافي': '#e86aa6' };
   const ST = { who: null, tab: 'rooms', rooms: [], live: {}, stats: null, chat: [], notes: [], members: [], unread: 0, lastMsg: 0, open: false };
   const auth = () => { const s = store.get(KEY); return s && typeof s === 'object' && s.tok ? s : null; };
   window.teamTok = () => { const a = auth(); return a ? a.tok : undefined; };

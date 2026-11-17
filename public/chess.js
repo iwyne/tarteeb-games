@@ -60,7 +60,7 @@ function renderChess(body) {
         img.animate([{ transform: `translate(${dx}px,${dy}px)` }, { transform: 'none' }], { duration: 180, easing: 'cubic-bezier(.3,.7,.4,1)' });
       }
       CH.justDropped = false;
-      try { sfx(g.check ? 'alarm' : g.last.cap ? 'slap' : 'card'); } catch {}
+      try { sfx(g.check ? 'alarm' : g.last.cap ? 'slap' : 'marble'); } catch {}
     }
   }
   // الحالة

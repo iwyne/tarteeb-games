@@ -17,6 +17,7 @@ const GTI = {
   fib: { s: 'ding', t: 'صدّقني', html: () => `<div class="bulbs">${Array.from({ length: 14 }, (_, i) => `<i style="--k:${i}"></i>`).join('')}</div><div class="pg"><svg viewBox="0 0 200 60" preserveAspectRatio="none"><path d="M0 30h30l8-18 8 34 8-26 6 14h20l6-24 10 44 8-30 6 10h20l8-14 8 22 6-8h28"/></svg></div><em class="lie">كذّاب؟</em>` },
   bomb: { s: 'tick', t: 'القنبلة', html: () => `<div class="hz"></div><div class="bm"><i class="cap"></i><i class="fz"></i><i class="sp"></i><i class="sh"></i></div><div class="kb"></div>` },
   auction: { s: 'bell', t: 'المزاد', html: () => `<div class="pod"></div><div class="lot">🏺<small>قطعة رقم ١</small></div><div class="gv">🔨</div><em class="sold">بيع!</em>` },
+  rich: { s: 'coin', t: 'مليونير الديرة', html: () => `<div class="bills">${['💵', '💰', '🏠', '💵', '🏨', '💰', '💵'].map((e, i) => `<i style="left:${8 + i * 13}%;top:${20 + (i % 3) * 18}%;animation-delay:${i * .12}s">${e}</i>`).join('')}</div><i class="rd2">🎲</i>` },
   cars: { s: 'whoosh', t: 'مطاردة', html: () => `<i class="rd"></i><i class="kc run">🚗</i><i class="kc cop">🚓</i><i class="sr r"></i><i class="sr b"></i>` },
   baloot: { s: 'card', t: 'بلوت', html: () => `<i class="b1">A♥</i><i class="b2">J♠</i><i class="b3">9♦</i>` },
   jwb: { s: 'pop', t: 'جوابك الترتيب', html: () => `<i class="jb1">🍚 دجاج؟</i><i class="jb2">لحم! 🥩</i><i class="jb3">🤝 +٥</i>` },
@@ -44,12 +45,30 @@ function gtSync() {
   const key = g ? S.code + ':' + g : '';
   if (key && key !== GT.cur) {
     GT.cur = key;
-    // لو توه شاف انميشنها من الصفحة الرئيسية ما نعيده
-    if (!(GT.last === g && Date.now() - GT.lastAt < 12000)) gtIntro(g);
+    // الانميشن يطلع بعد ما تسوي الغرفة (أو تدخلها، أو المضيف يغيّر اللعبة) — مو لما تضغط على اللعبة
+    gtIntro(g);
   }
   if (!g) GT.cur = '';
 }
 (() => {
   const r0 = render; render = function () { r0.apply(this, arguments); try { gtSync(); } catch (e) { console.warn(e); } };
-  const p0 = pickGame; pickGame = function (g) { p0(g); gtIntro(g); };
+  // أصوات بداية الجولة: خلط وتوزيع ورق، أو صفّارة/جرس للألعاب الثانية
+  const SND = { k: '', hand: -1 };
+  const r1 = render; render = function () {
+    r1.apply(this, arguments);
+    try {
+      if (!S || !S.g || S.phase !== 'play') { if (!S || S.phase === 'lobby') SND.k = ''; return; }
+      const k = S.code + ':' + S.game;
+      if (k !== SND.k) {
+        SND.k = k; SND.hand = -1;
+        if (['uno', 'flip'].includes(S.game)) sfx.dealRound(7);
+        else if (S.game === 'liars') sfx.dealRound(5);
+        else if (['cars', 'sus', 'haunt', 'typing', 'bomb', 'flags', 'feud'].includes(S.game)) sfx('whistle');
+        else if (S.game !== 'baloot' && S.game !== 'jackaroo') sfx('bell');
+      }
+      // البلوت والجاكارو: كل توزيعة جديدة لها صوت
+      if (S.game === 'baloot' && S.g.handN !== SND.hand) { if (S.g.sub === 'bid') { SND.hand = S.g.handN; sfx.dealRound(5); } }
+      if (S.game === 'jackaroo' && S.g.hand) { const n = S.g.hand.length; if (n > SND.hand && SND.hand !== -2) sfx.dealRound(n); SND.hand = n; }
+    } catch (e) { console.warn(e); }
+  };
 })();

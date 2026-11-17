@@ -40,7 +40,7 @@ function renderAuction(body) {
   // اللاعبين
   $('#auPpl').innerHTML = [...S.players].filter(p => g.P[p.id]).map(p => { const P = g.P[p.id]; return `<div class="aup${p.id === g.top && g.sub === 'bid' ? ' top' : ''}${p.id === S.me ? ' me' : ''}"><span class="bmav">${bmFace(p.id)}</span><b class="nt">${esc(p.name)}</b><i>💰 ${auM(P.cash)}</i><small>${P.items.map(x => x.e).join('') || '—'}</small></div>`; }).join('');
   // أصوات
-  if (g.bidN !== AU.bidN) { if (AU.bidN && g.sub === 'bid') sfx('gclick'); AU.bidN = g.bidN; }
+  if (g.bidN !== AU.bidN) { if (AU.bidN && g.sub === 'bid') sfx('coin'); AU.bidN = g.bidN; }
   if (g.sub !== AU.sub || g.k !== AU.k) { if (g.sub === 'sold') { sfx('slam'); setTimeout(() => sfx(g.top && it && it.v >= g.price ? 'win' : 'nope'), 700); } else if (g.sub === 'show') sfx('bell'); AU.sub = g.sub; AU.k = g.k; }
   auCall();
 }

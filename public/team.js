@@ -9,7 +9,8 @@
     { n: 'ايزن', img: 'team/m5.webp', c: '#19c3d6' },
     { n: 'حميد', img: 'team/m6.webp', c: '#2a5bd7' },
     { n: 'علي', img: 'team/m7.webp', c: '#ffc928' },
-    { n: 'هدهد', img: 'team/m8.webp', c: '#1fa35c' }
+    { n: 'هدهد', img: 'team/m8.webp', c: '#1fa35c' },
+    { n: 'لافي', img: 'team/m9.webp', c: '#ff8fc0' }
   ];
   const SKEW = -8, reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
   const root = document.getElementById('ttTeam'); if (!root) return;

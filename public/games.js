@@ -1,7 +1,7 @@
 // واجهات الألعاب الثانية: كلمة السر، خلية الحروف، الكذابين الترتيب
-const GNAME = { uno: 'أونو', codes: 'كلمة السر', hive: 'خلية الحروف', liars: 'الكذابين الترتيب', outside: 'برا السالفة', typing: 'سبّاق الكتابة', jackaroo: 'جاكارو', draw: 'رسم وخمّن', flip: 'أونو فليب', sus: 'المندس', haunt: 'البيت المسكون', mafia: 'المافيا', phone: 'التلفون الترتيب', fib: 'صدّقني', bomb: 'القنبلة', auction: 'المزاد', feud: 'العائلة الترتيب', flags: 'أعلام ودول', mimic: 'الأصوات الترتيب', chess: 'شطرنج', jwb: 'جوابك الترتيب', baloot: 'بلوت', cars: 'مطاردة' };
-const GINFO = { cars: 'من ٢ إلى ١٠ لاعبين (والبوتات تكمّل)', chess: 'لاعبين، أو أنت ضد بوت (والباقين يتفرجون)', jwb: 'من ٢ إلى ١٢ لاعب (والبوتات تكمّل)', baloot: '٤ لاعبين، فريقين (والبوتات تكمّل)', mimic: 'من ١ إلى ٨ لاعبين (يحتاج مايك)', auction: 'من ٢ إلى ١٠ لاعبين (والبوتات تكمّل)', feud: 'من ٢ إلى ١٢، فريقين (والبوتات تكمّل)', flags: 'من ١ إلى ١٢ لاعب (والبوتات تكمّل)', phone: 'من ٣ إلى ١٢ لاعب', fib: 'من ٣ إلى ١٠ لاعبين (والبوتات تكمّل)', bomb: 'من ٢ إلى ١٢ لاعب (والبوتات تكمّل)', mafia: 'من ٥ إلى ١٦ لاعب (والبوتات تكمّل)', haunt: 'من ٢ إلى ١٠ لاعبين (ثري دي، والبوتات تكمّل)', sus: 'من ٤ إلى ١٢ لاعب (والبوتات تكمّل العدد)', flip: 'من ٢ إلى ٨ لاعبين', uno: 'من ٢ إلى ٨ لاعبين', codes: 'من ٤ إلى ١٠ لاعبين، فريقين', hive: 'من ٢ إلى ١٠ لاعبين، فريقين', liars: 'من ٢ إلى ٨ لاعبين', outside: 'من ٣ إلى ١٠ لاعبين', typing: 'من ٢ إلى ١٠ لاعبين', jackaroo: '٤ لاعبين بالضبط، فريقين (شريكك قبالتك)', draw: 'من ٢ إلى ١٠ لاعبين' };
-const BOTGAMES = ['cars', 'baloot', 'jwb', 'chess', 'auction', 'feud', 'flags', 'fib', 'bomb', 'mafia', 'uno', 'hive', 'liars', 'jackaroo', 'outside', 'typing', 'flip', 'sus', 'haunt'];
+const GNAME = { uno: 'أونو', codes: 'كلمة السر', hive: 'خلية الحروف', liars: 'الكذابين الترتيب', outside: 'برا السالفة', typing: 'سبّاق الكتابة', jackaroo: 'جاكارو', draw: 'رسم وخمّن', flip: 'أونو فليب', sus: 'المندس', haunt: 'البيت المسكون', mafia: 'المافيا', phone: 'التلفون الترتيب', fib: 'صدّقني', bomb: 'القنبلة', auction: 'المزاد', feud: 'العائلة الترتيب', flags: 'أعلام ودول', mimic: 'الأصوات الترتيب', chess: 'شطرنج', jwb: 'جوابك الترتيب', baloot: 'بلوت', cars: 'مطاردة', rich: 'مليونير الديرة' };
+const GINFO = { rich: 'من ٢ إلى ٦ لاعبين (والبوتات تكمّل)', cars: 'من ٢ إلى ١٠ لاعبين (والبوتات تكمّل)', chess: 'لاعبين، أو أنت ضد بوت (والباقين يتفرجون)', jwb: 'من ٢ إلى ١٢ لاعب (والبوتات تكمّل)', baloot: '٤ لاعبين، فريقين (والبوتات تكمّل)', mimic: 'من ١ إلى ٨ لاعبين (يحتاج مايك)', auction: 'من ٢ إلى ١٠ لاعبين (والبوتات تكمّل)', feud: 'من ٢ إلى ١٢، فريقين (والبوتات تكمّل)', flags: 'من ١ إلى ١٢ لاعب (والبوتات تكمّل)', phone: 'من ٣ إلى ١٢ لاعب', fib: 'من ٣ إلى ١٠ لاعبين (والبوتات تكمّل)', bomb: 'من ٢ إلى ١٢ لاعب (والبوتات تكمّل)', mafia: 'من ٥ إلى ١٦ لاعب (والبوتات تكمّل)', haunt: 'من ٢ إلى ١٠ لاعبين (ثري دي، والبوتات تكمّل)', sus: 'من ٤ إلى ١٢ لاعب (والبوتات تكمّل العدد)', flip: 'من ٢ إلى ٨ لاعبين', uno: 'من ٢ إلى ٨ لاعبين', codes: 'من ٤ إلى ١٠ لاعبين، فريقين', hive: 'من ٢ إلى ١٠ لاعبين، فريقين', liars: 'من ٢ إلى ٨ لاعبين', outside: 'من ٣ إلى ١٠ لاعبين', typing: 'من ٢ إلى ١٠ لاعبين', jackaroo: '٤ لاعبين بالضبط، فريقين (شريكك قبالتك)', draw: 'من ٢ إلى ١٠ لاعبين' };
+const BOTGAMES = ['rich', 'cars', 'baloot', 'jwb', 'chess', 'auction', 'feud', 'flags', 'fib', 'bomb', 'mafia', 'uno', 'hive', 'liars', 'jackaroo', 'outside', 'typing', 'flip', 'sus', 'haunt'];
 const GHELP = {
   baloot: '٤ لاعبين فريقين، وشريكك قبالك. كل واحد ياخذ ٥ أوراق وتنكشف ورقة بالنص. بالدور: «حكم» يعني نوع الورقة المكشوفة هو الحكم، «صن» بدون حكم، أو «بس». لو محد اشترى تصير جولة ثانية تختار فيها أي نوع ثاني. بعدها تكمل الأوراق ٨ لكل واحد. لازم تنزل من نفس النوع لو عندك، وبالحكم لو ما عندك لازم تقطع بالحكم (إلا لو شريكك ماسك الأكلة). بالحكم: الولد ثم التسعة أقوى شي. المشاريع (سرا، خمسين، مية، أربعمية، بلوت) تنحسب تلقائي. لو الفريق المشتري ما جاب أكثر من النص تصير «خسرانة» وتروح كل النقاط للخصم. أول فريق يوصل ١٥٢ يفوز.',
   jwb: 'كل جولة يطلع سؤال مثل «شي تاكله مع الرز». الكل يكتب أجوبته بنفس الوقت (لين ٣ أجوبة). بعدها تنكشف أشهر ٦ أجوبة من استبيان: لو جوابك منها تاخذ نقاطه، وكل ما كان أشهر نقاطه أكثر. ولو لاعب ثاني كتب نفس جوابك تاخذون +٥ عن كل واحد (جوابك جوابهم 🤝). آخر جولة النقاط دبل، واللي يجمع أكثر يفوز.',
@@ -23,6 +23,7 @@ const GHELP = {
   liars: 'كل واحد يلعب ١–٣ أوراق مقلوبة ويقول إنها الورقة المطلوبة (ملك أو ملكة أو آص). اللي بعده يصدّق أو يقول «كذّاب!». اللي يخسر يسحب زناد المسدس (روليت: ٦ خانات وفيها رصاصة وحدة)، وآخر واحد ينجو يفوز.',
   outside: 'الكل يعرف الفئة والكلمة السرية إلا واحد (برا السالفة). كل واحد يسأل لاعب ثاني سؤال بصوته عن الكلمة بدون ما يقولها، والمسؤول يجاوب ثم يسأل غيره. بعد ما يخلص الكل تصوّتون على مين برا السالفة. لو انكشف يختار الكلمة من ٨ خيارات.',
   typing: 'يطلع نص وأسرع واحد يكتبه صح ياخذ نقطة. أول واحد يوصل الهدف يفوز. ما يهم التشكيل.',
+  rich: 'لعبة عقارات بمدن السعودية 💰 ترمي الزهر وتمشي، تشتري الأماكن اللي تنزل عليها، ولما تملك مجموعة كاملة (نفس اللون) تبني بيوت وفنادق ويزيد الإيجار. اللي ينزل على عقارك يدفع لك. تقدر تعرض على أحد تشتري عقاره (اضغط على الخانة). كروت الحظ ممكن تفيدك أو تورّطك، والتوقيف تطلع منه بـ٥٠ أو دبل. اللي يفلس يطلع، والأغنى بالنهاية يفوز.',
   cars: 'مطاردة سيارات بالمدينة 🚓 الصياد عليه سيارة بإنارة شرطة ويصدم الهاربين، واللي ينصاد يصير صياد معه. امشِ بالأسهم/WASD أو اسحب على الشاشة أو بيد التحكم، والمسافة (أو زر ⚡) نيترو. الهارب ياخذ نقطة كل ثانية و٢٠ لو نجا للنهاية، والصياد ١٥ عن كل صيدة. أكثر نقاط بعد الجولات يفوز.',
   jackaroo: 'أنت وشريكك (قبالتك) تدخلون الـ٨ كرات للبيت. آص/شايب يطلّعون كرة، الباقي يحرّك بعدده، الولد يبدّل، الـ٤ رجوع، الـ٥ تحرّك أي كرة، الـ٧ تقسّمها. اللي تنزل عليه كرتك ينأكل.',
   draw: 'كل لاعب يرسم كلمة سرية والباقي يخمّنون بالكتابة. كل ما خمّنت أسرع ياخذ نقاط أكثر، والرسّام ياخذ نقاط على كل واحد يخمّن. الأعلى نقاط يفوز.'
@@ -46,12 +47,12 @@ pickGame('uno');
 const GCAT = {
   bots: BOTGAMES,
   teams: ['baloot', 'codes', 'hive', 'jackaroo', 'feud'],
-  big: ['cars', 'jwb', 'mafia', 'sus', 'bomb', 'flags', 'phone', 'feud', 'haunt', 'codes', 'hive', 'outside', 'typing', 'draw', 'fib', 'auction'],
+  big: ['rich', 'cars', 'jwb', 'mafia', 'sus', 'bomb', 'flags', 'phone', 'feud', 'haunt', 'codes', 'hive', 'outside', 'typing', 'draw', 'fib', 'auction'],
   words: ['jwb', 'codes', 'hive', 'outside', 'typing', 'draw', 'fib', 'feud', 'flags', 'bomb', 'phone'],
   cards: ['baloot', 'uno', 'flip', 'liars', 'jackaroo', 'chess', 'auction']
 };
 // البحث: يطابق الاسم العربي والإنجليزي وأسماء ثانية معروفة، ويتجاهل الهمزات والتشكيل
-const GALIAS = { sus: 'among us امونق اس امنق المندس impostor', haunt: 'haunted house البيت المسكون رعب horror', uno: 'uno اونو', flip: 'uno flip اونو فليب', jackaroo: 'jackaroo جاكارو', baloot: 'baloot بلوت ورق', chess: 'chess شطرنج', mafia: 'mafia مافيا', codes: 'codenames كود نيمز', hive: 'hex حروف خلية', liars: 'liars bar roulette رولت كذابين', typing: 'typing race سباق كتابه', draw: 'draw guess skribbl رسم', outside: 'spyfall برا السالفه', bomb: 'bomb party قنبله', flags: 'flags countries اعلام دول', feud: 'family feud عائله', fib: 'fibbage صدقني', phone: 'gartic phone تلفون', auction: 'auction مزاد', mimic: 'voices اصوات', jwb: 'جوابك', cars: 'cars chase tag سيارات مطارده صيد' };
+const GALIAS = { sus: 'among us امونق اس امنق المندس impostor', haunt: 'haunted house البيت المسكون رعب horror', uno: 'uno اونو', flip: 'uno flip اونو فليب', jackaroo: 'jackaroo جاكارو', baloot: 'baloot بلوت ورق', chess: 'chess شطرنج', mafia: 'mafia مافيا', codes: 'codenames كود نيمز', hive: 'hex حروف خلية', liars: 'liars bar roulette رولت كذابين', typing: 'typing race سباق كتابه', draw: 'draw guess skribbl رسم', outside: 'spyfall برا السالفه', bomb: 'bomb party قنبله', flags: 'flags countries اعلام دول', feud: 'family feud عائله', fib: 'fibbage صدقني', phone: 'gartic phone تلفون', auction: 'auction مزاد', mimic: 'voices اصوات', jwb: 'جوابك', cars: 'cars chase tag سيارات مطارده صيد', rich: 'monopoly مونوبولي مونوبلي عقارات بنك فلوس زهر مليونير' };
 const gNorm = s => String(s || '').toLowerCase().replace(/[\u064B-\u0652\u0640]/g, '').replace(/[أإآٱ]/g, 'ا').replace(/ة/g, 'ه').replace(/ى/g, 'ي').replace(/ؤ/g, 'و').replace(/ئ/g, 'ي').replace(/\s+/g, ' ').trim();
 let gFilt = 'all';
 function gApply() {
@@ -138,7 +139,7 @@ function renderOther() {
   const body = $('#g2body');
   if (body.dataset.built && body.dataset.built !== S.game) { body.innerHTML = ''; body.dataset.built = ''; }
   body.className = 'g2body ' + S.game;
-  keep(body, () => ({ codes: renderCodes, hive: renderHive, liars: renderLiars, outside: renderOutside, typing: renderTyping, jackaroo: renderJack, draw: renderDraw, flip: renderFlip, sus: renderSus, haunt: renderHaunt, mafia: renderMafia, phone: renderPhone, fib: renderFib, bomb: renderBomb, auction: renderAuction, feud: renderFeud, jwb: renderJwb, baloot: renderBaloot, cars: renderCars, flags: renderFlags, mimic: renderMimic, chess: renderChess })[S.game](body, mt));
+  keep(body, () => ({ codes: renderCodes, hive: renderHive, liars: renderLiars, outside: renderOutside, typing: renderTyping, jackaroo: renderJack, draw: renderDraw, flip: renderFlip, sus: renderSus, haunt: renderHaunt, mafia: renderMafia, phone: renderPhone, fib: renderFib, bomb: renderBomb, auction: renderAuction, feud: renderFeud, jwb: renderJwb, baloot: renderBaloot, cars: renderCars, rich: renderRich, flags: renderFlags, mimic: renderMimic, chess: renderChess })[S.game](body, mt));
   // نهاية الجولة
   const over = S.phase === 'over';
   $('#over2').hidden = !over;
@@ -447,7 +448,7 @@ function renderTyping(body) {
 
 // ================= إعدادات الغرفة (اللوبي) =================
 let lsSig = '', lsOpen = false;
-const GEMO = { uno: '🃏', codes: '🕵️', hive: '🐝', liars: '🤥', outside: '🕶️', typing: '🏁', jackaroo: '🎱', draw: '✏️', flip: '🔄', sus: '🚀', haunt: '👻', mafia: '🎩', phone: '☎️', fib: '🤫', bomb: '💣', auction: '🔨', feud: '👨‍👩‍👧', flags: '🌍', mimic: '🎙️', chess: '♞', jwb: '🗣️', baloot: '🂡', cars: '🚓' };
+const GEMO = { uno: '🃏', codes: '🕵️', hive: '🐝', liars: '🤥', outside: '🕶️', typing: '🏁', jackaroo: '🎱', draw: '✏️', flip: '🔄', sus: '🚀', haunt: '👻', mafia: '🎩', phone: '☎️', fib: '🤫', bomb: '💣', auction: '🔨', feud: '👨‍👩‍👧', flags: '🌍', mimic: '🎙️', chess: '♞', jwb: '🗣️', baloot: '🂡', cars: '🚓', rich: '💰' };
 function renderLobbySet(isHost) {
   const gh = $('#ghelp'); if (gh) { gh.hidden = !S || S.spec; $('#ghelpTxt').textContent = GHELP[S.game] || ''; }
   const box = $('#lobbyset'); if (!S || S.spec) { box.hidden = true; return; }
@@ -458,7 +459,7 @@ function renderLobbySet(isHost) {
   const sum = [o.lock ? '🔒 مقفلة بدون متفرجين' : '', o.hasPass ? '🔑 بكلمة سر' : '', S.game === 'uno' && o.stack ? 'تراكم +٢/+٤' : '', S.game === 'uno' && o.turn !== 15 ? `مهلة الدور ${o.turn} ث` : '', S.game === 'sus' ? (o.map === 'forest' ? '🌲 الغابة الملعونة' : '🚀 السفينة') : '', S.game === 'sus' ? `${o.imps || 1} ${(o.imps || 1) > 1 ? 'مندسين' : 'مندس'}` : '', S.game === 'sus' && o.doctor ? 'طور الدكتور 🩺' : '', S.game === 'typing' ? `الهدف ${o.target} نقاط` : '', S.game === 'codes' && o.nwords ? `كلمات مخصصة (${o.nwords})` : ''].filter(Boolean);
   if (S.game === 'chess') sum.push({ none: 'بدون ساعة', '3+2': '⚡ ٣+٢', '5': '٥ دقايق', '10': '١٠ دقايق' }[o.ctime] || 'بدون ساعة', 'البوت ' + ({ easy: 'سهل', mid: 'متوسط', hard: 'صعب' }[o.clevel] || 'متوسط'));
   if (S.game === 'mimic') sum.push(`${o.mrounds || 5} جولات`, { all: 'كل الأصوات', react: '🎭 رياكشنات', basic: '🎵 منوّعة' }[o.mpack] || 'كل الأصوات');
-  if (S.game === 'auction') sum.push(`${o.aitems || 8} قطع`); else if (S.game === 'feud') sum.push(`${o.drounds || 4} جولات`); else if (S.game === 'cars') sum.push(`${o.krounds || 3} جولات`, `${o.ktime || 75} ثانية`); else if (S.game === 'jwb') sum.push(`${o.jrounds || 7} جولات`, `${o.jtime || 30} ثانية`, `${o.jn || 3} أجوبة`); else if (S.game === 'flags') sum.push({ flags: '🚩 أعلام', cap: '🏛️ عواصم', mix: '🌍 منوّع' }[o.fmode] || '🚩 أعلام', o.fdiff === 'all' ? 'كل الدول' : 'المشهورة', `${o.fcount || 10} سؤال`);
+  if (S.game === 'auction') sum.push(`${o.aitems || 8} قطع`); else if (S.game === 'feud') sum.push(`${o.drounds || 4} جولات`); else if (S.game === 'rich') sum.push(o.mlim ? `${o.mlim} جولة` : 'لين يفلسون'); else if (S.game === 'cars') sum.push(`${o.krounds || 3} جولات`, `${o.ktime || 75} ثانية`); else if (S.game === 'jwb') sum.push(`${o.jrounds || 7} جولات`, `${o.jtime || 30} ثانية`, `${o.jn || 3} أجوبة`); else if (S.game === 'flags') sum.push({ flags: '🚩 أعلام', cap: '🏛️ عواصم', mix: '🌍 منوّع' }[o.fmode] || '🚩 أعلام', o.fdiff === 'all' ? 'كل الدول' : 'المشهورة', `${o.fcount || 10} سؤال`);
   if (S.game === 'bomb') sum.push('❤️'.repeat(o.blives || 3), { easy: 'سهل', mid: 'عادي', hard: 'صعب' }[o.bdiff] || 'عادي'); else if (S.game === 'fib') sum.push(`${o.frounds || 7} جولات`); else if (S.game === 'phone') sum.push(o.psteps ? `${o.psteps} خطوات` : 'تلف على الكل', `الرسم ${o.pdraw || 90} ث`);
   if (!isHost) { box.innerHTML = sum.length ? `<div class="lsum">${sum.map(x => `<span>${x}</span>`).join('')}</div>` : ''; box.hidden = !sum.length; return; }
   const gm = Object.keys(GNAME).map(k => `<button type="button" class="gsw${k === S.game ? ' on' : ''}" data-g="${k}"><i>${GEMO[k] || '🎲'}</i><span>${GNAME[k]}</span></button>`).join('');
@@ -479,6 +480,7 @@ function renderLobbySet(isHost) {
   else if (S.game === 'mimic') extra = `<label class="chk">الجولات <select id="oMr">${[5, 8, 10].map(n => `<option value="${n}"${o.mrounds === n ? ' selected' : ''}>${n}</option>`).join('')}</select></label>
     <label class="chk">الأصوات <select id="oMp">${[['all', 'الكل'], ['react', '🎭 رياكشنات'], ['basic', '🎵 أصوات منوّعة']].map(([k, n]) => `<option value="${k}"${o.mpack === k ? ' selected' : ''}>${n}</option>`).join('')}</select></label>`;
   else if (S.game === 'auction') extra = `<label class="chk">عدد القطع <select id="oAi">${[6, 8, 10].map(n => `<option value="${n}"${o.aitems === n ? ' selected' : ''}>${n}</option>`).join('')}</select></label>`;
+  else if (S.game === 'rich') extra = `<label class="chk">تنتهي بعد <select id="oMl">${[[15, '١٥ جولة'], [25, '٢٥ جولة'], [0, 'لين يفلس الكل']].map(([n, l]) => `<option value="${n}"${(o.mlim == null ? 25 : o.mlim) === n ? ' selected' : ''}>${l}</option>`).join('')}</select></label>`;
   else if (S.game === 'cars') extra = `<label class="chk">عدد الجولات <select id="oKr">${[1, 3, 5].map(n => `<option value="${n}"${(o.krounds || 3) === n ? ' selected' : ''}>${n}</option>`).join('')}</select></label>
     <label class="chk">وقت الجولة <select id="oKt">${[60, 75, 90].map(n => `<option value="${n}"${(o.ktime || 75) === n ? ' selected' : ''}>${n} ثانية</option>`).join('')}</select></label>`;
   else if (S.game === 'jwb') extra = `<label class="chk">عدد الجولات <select id="oJr">${[5, 7, 10].map(n => `<option value="${n}"${(o.jrounds || 7) === n ? ' selected' : ''}>${n}</option>`).join('')}</select></label>
@@ -525,6 +527,7 @@ function renderLobbySet(isHost) {
   bind('oMp', 'onchange', e => send({ t: 'opt', k: 'mpack', v: e.target.value }));
   bind('oAi', 'onchange', e => send({ t: 'opt', k: 'aitems', v: +e.target.value }));
   bind('oDr', 'onchange', e => send({ t: 'opt', k: 'drounds', v: +e.target.value }));
+  bind('oMl', 'onchange', e => send({ t: 'opt', k: 'mlim', v: +e.target.value }));
   bind('oKr', 'onchange', e => send({ t: 'opt', k: 'krounds', v: +e.target.value }));
   bind('oKt', 'onchange', e => send({ t: 'opt', k: 'ktime', v: +e.target.value }));
   bind('oJr', 'onchange', e => send({ t: 'opt', k: 'jrounds', v: +e.target.value }));
@@ -641,7 +644,7 @@ function renderDraw(body) {
 // ================= جاكارو =================
 const JCOL = ['#e8362d', '#2a5bd7', '#ff9f43', '#19b5c9'];
 let jsel = null, jm = null;
-const JDESC = { A: 'طلّع / ١ / ١١', K: 'طلّع / ١٣', Q: '١٢', J: 'بدّل', 4: 'رجوع ٤', 5: 'أي كرة ٥', 7: 'قسّمها', 10: '١٠' };
+const JDESC = { A: 'طلّع / ١ / ١١', K: 'طلّع / ١٣', Q: '١٢', J: 'بدّل', 4: 'رجوع ٤', 5: 'أي كرة ٥', 7: 'قسّمها', 10: '١٠ / احرق' };
 function jlabel(k) {
   const t = k.split('|')[1];
   if (t === 'out') return 'طلّع كرة';
@@ -666,11 +669,12 @@ function jXY(s, p, k, my) {
   const q = (s - my + 4) % 4, { h, d, R1 } = JB;
   if (p < 0) { const o = .9 * h; return jRot([0, o, 0, -o][k], R1 + 2.45 * h + [-o, 0, o, 0][k], q); }
   if (p <= 79) return jCellXY((s * 20 + p) % 80, my);
-  const k2 = p - 79, P = [3 * h + 6 * d, R1 + 4 * d]; // الخانة اللي قبل البداية، ومنها يدخل البيت
+  const k2 = p - 79, P = [3 * h + 7 * d, R1 + 3 * d]; // نص الأذن (خانة ٧٨)، ومنها يدخل البيت
   return jRot(P[0] - k2 * d, P[1] - k2 * d, q);
 }
 const jNum = n => String(n).replace(/\d/g, d => '٠١٢٣٤٥٦٧٨٩'[d]);
 function jMoveLabel(l, my) {
+  if (l.burn != null) return `🔥 احرق ورقة على ${esc((S.players[l.burn] || {}).name || '')}`;
   const t = l.k.split('|')[1], who = S.players[l.s], mine = l.s === (S.g.ctl >= 0 ? S.g.ctl : my);
   const ball = `${mine ? '' : esc(who ? who.name : '') + ' '}كرة ${jNum(l.i + 1)}`;
   if (l.x) { const o = S.players[l.x[0]]; return `${ball} ⇄ ${esc(o ? o.name : '')}`; }
@@ -683,7 +687,7 @@ function renderJack(body) {
   if (g.split) jsel = g.split.card;
   if (jsel !== null && !g.split && !g.hand.some(c => c.id === jsel)) { jsel = null; jm = null; }
   if (!mineTurn) { jsel = null; jm = null; }
-  const legal = jsel === null ? [] : g.legal.filter(l => l.c === jsel);
+  const legalAll = jsel === null ? [] : g.legal.filter(l => l.c === jsel), legal = legalAll.filter(l => l.burn == null), burnOpt = legalAll.find(l => l.burn != null);
   const byM = {}; legal.forEach(l => { (byM[l.s + '-' + l.i] = byM[l.s + '-' + l.i] || []).push(l); });
   const movers = Object.keys(byM);
   if (jm && !byM[jm]) jm = null;
@@ -718,7 +722,7 @@ function renderJack(body) {
   for (let s = 0; s < 4; s++) g.marb[s].forEach((p, i) => {
     const [x, y] = xy(s, p, i), key = s + '-' + i, go = !!byM[key], tg = targets.has(key);
     const num = s === ctlS && !S.spec ? `<text x="${f1(x)}" y="${f1(y + 4.5)}" class="jmn">${jNum(i + 1)}</text>` : '';
-    marbles += `<g class="jm${go ? ' go' : ''}${tg ? ' tg' : ''}${jm === key ? ' sel' : ''}${g.last && g.last.cell && g.last.cell.s === s && g.last.cell.i === i ? ' lastm' : ''}" data-m="${key}"${go || tg ? ' tabindex="0"' : ''}><circle class="hit" cx="${f1(x)}" cy="${f1(y)}" r="17"/><circle class="ring" cx="${f1(x)}" cy="${f1(y)}" r="17"/><circle class="ball" cx="${f1(x)}" cy="${f1(y)}" r="12" fill="${JCOL[s]}"/><circle cx="${f1(x - 4)}" cy="${f1(y - 4.5)}" r="3.8" fill="#fff" opacity=".55"/>${num}</g>`;
+    marbles += `<g class="jm${p === 0 ? ' grd' : ''}${go ? ' go' : ''}${tg ? ' tg' : ''}${jm === key ? ' sel' : ''}${g.last && g.last.cell && g.last.cell.s === s && g.last.cell.i === i ? ' lastm' : ''}" data-m="${key}"${go || tg ? ' tabindex="0"' : ''}><circle class="hit" cx="${f1(x)}" cy="${f1(y)}" r="17"/><circle class="ring" cx="${f1(x)}" cy="${f1(y)}" r="17"/><circle class="ball" cx="${f1(x)}" cy="${f1(y)}" r="12" fill="${JCOL[s]}"/><circle cx="${f1(x - 4)}" cy="${f1(y - 4.5)}" r="3.8" fill="#fff" opacity=".55"/>${num}${p === 0 ? `<text x="${f1(x + 11)}" y="${f1(y - 8)}" class="jshield">🛡</text>` : ''}</g>`;
   });
   // أسماء اللاعبين داخل المربع اللي بالنص (SVG بس — سفاري ما يرسم HTML داخل SVG صح)
   const cut = (t, n) => { const a = [...t]; return a.length > n ? a.slice(0, n - 1).join('') + '…' : t; };
@@ -736,7 +740,9 @@ function renderJack(body) {
   }).join('');
   // الوسط: آخر ورقة انلعبت
   const dc = g.discard, dred = dc && (dc.s === '♥' || dc.s === '♦');
-  const centre = dc ? `<g class="jdisc${dred ? ' red' : ''}" transform="rotate(-7)"><rect x="-30" y="-42" width="60" height="84" rx="9"/><text x="0" y="-4" class="r">${dc.r}</text><text x="0" y="26" class="s">${dc.s}</text></g>` : `<g class="jdisc empty" transform="rotate(-7)"><rect x="-30" y="-42" width="60" height="84" rx="9"/></g>`;
+  const bc = g.burned, bred = bc && (bc.s === '♥' || bc.s === '♦');
+  const burnCard = bc ? `<g class="jdisc burnt${bred ? ' red' : ''}" transform="translate(44 8) rotate(12)"><rect x="-26" y="-36" width="52" height="72" rx="8"/><text x="0" y="-6" class="r">${bc.r}</text><text x="0" y="20" class="s">${bc.s}</text><text x="16" y="-24" class="fire">🔥</text></g>` : '';
+  const centre = burnCard + (dc ? `<g class="jdisc${dred ? ' red' : ''}" transform="rotate(-7)"><rect x="-30" y="-42" width="60" height="84" rx="9"/><text x="0" y="-4" class="r">${dc.r}</text><text x="0" y="26" class="s">${dc.s}</text></g>` : `<g class="jdisc empty" transform="rotate(-7)"><rect x="-30" y="-42" width="60" height="84" rx="9"/></g>`);
   // اليد
   const hand = g.hand.map(c => {
     const has = g.legal.some(l => l.c === c.id), red = c.s === '♥' || c.s === '♦';
@@ -753,20 +759,20 @@ function renderJack(body) {
   else hint = 'اضغط الكرة المتوهّجة أو مكانها الجديد';
   const ctlNote = !S.spec && g.ctl >= 0 && g.ctl !== g.seat ? '<div class="jnote">خلّصت كراتك — تلعب بكرات شريكك 🤝</div>' : '';
   // أزرار الحركات: واضحة على الجوال وتشتغل بيد التحكم
-  const list = jm ? mOpts : legal.length <= 6 ? legal : [];
-  const opts = jsel !== null && list.length ? `<div class="jopts">${list.map(l => `<button type="button" class="jmv" data-k="${esc(l.k)}" data-mk="${l.s}-${l.i}" style="--jc:${JCOL[l.s]}">${jMoveLabel(l, my)}</button>`).join('')}${jm && movers.length > 1 ? '<button type="button" class="jmv back" id="jBack">↩ كرة ثانية</button>' : ''}</div>` : '';
+  const list = (jm ? mOpts : legal.length <= 6 ? legal : []).concat(burnOpt && !jm ? [burnOpt] : []);
+  const opts = jsel !== null && list.length ? `<div class="jopts">${list.map(l => `<button type="button" class="jmv${l.burn != null ? ' burn' : ''}" data-k="${esc(l.k)}" data-mk="${l.s}-${l.i}" style="--jc:${l.burn != null ? '#ff6a1a' : JCOL[l.s]}">${jMoveLabel(l, my)}</button>`).join('')}${jm && movers.length > 1 ? '<button type="button" class="jmv back" id="jBack">↩ كرة ثانية</button>' : ''}</div>` : '';
   const oldPos = window.JPOS || {};
   body.innerHTML = `<div class="jwrap">
-    <div class="jtop"><span class="tc t0${g.turn % 2 === 0 && !over ? ' on' : ''}">فريق أ <b>${jNum(g.home[0] + g.home[2])}/٨</b></span><span class="cd2"></span><span class="tc t1${g.turn % 2 === 1 && !over ? ' on' : ''}"><b>${jNum(g.home[1] + g.home[3])}/٨</b> فريق ب</span></div>
+    <div class="jtop"><span class="tc t0${g.turn % 2 === 0 && !over ? ' on' : ''}">فريق أ <b>${jNum(g.home[0] + g.home[2])}/٨</b></span><span class="jmidtop"><span class="cd2"></span><button type="button" class="jq" id="jHelpBtn" aria-label="شرح اللعبة">؟ الشرح</button></span><span class="tc t1${g.turn % 2 === 1 && !over ? ' on' : ''}"><b>${jNum(g.home[1] + g.home[3])}/٨</b> فريق ب</span></div>
     <svg class="jboard" viewBox="-356 -356 712 712"><defs><radialGradient id="jwood" cx="45%" cy="40%" r="75%"><stop offset="0" stop-color="#b98252"/><stop offset=".7" stop-color="#94603a"/><stop offset="1" stop-color="#6e4325"/></radialGradient></defs>
       <circle r="352" fill="#2e7d50" stroke="#16130f" stroke-width="5"/>
       <circle r="338" fill="url(#jwood)" stroke="#5a3517" stroke-width="4"/>
       <circle r="322" fill="none" stroke="rgba(60,30,10,.35)" stroke-width="3" stroke-dasharray="2 9" stroke-linecap="round"/>
       <rect x="-${(R1 - 16).toFixed(0)}" y="-${(R1 - 16).toFixed(0)}" width="${(2 * R1 - 32).toFixed(0)}" height="${(2 * R1 - 32).toFixed(0)}" rx="26" class="jcen"/>
       ${cells}${lab}${centre}${gh}${marbles}</svg>
-    ${ctlNote}<div class="jhint${mineTurn ? ' me' : ''}">${hint}</div>${g.last ? `<div class="jlastl">${esc(((S.players[g.last.who] || {}).name || '') + ' ' + g.last.text)}</div>` : ''}${opts}
-    <div class="jhand">${hand}</div>${logHtml()}
-    <details class="jhelp"><summary>شرح اللعبة</summary><ul><li><b>الهدف:</b> أنت وشريكك (قبالتك) تدخلون الـ٨ كرات في البيت. لما تخلّص كراتك تلعبون بكرات شريكك.</li><li><b>التحكم:</b> اختر ورقة، بعدين اضغط الكرة المتوهّجة أو المكان اللي بتروح له (الدوائر الصفرا)، أو استخدم الأزرار تحت اللوح.</li><li><b>آص / شايب:</b> يطلّعون كرة من القاعدة. الآص يحرّك ١ أو ١١، والشايب ١٣.</li><li><b>بنت:</b> ١٢ خطوة. <b>ولد:</b> بدّل كرتك مع أي كرة ثانية على الطاولة.</li><li><b>٤:</b> رجوع ٤ خطوات. <b>٥:</b> حرّك أي كرة (حتى كرة خصمك) ٥ خطوات.</li><li><b>٧:</b> تقدر تقسّمها بين كراتك. باقي الأوراق تحرّك بعددها.</li><li>الكرة اللي تنزل عليها كرة غيرها <b>تنأكل</b> وترجع للقاعدة (حتى كرة شريكك!). ما تنزل على كرتك.</li><li>لو ما عندك حركة، أوراقك تنرمي وينتقل الدور.</li></ul></details></div>`;
+    <div class="jdock">${ctlNote}<div class="jhint${mineTurn ? ' me' : ''}">${hint}</div>${g.last ? `<div class="jlastl">${esc(((S.players[g.last.who] || {}).name || '') + ' ' + g.last.text)}</div>` : ''}${opts}
+    <div class="jhand">${hand}</div></div>
+    <div class="jhelpov" id="jHelp" hidden><div class="jhelpbox"><button type="button" class="jhx" id="jHelpX" aria-label="سكّر">✕</button><h3>شرح الجاكارو</h3><ul><li><b>الهدف:</b> أنت وشريكك (قبالتك) تدخلون الـ٨ كرات في البيت. لما تخلّص كراتك تلعبون بكرات شريكك.</li><li><b>التحكم:</b> اختر ورقة، بعدين اضغط الكرة المتوهّجة أو المكان اللي بتروح له (الدوائر الصفرا)، أو استخدم الأزرار تحت اللوح.</li><li><b>آص / شايب:</b> يطلّعون كرة من القاعدة. الآص يحرّك ١ أو ١١، والشايب ١٣.</li><li><b>بنت:</b> ١٢ خطوة. <b>ولد:</b> بدّل كرتك مع أي كرة ثانية على الطاولة.</li><li><b>٤:</b> رجوع ٤ خطوات. <b>٥:</b> حرّك أي كرة (حتى كرة خصمك) ٥ خطوات.</li><li><b>٧:</b> تقدر تقسّمها بين كراتك. باقي الأوراق تحرّك بعددها.</li><li><b>١٠:</b> يا تحرّك ١٠ خطوات، يا <b>تحرق</b> ورقة عشوائية على اللي بعدك ويروح عليه دوره 🔥</li><li><b>الحماية 🛡:</b> الكرة اللي واقفة على خانة بدايتها محمية: ما أحد يتخطاها ولا ينزل عليها ولا يبدّلها. وبالبيت ما تتخطى كراتك.</li><li><b>البيت:</b> تدخله من الخانة اللي بنص الأذن الملوّنة.</li><li>الكرة اللي تنزل عليها كرة غيرها <b>تنأكل</b> وترجع للقاعدة (حتى كرة شريكك!). ما تنزل على كرتك.</li><li>لو ما عندك حركة، أوراقك تنرمي وينتقل الدور.</li></ul></div></div></div>`;
   // حركة الكرات: تمشي خانة خانة على المسار بدل ما تطير
   const newPos = {};
   for (let s = 0; s < 4; s++) g.marb[s].forEach((p, i) => {
@@ -774,19 +780,23 @@ function renderJack(body) {
     const [x, y] = xy(s, p, i); newPos[k] = { p, x, y };
     const o = oldPos[k]; if (!o || o.p === p) return;
     let pts;
-    if (o.p >= 0 && p > o.p && p - o.p <= 15) { pts = []; for (let q = o.p; q <= p; q++) pts.push(xy(s, q, i)); }
+    if (o.p >= 0 && p > o.p && p - o.p <= 16) { pts = [xy(s, o.p, i)]; for (let q = o.p, n = 0; q !== p && n < 16; n++) { q = q >= 80 ? q + 1 : q >= 78 && p >= 80 ? 80 : q + 1; pts.push(xy(s, q, i)); } }
     else if (p >= 0 && o.p > p && o.p - p <= 4) { pts = []; for (let q = o.p; q >= p; q--) pts.push(xy(s, q, i)); }
     else pts = [[o.x, o.y], [(o.x + x) / 2, (o.y + y) / 2 - 40], [x, y]];
     el.animate(pts.map(([px, py]) => ({ transform: `translate(${px - x}px,${py - y}px)` })), { duration: Math.min(1100, 120 * pts.length + 120), easing: 'ease-in-out' });
+    try { const dur = Math.min(1100, 120 * pts.length + 120) / 1000, n = Math.min(10, pts.length - 1); for (let q = 1; q <= n; q++) sfx('marble', { at: dur * q / (n + 1), gain: q === n ? 1 : .55 }); if (p < 0 && o.p >= 0) setTimeout(() => sfx('catch'), 200); } catch {}
   });
   window.JPOS = newPos;
-  const play = k => { if (!k) return; send({ t: 'move', id: jsel, key: k }); sfx('pop'); jm = null; if (!g.split) jsel = null; };
+  const hov = $('#jHelp'); hov.hidden = !window.jHelpOpen;
+  const setHelp = v => { window.jHelpOpen = v; hov.hidden = !v; };
+  $('#jHelpBtn').onclick = () => setHelp(true); $('#jHelpX').onclick = () => setHelp(false); hov.onclick = e => { if (e.target === hov) setHelp(false); };
+  const play = k => { if (!k) return; send({ t: 'move', id: jsel, key: k }); sfx('card'); jm = null; if (!g.split) jsel = null; };
   body.querySelectorAll('.jc').forEach(b => b.onclick = () => {
     if (g.split) return;
     const id = +b.dataset.id;
     if (jsel === id) { const L = g.legal.filter(l => l.c === id); if (L.length === 1) return play(L[0].k); jsel = null; jm = null; }
     else { jsel = id; jm = null; }
-    sfx('pop'); renderJack(body);
+    sfx('shove'); renderJack(body);
   });
   body.querySelectorAll('.jmv[data-k]').forEach(b => {
     b.onclick = () => play(b.dataset.k);

@@ -4,7 +4,7 @@
 const crypto = require('crypto'), fs = require('fs'), path = require('path');
 const PIN = String(process.env.TEAM_PIN || '').trim();
 const FILE = process.env.TEAM_DATA || path.join(__dirname, 'data', 'team.json');
-const MEMBERS = ['بشرى', 'مازن', 'أفراح', 'سلمان', 'عبدالرحمن', 'حميد', 'علي', 'هدهد'];
+const MEMBERS = ['بشرى', 'مازن', 'أفراح', 'سلمان', 'ايزن', 'حميد', 'علي', 'هدهد', 'لافي'];
 const DAY = 864e5, TOK_DAYS = 30, MAX_TRIES = 5, LOCK_MS = 15 * 60 * 1000;
 
 let D = { chat: [], notes: [], stats: { total: 0, games: {}, days: {}, hours: Array(24).fill(0), peak: 0, peakAt: 0 } };

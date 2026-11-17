@@ -23,7 +23,7 @@ window.net_cars = m => {
     if (v) for (let i = 0; i < 18; i++) CA.fx.push({ x: v.x, y: v.y, vx: (Math.random() - .5) * 420, vy: (Math.random() - .5) * 420, t: 0, life: .6 + Math.random() * .4, c: i % 3 ? '#ffc928' : '#e8362d' });
     if (v) CA.fx.push({ ring: 1, x: v.x, y: v.y, t: 0, life: .5 });
     sfx('catch');
-    if (m.who === S.me) { CA.shake = 1; kBig('💥 انصدت! صرت صياد 🚨', 'bad'); }
+    if (m.who === S.me) { CA.shake = 1; kBig('💥 انصدت! صرت صياد 🚨', 'bad'); setTimeout(() => sfx('siren'), 300); }
     else if (m.by === S.me) { CA.shake = .4; kBig('صدته! +١٥ 🎯', 'good'); }
   }
 };
@@ -175,7 +175,7 @@ function renderCars(body) {
     intro.dataset.k = String(g.round);
     const hs = L.filter(([, c]) => c.role === 'h').map(([id]) => id);
     intro.innerHTML = `<div class="kcard ${hunter ? 'h' : 'r'}"><small>الجولة ${kNum(g.round)} من ${kNum(g.rounds)}</small><h2>${!me ? '👁 تتفرّج' : hunter ? '🚨 أنت الصياد!' : '🏃 اهرب!'}</h2><p>${!me ? '' : hunter ? 'اصدم الهاربين قبل ما يخلص الوقت. كل صيدة +١٥ واللي تصيده ينضم لك.' : 'لا يصدمك الصياد! كل ثانية تعيشها نقطة، ولو نجيت للنهاية +٢٠.'}</p><div class="khs">${hs.map(id => `<span style="--c:${KCOL[g.cars[id].c]}">🚨 ${esc(kName(id))}</span>`).join('')}</div></div>`;
-    sfx('turn');
+    sfx(hunter ? 'siren' : 'whistle');
   }
   // النتيجة
   const res = $('#kRes'), showRes = (g.sub === 'res' && g.res) || over;
