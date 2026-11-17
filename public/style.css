@@ -557,45 +557,42 @@ body{transition:background-color .3s,color .3s}
 /* ===== جاكارو ===== */
 .jwrap{display:grid;gap:10px;width:100%;max-width:760px;margin:0 auto}
 .jtop{display:flex;justify-content:space-between;align-items:center;gap:8px;font-weight:800}
-.jboard{width:100%;max-width:min(700px,calc(100vh - 250px));min-width:min(100%,340px);margin:0 auto;display:block;filter:drop-shadow(5px 6px 0 rgba(0,0,0,.28));user-select:none;-webkit-user-select:none;touch-action:manipulation}
-.jcen{fill:rgba(0,0,0,.16);stroke:rgba(255,250,240,.25);stroke-width:3;stroke-dasharray:6 8}
-.jcell{fill:#fbf3e2;stroke:#16130f;stroke-width:2.5}
-.jcell.st{stroke-width:6}
-.jlane{stroke-width:4}
-.jpocket{fill:rgba(0,0,0,.22);stroke-width:4;stroke-dasharray:7 6}
-.jbase{fill:rgba(0,0,0,.28);stroke:rgba(255,250,240,.35);stroke-width:2}
+.jboard{direction:ltr;width:100%;max-width:min(700px,calc(100vh - 250px));min-width:min(100%,340px);margin:0 auto;display:block;filter:drop-shadow(5px 6px 0 rgba(0,0,0,.28));user-select:none;-webkit-user-select:none;touch-action:manipulation}
+.jcen{fill:rgba(40,20,5,.28);stroke:rgba(255,240,220,.18);stroke-width:3}
+.jcell{fill:#4a2a12;stroke:#2a1608;stroke-width:2.5}
+.jcell.st{stroke-width:5;fill:#5a3517}
+.jlane{stroke-width:3.5}
+.jbase{fill:#4a2a12;stroke-width:3;stroke-dasharray:4 3}
 .jm{transition:filter .2s}
 .jm .hit{fill:transparent}
 .jm .ring{fill:none;stroke:transparent;stroke-width:4}
-.jm .ball{stroke:#16130f;stroke-width:3}
-.jmn{font:800 15px Tajawal,sans-serif;fill:#fff;text-anchor:middle;paint-order:stroke;stroke:#16130f;stroke-width:3px;pointer-events:none}
-.jm.lastm .ring{stroke:rgba(255,250,240,.7);stroke-dasharray:5 5}
+.jm .ball{stroke:#16130f;stroke-width:2.5}
+.jmn{font:800 13px Tajawal,sans-serif;fill:#fff;text-anchor:middle;paint-order:stroke;stroke:#16130f;stroke-width:3px;pointer-events:none}
+.jm.lastm .ring{stroke:rgba(255,250,240,.75);stroke-dasharray:4 4}
 .jm.go,.jm.tg{cursor:pointer}
-.jm.go .ring{stroke:#ffd166;animation:jring .9s ease-in-out infinite alternate}
+.jm.go .ring{stroke:#ffd166;stroke-width:4;animation:jring .9s ease-in-out infinite alternate}
 .jm.tg .ring{stroke:#ff6b6b;stroke-width:5;animation:jring .6s ease-in-out infinite alternate}
-.jm.sel .ring,.jm.hov .ring{stroke:#fff;stroke-width:6;animation:none}
+.jm.sel .ring,.jm.hov .ring{stroke:#fff;stroke-width:5;animation:none}
 .jm.go:hover .ball,.jm.sel .ball{filter:brightness(1.15)}
-@keyframes jring{from{r:17;opacity:.6}to{r:23;opacity:1}}
+@keyframes jring{from{opacity:.55}to{opacity:1}}
 .jgh{cursor:pointer}
-.jgh circle{fill:rgba(255,209,102,.35);stroke:#ffd166;stroke-width:4;stroke-dasharray:6 4;animation:jgh 1s linear infinite}
-.jgh.kill circle{fill:rgba(232,54,45,.35);stroke:#ff6b6b}
-.jgh text{font:800 16px Tajawal,sans-serif;fill:#fffaf0;text-anchor:middle;paint-order:stroke;stroke:#16130f;stroke-width:3px;pointer-events:none}
-.jgh:hover circle{fill:rgba(255,209,102,.7)}
-@keyframes jgh{to{stroke-dashoffset:-20}}
-.jlab{height:100%;box-sizing:border-box;display:flex;align-items:center;gap:6px;padding:4px 8px 4px 5px;background:#fffaf0;color:#16130f;border:4px solid var(--jc);border-radius:16px;line-height:1.15;overflow:hidden;white-space:nowrap;box-shadow:3px 3px 0 #16130f}
-.jlab i{font-style:normal;width:34px;height:34px;flex:none;border-radius:50%;background:var(--jc);display:grid;place-items:center;font-size:20px;color:#fff;border:3px solid #16130f}
-.jlab span{display:grid;min-width:0}
-.jlab b{font:800 19px Tajawal,sans-serif;overflow:hidden;text-overflow:ellipsis}
-.jlab small{font:700 14px Tajawal,sans-serif;opacity:.75}
-.jlab.cur{background:#ffd166;animation:jcur 1s ease-in-out infinite alternate}
-@keyframes jcur{to{box-shadow:3px 3px 0 #16130f,0 0 0 5px rgba(255,209,102,.55)}}
-.jmid{height:100%;display:grid;justify-items:center;align-content:center;gap:8px;color:#fffaf0;text-align:center}
-.jturn{font:400 28px Lalezar,sans-serif;background:rgba(0,0,0,.35);padding:2px 16px;border-radius:99px}
-.jturn.me{background:#ffd166;color:#16130f;animation:jcur 1s ease-in-out infinite alternate}
-.jdisc{width:70px;height:96px;border-radius:12px;background:#fffaf0;color:#16130f;border:3px solid #16130f;box-shadow:3px 3px 0 rgba(0,0,0,.4);display:grid;place-items:center;align-content:center;font-family:Lalezar,sans-serif;transform:rotate(-6deg)}
-.jdisc b{font-size:32px;font-weight:400;line-height:1}.jdisc span{font-size:28px;line-height:1}
-.jdisc.red{color:#e8362d}.jdisc.empty{font-size:40px;opacity:.5}
-.jlast{font:700 15px Tajawal,sans-serif;opacity:.9;max-width:240px;line-height:1.3}
+.jgh circle{fill:rgba(255,209,102,.4);stroke:#ffd166;stroke-width:3.5;stroke-dasharray:5 4;animation:jgh 1s linear infinite}
+.jgh.kill circle{fill:rgba(232,54,45,.4);stroke:#ff6b6b}
+.jgh text{font:800 14px Tajawal,sans-serif;fill:#fffaf0;text-anchor:middle;paint-order:stroke;stroke:#16130f;stroke-width:3px;pointer-events:none}
+@keyframes jgh{to{stroke-dashoffset:-18}}
+.jlab rect{fill:#fffaf0;stroke-width:4}
+.jlab.cur rect{fill:#ffd166;animation:jlabp 1s ease-in-out infinite alternate}
+@keyframes jlabp{to{stroke-width:7}}
+.jav{stroke:#16130f;stroke-width:2.5}
+.javt{font:800 16px Tajawal,sans-serif;fill:#fff;text-anchor:middle;pointer-events:none}
+.jln{font:800 17px Tajawal,sans-serif;fill:#16130f;text-anchor:middle}
+.jls{font:700 12.5px Tajawal,sans-serif;fill:#16130f;opacity:.75;text-anchor:middle}
+.jdisc rect{fill:#fffaf0;stroke:#16130f;stroke-width:3}
+.jdisc text{font-family:Lalezar,Tajawal,sans-serif;fill:#16130f;text-anchor:middle}
+.jdisc .r{font-size:30px}.jdisc .s{font-size:28px}
+.jdisc.red text{fill:#d42a22}
+.jdisc.empty rect{fill:rgba(255,250,240,.15);stroke:rgba(255,250,240,.4);stroke-dasharray:6 5}
+.jlastl{text-align:center;font-weight:700;font-size:.88rem;opacity:.75;margin-top:-4px}
 .jhint{text-align:center;font-weight:800;font-size:1.05rem}
 .jhint.me{background:var(--ink);color:var(--paper);border-radius:99px;padding:6px 16px;justify-self:center}
 .jhint b{color:#ffd166;font-size:1.3em}
@@ -606,8 +603,8 @@ body{transition:background-color .3s,color .3s}
 .jmv.back{border-inline-start-width:3px;background:var(--surf);color:var(--ink)}
 .jhand{display:flex;gap:10px;justify-content:center;padding-top:14px}
 .jc{position:relative;width:88px;height:124px;border:3px solid #16130f;border-radius:14px;background:linear-gradient(160deg,#fffdf6,#f3e7cc);color:#16130f;box-shadow:4px 4px 0 #16130f;display:grid;place-items:center;align-content:center;font-family:Lalezar,sans-serif;cursor:pointer;transition:transform .18s cubic-bezier(.3,1.6,.5,1),box-shadow .18s,opacity .2s;padding:2px}
-.jc .tl{position:absolute;top:5px;inset-inline-start:7px;font:400 .95rem/0.95 Lalezar,sans-serif;font-style:normal;text-align:center}
-.jc span{font-size:2.2rem;line-height:1}
+.jc .tl{position:absolute;top:5px;inset-inline-start:7px;font:400 .8rem/0.95 Lalezar,sans-serif;font-style:normal;text-align:center;opacity:.8}
+.jc span{font-size:2rem;line-height:1;margin-top:8px}
 .jc b{font-size:1.5rem;font-weight:400;line-height:1}
 .jc small{font:800 .72rem Tajawal,sans-serif;opacity:.75;margin-top:2px}
 .jc.red{color:#d42a22}
@@ -2744,3 +2741,4 @@ svg .padf .ring,svg .padf circle:first-child{stroke:#fff!important;stroke-width:
 @keyframes kDrive{from{left:110%}to{left:-30%}}
 @keyframes kRoad{to{background-position:-80px 0}}
 @keyframes kSiren{0%{opacity:1}50%{opacity:0}}
+.jln.e,.jls.e{text-anchor:end}

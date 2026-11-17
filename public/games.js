@@ -649,27 +649,25 @@ function jlabel(k) {
   if (t[0] === 'f') return '+' + t.slice(1);
   return t;
 }
-// ---- لوح الجاكارو: مسار مربّع بزوايا مدوّرة، كل لاعب على ضلع، وأنت دايم تحت ----
-const JB = { C: 360, h: 316, rc: 74 };
-JB.L = JB.h - JB.rc; JB.Q = Math.PI * JB.rc / 2; JB.P = 8 * JB.L + 4 * JB.Q;
-function jPerim(u) {
-  const { C, h, rc, L, Q } = JB; let d = (((u % 1) + 1) % 1) * JB.P;
-  const segs = [['l', C, C + h, -1, 0, L], ['a', C - L, C + L, Math.PI / 2], ['l', C - h, C + L, 0, -1, 2 * L], ['a', C - L, C - L, Math.PI], ['l', C - L, C - h, 1, 0, 2 * L], ['a', C + L, C - L, Math.PI * 1.5], ['l', C + h, C - L, 0, 1, 2 * L], ['a', C + L, C + L, 0], ['l', C + L, C + h, -1, 0, L]];
-  for (const s of segs) {
-    const len = s[0] === 'l' ? s[5] : Q;
-    if (d <= len + 1e-6) return s[0] === 'l' ? [s[1] + s[3] * d, s[2] + s[4] * d] : [s[1] + rc * Math.cos(s[3] + d / rc), s[2] + rc * Math.sin(s[3] + d / rc)];
-    d -= len;
-  }
-  return [C, C + h];
+// ---- لوح الجاكارو: دائري مثل اللوح الحقيقي — ضلع مستقيم لكل لاعب (٧ خانات) وبين كل ضلعين «أذن» مايلة.
+// كل لاعب يبدأ من رأس الأذن اللي يمينه، وبيته خط مايل داخل نفس الأذن، وقاعدته معيّن تحت ضلعه. وأنت دايم تحت.
+const JB = { h: 29 }; JB.d = JB.h / Math.SQRT2; JB.R1 = 3 * JB.h + 4 * JB.d;
+// خانة p (٠..١٩) من ربع اللاعب اللي تحت، بدون تدوير (المركز ٠،٠)
+function jQuarter(p) {
+  const { h, d, R1 } = JB, Bx = 3 * h + 5 * d, By = R1 + 5 * d;
+  if (p <= 5) return [Bx - p * d, By - p * d];
+  if (p <= 11) return [3 * h - (p - 5) * h, R1];
+  if (p <= 16) return [-3 * h - (p - 11) * d, R1 + (p - 11) * d];
+  return [-3 * h - 5 * d - (p - 16) * d, R1 + 5 * d - (p - 16) * d];
 }
-// يدوّر نقطة (نسبة للمركز) ربع لفّة k مرات — عشان كل لاعب ياخذ ضلعه
-const jRot = (dx, dy, k) => { for (let i = 0; i < k; i++) [dx, dy] = [-dy, dx]; return [JB.C + dx, JB.C + dy]; };
-const jCellXY = (cell, my) => jPerim(((cell - my * 20 + 80) % 80) / 80);
+const jRot = (dx, dy, k) => { for (let i = 0; i < k; i++) [dx, dy] = [-dy, dx]; return [dx, dy]; };
+const jCellXY = (cell, my) => { const rel = (cell - my * 20 + 80) % 80; return jRot(...jQuarter(rel % 20), Math.floor(rel / 20)); };
 function jXY(s, p, k, my) {
-  const q = (s - my + 4) % 4;
-  if (p < 0) return jRot(-158 + (k % 2) * 40 - 20, 200 + (k > 1 ? 40 : 0) - 20, q);
+  const q = (s - my + 4) % 4, { h, d, R1 } = JB;
+  if (p < 0) { const o = .9 * h; return jRot([0, o, 0, -o][k], R1 + 2.45 * h + [-o, 0, o, 0][k], q); }
   if (p <= 79) return jCellXY((s * 20 + p) % 80, my);
-  return jRot(0, JB.h - 46 - 40 * (p - 80), q);
+  const k2 = p - 79, P = [3 * h + 6 * d, R1 + 4 * d]; // الخانة اللي قبل البداية، ومنها يدخل البيت
+  return jRot(P[0] - k2 * d, P[1] - k2 * d, q);
 }
 const jNum = n => String(n).replace(/\d/g, d => '٠١٢٣٤٥٦٧٨٩'[d]);
 function jMoveLabel(l, my) {
@@ -682,7 +680,6 @@ function jMoveLabel(l, my) {
 }
 function renderJack(body) {
   const g = S.g, over = S.phase === 'over', my = g.seat >= 0 ? g.seat : 0, mineTurn = g.turn === g.seat && !over && !S.spec;
-  const C = JB.C;
   if (g.split) jsel = g.split.card;
   if (jsel !== null && !g.split && !g.hand.some(c => c.id === jsel)) { jsel = null; jm = null; }
   if (!mineTurn) { jsel = null; jm = null; }
@@ -699,44 +696,47 @@ function renderJack(body) {
   const xy = (s, p, k) => jXY(s, p, k, my);
   const f1 = n => n.toFixed(1);
   // المسار والخانات
+  const { h: JH, d: JD, R1 } = JB;
   let cells = '';
   for (let c = 0; c < 80; c++) {
-    const [x, y] = jCellXY(c, my), st = c % 20 === 0, own = st ? c / 20 : -1;
-    cells += `<circle cx="${f1(x)}" cy="${f1(y)}" r="${st ? 15 : 11.5}" class="jcell${st ? ' st' : ''}"${st ? ` style="stroke:${JCOL[own]}"` : ''}/>`;
+    const [x, y] = jCellXY(c, my), st = c % 20 === 0;
+    cells += `<circle cx="${f1(x)}" cy="${f1(y)}" r="${st ? 12.5 : 10.5}" class="jcell${st ? ' st' : ''}"${st ? ` style="stroke:${JCOL[c / 20]}"` : ''}/>`;
   }
   for (let s = 0; s < 4; s++) {
-    const q = (s - my + 4) % 4;
-    for (let k = 0; k < 4; k++) { const [x, y] = jRot(0, JB.h - 46 - 40 * k, q); cells += `<rect x="${f1(x - 15)}" y="${f1(y - 15)}" width="30" height="30" rx="8" class="jlane" style="stroke:${JCOL[s]};fill:color-mix(in srgb,${JCOL[s]} 22%,#fbf3e2)"/>`; }
-    const [bx, by] = jRot(-158, 200, q);
-    cells += `<rect x="${f1(bx - 46)}" y="${f1(by - 46)}" width="92" height="92" rx="26" class="jpocket" style="stroke:${JCOL[s]}"/>`;
-    for (let k = 0; k < 4; k++) { const [x, y] = xy(s, -1, k); cells += `<circle cx="${f1(x)}" cy="${f1(y)}" r="14" class="jbase"/>`; }
+    for (let k = 80; k < 84; k++) { const [x, y] = xy(s, k, 0); cells += `<circle cx="${f1(x)}" cy="${f1(y)}" r="11.5" class="jlane" style="stroke:${JCOL[s]};fill:color-mix(in srgb,${JCOL[s]} 30%,#5a3517)"/>`; }
+    for (let k = 0; k < 4; k++) { const [x, y] = xy(s, -1, k); cells += `<circle cx="${f1(x)}" cy="${f1(y)}" r="12" class="jbase" style="stroke:${JCOL[s]}"/>`; }
   }
   // الأشباح
   const gh = ghosts.map(l => {
     const [x, y] = xy(l.s, l.np, 0), t = l.k.split('|')[1];
     const lab = t === 'out' ? '⬆' : t === 'b4' ? '-٤' : '+' + jNum(t.slice(1));
-    return `<g class="jgh${l.kill ? ' kill' : ''}" data-k="${esc(l.k)}" tabindex="0"><circle cx="${f1(x)}" cy="${f1(y)}" r="17"/><text x="${f1(x)}" y="${f1(y + 5)}">${l.kill ? '💥' : lab}</text></g>`;
+    return `<g class="jgh${l.kill ? ' kill' : ''}" data-k="${esc(l.k)}" tabindex="0"><circle cx="${f1(x)}" cy="${f1(y)}" r="15"/><text x="${f1(x)}" y="${f1(y + 5)}">${l.kill ? '💥' : lab}</text></g>`;
   }).join('');
   // الكرات
   const ctlS = g.ctl >= 0 ? g.ctl : my;
   let marbles = '';
   for (let s = 0; s < 4; s++) g.marb[s].forEach((p, i) => {
     const [x, y] = xy(s, p, i), key = s + '-' + i, go = !!byM[key], tg = targets.has(key);
-    const num = s === ctlS && !S.spec ? `<text x="${f1(x)}" y="${f1(y + 5)}" class="jmn">${jNum(i + 1)}</text>` : '';
-    marbles += `<g class="jm${go ? ' go' : ''}${tg ? ' tg' : ''}${jm === key ? ' sel' : ''}${g.last && g.last.cell && g.last.cell.s === s && g.last.cell.i === i ? ' lastm' : ''}" data-m="${key}"${go || tg ? ' tabindex="0"' : ''}><circle class="hit" cx="${f1(x)}" cy="${f1(y)}" r="24"/><circle class="ring" cx="${f1(x)}" cy="${f1(y)}" r="20"/><circle class="ball" cx="${f1(x)}" cy="${f1(y)}" r="14" fill="${JCOL[s]}"/><circle cx="${f1(x - 4.5)}" cy="${f1(y - 5)}" r="4.5" fill="#fff" opacity=".55"/>${num}</g>`;
+    const num = s === ctlS && !S.spec ? `<text x="${f1(x)}" y="${f1(y + 4.5)}" class="jmn">${jNum(i + 1)}</text>` : '';
+    marbles += `<g class="jm${go ? ' go' : ''}${tg ? ' tg' : ''}${jm === key ? ' sel' : ''}${g.last && g.last.cell && g.last.cell.s === s && g.last.cell.i === i ? ' lastm' : ''}" data-m="${key}"${go || tg ? ' tabindex="0"' : ''}><circle class="hit" cx="${f1(x)}" cy="${f1(y)}" r="17"/><circle class="ring" cx="${f1(x)}" cy="${f1(y)}" r="17"/><circle class="ball" cx="${f1(x)}" cy="${f1(y)}" r="12" fill="${JCOL[s]}"/><circle cx="${f1(x - 4)}" cy="${f1(y - 4.5)}" r="3.8" fill="#fff" opacity=".55"/>${num}</g>`;
   });
-  // أسماء اللاعبين جنب قواعدهم
+  // أسماء اللاعبين داخل المربع اللي بالنص (SVG بس — سفاري ما يرسم HTML داخل SVG صح)
+  const cut = (t, n) => { const a = [...t]; return a.length > n ? a.slice(0, n - 1).join('') + '…' : t; };
   const lab = [0, 1, 2, 3].map(s => {
-    const q = (s - my + 4) % 4, [x, y] = [[-158, 112], [-205, -72], [158, -112], [205, 72]][q].map(v => JB.C + v), p = S.players[s];
+    const q = (s - my + 4) % 4, p = S.players[s], side = q % 2 === 1, cur = g.turn === s && !over;
     const tag = s === g.seat ? 'أنت' : g.seat >= 0 && s === (g.seat + 2) % 4 ? 'شريكك' : g.seat >= 0 ? 'خصم' : '';
-    return `<foreignObject x="${f1(x - 92)}" y="${f1(y - 30)}" width="184" height="60"><div class="jlab${g.turn === s && !over ? ' cur' : ''}" style="--jc:${JCOL[s]}"><i>${p ? bmFace(p.id) : '؟'}</i><span><b>${esc(p ? p.name : '؟')}</b><small>${tag ? `<em>${tag}</em> ` : ''}🃏${jNum(g.cnt[s])} 🏠${jNum(g.home[s])}</small></span></div></foreignObject>`;
+    const nm = p ? p.name : '؟', av = p ? bmFace(p.id) : '؟', st = `🃏${jNum(g.cnt[s])}  🏠${jNum(g.home[s])}/٤`;
+    const cls = `jlab${cur ? ' cur' : ''}`;
+    if (!side) {
+      const y = q === 0 ? R1 - 50 : -(R1 - 50), w = 196, hh = 50;
+      return `<g class="${cls}"><rect x="${-w / 2}" y="${y - hh / 2}" width="${w}" height="${hh}" rx="14" style="stroke:${JCOL[s]}"/><circle cx="${w / 2 - 25}" cy="${y}" r="16" fill="${JCOL[s]}" class="jav"/><text x="${w / 2 - 25}" y="${y + 6}" class="javt">${esc(av)}</text><text x="${w / 2 - 50}" y="${y - 3}" class="jln e">${esc(cut(nm, 11))}</text><text x="${w / 2 - 50}" y="${y + 16}" class="jls e">${tag ? tag + ' · ' : ''}${st}</text></g>`;
+    }
+    const x = q === 1 ? -(R1 - 66) : R1 - 66, w = 100, hh = 84;
+    return `<g class="${cls}"><rect x="${x - w / 2}" y="${-hh / 2}" width="${w}" height="${hh}" rx="14" style="stroke:${JCOL[s]}"/><circle cx="${x}" cy="-20" r="14" fill="${JCOL[s]}" class="jav"/><text x="${x}" y="-14.5" class="javt">${esc(av)}</text><text x="${x}" y="13" class="jln">${esc(cut(nm, 8))}</text><text x="${x}" y="32" class="jls">${tag ? tag + ' ' : ''}🃏${jNum(g.cnt[s])} 🏠${jNum(g.home[s])}</text></g>`;
   }).join('');
-  // الوسط: آخر ورقة انلعبت ومين دوره
+  // الوسط: آخر ورقة انلعبت
   const dc = g.discard, dred = dc && (dc.s === '♥' || dc.s === '♦');
-  const centre = `<foreignObject x="${C - 130}" y="${C - 118}" width="260" height="236"><div class="jmid">
-    <div class="jturn${mineTurn ? ' me' : ''}">${over ? 'انتهت 🏁' : mineTurn ? 'دورك!' : 'دور ' + esc((S.players[g.turn] || {}).name || '')}</div>
-    ${dc ? `<div class="jdisc${dred ? ' red' : ''}"><b>${dc.r}</b><span>${dc.s}</span></div>` : '<div class="jdisc empty">🂠</div>'}
-    <div class="jlast">${g.last ? esc(((S.players[g.last.who] || {}).name || '') + ' ' + g.last.text) : 'طلّع كراتك بالآص أو الشايب'}</div></div></foreignObject>`;
+  const centre = dc ? `<g class="jdisc${dred ? ' red' : ''}" transform="rotate(-7)"><rect x="-30" y="-42" width="60" height="84" rx="9"/><text x="0" y="-4" class="r">${dc.r}</text><text x="0" y="26" class="s">${dc.s}</text></g>` : `<g class="jdisc empty" transform="rotate(-7)"><rect x="-30" y="-42" width="60" height="84" rx="9"/></g>`;
   // اليد
   const hand = g.hand.map(c => {
     const has = g.legal.some(l => l.c === c.id), red = c.s === '♥' || c.s === '♦';
@@ -745,9 +745,9 @@ function renderJack(body) {
   let hint = '';
   if (over) hint = '';
   else if (S.spec) hint = 'تتفرّج 👁';
-  else if (!mineTurn) hint = 'استنى دورك…';
+  else if (!mineTurn) hint = `دور ${esc((S.players[g.turn] || {}).name || '')}…`;
   else if (g.split) hint = `قسّمت الـ٧ — باقي <b>${jNum(g.split.left)}</b> خطوات`;
-  else if (jsel === null) hint = 'اختر ورقة 👇';
+  else if (jsel === null) hint = 'دورك! اختر ورقة 👇';
   else if (jm && targets.size) hint = 'اختر الكرة اللي تبدّل معها ✨';
   else if (jm) hint = 'اختر وين تروح الكرة';
   else hint = 'اضغط الكرة المتوهّجة أو مكانها الجديد';
@@ -758,12 +758,13 @@ function renderJack(body) {
   const oldPos = window.JPOS || {};
   body.innerHTML = `<div class="jwrap">
     <div class="jtop"><span class="tc t0${g.turn % 2 === 0 && !over ? ' on' : ''}">فريق أ <b>${jNum(g.home[0] + g.home[2])}/٨</b></span><span class="cd2"></span><span class="tc t1${g.turn % 2 === 1 && !over ? ' on' : ''}"><b>${jNum(g.home[1] + g.home[3])}/٨</b> فريق ب</span></div>
-    <svg class="jboard" viewBox="10 10 700 700"><defs><radialGradient id="jfelt" cx="50%" cy="45%" r="70%"><stop offset="0" stop-color="#2c9563"/><stop offset="1" stop-color="#145234"/></radialGradient><linearGradient id="jwood" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#c58a4c"/><stop offset=".5" stop-color="#9a5f2c"/><stop offset="1" stop-color="#6e4019"/></linearGradient></defs>
-      <rect x="14" y="14" width="692" height="692" rx="110" fill="url(#jwood)" stroke="#16130f" stroke-width="6"/>
-      <rect x="44" y="44" width="632" height="632" rx="92" fill="url(#jfelt)" stroke="#3a2210" stroke-width="5"/>
-      <circle cx="${C}" cy="${C}" r="128" class="jcen"/>
+    <svg class="jboard" viewBox="-356 -356 712 712"><defs><radialGradient id="jwood" cx="45%" cy="40%" r="75%"><stop offset="0" stop-color="#b98252"/><stop offset=".7" stop-color="#94603a"/><stop offset="1" stop-color="#6e4325"/></radialGradient></defs>
+      <circle r="352" fill="#2e7d50" stroke="#16130f" stroke-width="5"/>
+      <circle r="338" fill="url(#jwood)" stroke="#5a3517" stroke-width="4"/>
+      <circle r="322" fill="none" stroke="rgba(60,30,10,.35)" stroke-width="3" stroke-dasharray="2 9" stroke-linecap="round"/>
+      <rect x="-${(R1 - 16).toFixed(0)}" y="-${(R1 - 16).toFixed(0)}" width="${(2 * R1 - 32).toFixed(0)}" height="${(2 * R1 - 32).toFixed(0)}" rx="26" class="jcen"/>
       ${cells}${lab}${centre}${gh}${marbles}</svg>
-    ${ctlNote}<div class="jhint${mineTurn ? ' me' : ''}">${hint}</div>${opts}
+    ${ctlNote}<div class="jhint${mineTurn ? ' me' : ''}">${hint}</div>${g.last ? `<div class="jlastl">${esc(((S.players[g.last.who] || {}).name || '') + ' ' + g.last.text)}</div>` : ''}${opts}
     <div class="jhand">${hand}</div>${logHtml()}
     <details class="jhelp"><summary>شرح اللعبة</summary><ul><li><b>الهدف:</b> أنت وشريكك (قبالتك) تدخلون الـ٨ كرات في البيت. لما تخلّص كراتك تلعبون بكرات شريكك.</li><li><b>التحكم:</b> اختر ورقة، بعدين اضغط الكرة المتوهّجة أو المكان اللي بتروح له (الدوائر الصفرا)، أو استخدم الأزرار تحت اللوح.</li><li><b>آص / شايب:</b> يطلّعون كرة من القاعدة. الآص يحرّك ١ أو ١١، والشايب ١٣.</li><li><b>بنت:</b> ١٢ خطوة. <b>ولد:</b> بدّل كرتك مع أي كرة ثانية على الطاولة.</li><li><b>٤:</b> رجوع ٤ خطوات. <b>٥:</b> حرّك أي كرة (حتى كرة خصمك) ٥ خطوات.</li><li><b>٧:</b> تقدر تقسّمها بين كراتك. باقي الأوراق تحرّك بعددها.</li><li>الكرة اللي تنزل عليها كرة غيرها <b>تنأكل</b> وترجع للقاعدة (حتى كرة شريكك!). ما تنزل على كرتك.</li><li>لو ما عندك حركة، أوراقك تنرمي وينتقل الدور.</li></ul></details></div>`;
   // حركة الكرات: تمشي خانة خانة على المسار بدل ما تطير
