@@ -10,9 +10,10 @@
     sus: { 0: 'e', 2: 'q', 3: 'r', 4: 'v', 5: 'f', 8: 'm', 9: 'm' },
     haunt: { 0: 'e', 2: 'q', 3: 'f', 4: 'c', 5: 'r', 8: 'm', 9: 'm' },
     cars: { 0: ' ', 2: ' ', 7: ' ' },
-    boxing: { 0: 'j', 2: 'k', 3: 'l', 4: 'a', 5: 'd', 14: 'a', 15: 'd' }
+    boxing: { 0: 'j', 2: 'k', 3: 'l', 4: 'a', 5: 'd', 14: 'a', 15: 'd' },
+    brawl: { 0: 'j', 2: 'k', 3: 'u', 5: 'i', 7: 'o' }
   };
-  const HOLD = { haunt: { 6: 'Shift', 7: 'Shift', 10: 'Shift' }, boxing: { 1: 's', 6: 's', 7: 's' } };
+  const HOLD = { haunt: { 6: 'Shift', 7: 'Shift', 10: 'Shift' }, boxing: { 1: 's', 6: 's', 7: 's' }, brawl: { 1: 's', 4: 's', 6: 's' } };
   const key = (k, up) => dispatchEvent(new KeyboardEvent(up ? 'keyup' : 'keydown', { key: k, bubbles: true }));
   function gameMode() {
     if (typeof S === 'undefined' || !S || S.phase !== 'play' || !S.g || (S.g.sub !== 'play' && S.g.sub !== 'fight')) return null;
@@ -20,6 +21,7 @@
     if (S.game === 'haunt' && typeof HU !== 'undefined' && !HU.mapOn) return 'haunt';
     if (S.game === 'cars') return 'cars';
     if (S.game === 'boxing' && typeof BX !== 'undefined' && BX.f.some(F => F.id === S.me)) return 'boxing';
+    if (S.game === 'brawl' && typeof FC !== 'undefined' && FC.f.some(F => F.id === S.me)) return 'brawl';
     return null;
   }
   // ---- التنقّل بالواجهة ----
