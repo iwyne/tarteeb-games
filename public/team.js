@@ -8,8 +8,8 @@
     { n: 'سلمان', img: 'team/m4.webp', c: '#ff8a1f' },
     { n: 'ايزن', img: 'team/m5.webp', c: '#19c3d6' },
     { n: 'حميد', img: 'team/m6.webp', c: '#2a5bd7' },
-    { n: 'علي', img: 'team/m7.webp', c: '#ffc928' },
-    { n: 'هدهد', img: 'team/m8.webp', c: '#1fa35c' },
+    { n: 'علي', img: 'team/m7.webp', c: '#055323' },
+    { n: 'هدهد', img: 'team/m8.webp', c: '#420000' },
     { n: 'لافي', img: 'team/m9.webp', c: '#ff8fc0' }
   ];
   const SKEW = -8, reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
