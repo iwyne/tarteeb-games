@@ -17,6 +17,7 @@ const GTI = {
   fib: { s: 'ding', t: 'صدّقني', html: () => `<div class="bulbs">${Array.from({ length: 14 }, (_, i) => `<i style="--k:${i}"></i>`).join('')}</div><div class="pg"><svg viewBox="0 0 200 60" preserveAspectRatio="none"><path d="M0 30h30l8-18 8 34 8-26 6 14h20l6-24 10 44 8-30 6 10h20l8-14 8 22 6-8h28"/></svg></div><em class="lie">كذّاب؟</em>` },
   bomb: { s: 'tick', t: 'القنبلة', html: () => `<div class="hz"></div><div class="bm"><i class="cap"></i><i class="fz"></i><i class="sp"></i><i class="sh"></i></div><div class="kb"></div>` },
   auction: { s: 'bell', t: 'المزاد', html: () => `<div class="pod"></div><div class="lot">🏺<small>قطعة رقم ١</small></div><div class="gv">🔨</div><em class="sold">بيع!</em>` },
+  boxing: { s: 'bell', t: 'حلبة الملاكمة', html: () => `<i class="gl a">🥊</i><i class="gl b">🥊</i><b class="pw">POW!</b>` },
   rich: { s: 'coin', t: 'مليونير الديرة', html: () => `<div class="bills">${['💵', '💰', '🏠', '💵', '🏨', '💰', '💵'].map((e, i) => `<i style="left:${8 + i * 13}%;top:${20 + (i % 3) * 18}%;animation-delay:${i * .12}s">${e}</i>`).join('')}</div><i class="rd2">🎲</i>` },
   cars: { s: 'whoosh', t: 'مطاردة', html: () => `<i class="rd"></i><i class="kc run">🚗</i><i class="kc cop">🚓</i><i class="sr r"></i><i class="sr b"></i>` },
   baloot: { s: 'card', t: 'بلوت', html: () => `<i class="b1">A♥</i><i class="b2">J♠</i><i class="b3">9♦</i>` },

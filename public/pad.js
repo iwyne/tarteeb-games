@@ -9,15 +9,17 @@
   const KEYS = {
     sus: { 0: 'e', 2: 'q', 3: 'r', 4: 'v', 5: 'f', 8: 'm', 9: 'm' },
     haunt: { 0: 'e', 2: 'q', 3: 'f', 4: 'c', 5: 'r', 8: 'm', 9: 'm' },
-    cars: { 0: ' ', 2: ' ', 7: ' ' }
+    cars: { 0: ' ', 2: ' ', 7: ' ' },
+    boxing: { 0: 'j', 2: 'k', 3: 'l', 4: 'a', 5: 'd', 14: 'a', 15: 'd' }
   };
-  const HOLD = { haunt: { 6: 'Shift', 7: 'Shift', 10: 'Shift' } };
+  const HOLD = { haunt: { 6: 'Shift', 7: 'Shift', 10: 'Shift' }, boxing: { 1: 's', 6: 's', 7: 's' } };
   const key = (k, up) => dispatchEvent(new KeyboardEvent(up ? 'keyup' : 'keydown', { key: k, bubbles: true }));
   function gameMode() {
-    if (typeof S === 'undefined' || !S || S.phase !== 'play' || !S.g || S.g.sub !== 'play') return null;
+    if (typeof S === 'undefined' || !S || S.phase !== 'play' || !S.g || (S.g.sub !== 'play' && S.g.sub !== 'fight')) return null;
     if (S.game === 'sus' && typeof SU !== 'undefined' && !SU.task && !SU.map && !SU.cams) return 'sus';
     if (S.game === 'haunt' && typeof HU !== 'undefined' && !HU.mapOn) return 'haunt';
     if (S.game === 'cars') return 'cars';
+    if (S.game === 'boxing' && typeof BX !== 'undefined' && BX.f.some(F => F.id === S.me)) return 'boxing';
     return null;
   }
   // ---- التنقّل بالواجهة ----
