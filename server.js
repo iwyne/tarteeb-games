@@ -93,9 +93,13 @@ function newCode() {
   do { c = Array.from({ length: 4 }, () => A[Math.random() * A.length | 0]).join(''); } while (rooms.has(c));
   return c;
 }
-function buildDeck() {
+// قدرات الأونو (خيار بالغرفة): أوراق خاصة تنخلط مع الكومة
+const POWERS = { spy: '👀 تجسّس', steal: '🫳 سرقة', rain: '🌧️ مطر أوراق', swap: '🔄 بدّل اليد', shield: '🛡️ درع', freeze: '🧊 تجميد', gift: '🎁 هدية', bomb: '💣 قنبلة' };
+const PTARGET = ['spy', 'steal', 'swap', 'freeze', 'gift'];
+function buildDeck(powers) {
   const d = []; let id = 0;
   const add = (color, v) => d.push({ id: id++, color, v });
+  if (powers) for (const k in POWERS) for (let i = 0; i < 2; i++) add('power', k);
   for (const c of COLORS) {
     add(c, '0');
     for (let i = 0; i < 2; i++) { for (let n = 1; n <= 9; n++) add(c, String(n)); add(c, 'skip'); add(c, 'reverse'); add(c, 'draw2'); }
@@ -105,6 +109,7 @@ function buildDeck() {
 }
 function cname(c) {
   const v = { skip: 'منع', reverse: 'عكس', draw2: '+٢', wild: 'ملوّن', wild4: '+٤ ملوّن' }[c.v] || c.v;
+  if (c.color === 'power') return POWERS[c.v] || 'قدرة';
   return c.color === 'wild' ? v : `${v} ${AR[c.color]}`;
 }
 
@@ -131,7 +136,7 @@ const cleanAv = a => AVATARS.includes(a) ? a : '';
 const LOOKMAX = { b: 2, s: 4, h: 6, hc: 8, o: 7, c1: 12, c2: 12, bd: 2, mf: 4, ms: 4, me: 4, mt: 3 };
 const cleanLook = l => { if (!l || typeof l !== 'object') return null; const o = {}; for (const k in LOOKMAX) { const v = +l[k]; o[k] = Number.isInteger(v) && v >= 0 && v < LOOKMAX[k] ? v : 0; } return o; };
 const randLook = () => { const l = Object.fromEntries(Object.entries(LOOKMAX).map(([k, n]) => [k, Math.random() * n | 0])); l.h = 1 + (Math.random() * 5 | 0); l.hc = Math.random() * 6 | 0; return l; };
-const optsView = (r, p) => ({ stack: !!r.opts.stack, turn: r.opts.turn || 15, lock: !!r.opts.lock, hasPass: !!r.opts.pass, pass: r.host === p.id ? (r.opts.pass || '') : null, target: r.opts.target || 5, imps: r.opts.imps || 1, doctor: !!r.opts.doctor, map: r.opts.map || 'ship', nwords: r.opts.words ? r.opts.words.length : 0, wordsText: r.host === p.id ? (r.opts.wordsText || '') : '', mcount: r.opts.mcount || 0, dayT: r.opts.dayT || 90, reveal: r.opts.reveal !== false, mroles: Object.assign({ doc: 1, det: 1, sniper: 1, god: 1, jester: 1, mayor: 1 }, r.opts.mroles), blives: r.opts.blives || 3, bdiff: r.opts.bdiff || 'mid', frounds: r.opts.frounds || 7, psteps: r.opts.psteps || 0, pdraw: r.opts.pdraw || 90, aitems: r.opts.aitems || 8, drounds: r.opts.drounds || 4, fcount: r.opts.fcount || 10, fmode: r.opts.fmode || 'flags', fdiff: r.opts.fdiff || 'easy', mrounds: r.opts.mrounds || 5, mpack: r.opts.mpack || 'all', ctime: r.opts.ctime || 'none', clevel: r.opts.clevel || 'mid', ccolor: r.opts.ccolor || 'rand' , jrounds: r.opts.jrounds || 7, jtime: r.opts.jtime || 30, jn: r.opts.jn || 3, krounds: r.opts.krounds || 3, ktime: r.opts.ktime || 75, mlim: r.opts.mlim == null ? 25 : r.opts.mlim, bwins: r.opts.bwins || 2, fwins: r.opts.fwins || 2, trounds: r.opts.trounds || 10, ttime: r.opts.ttime || 30, rtime: r.opts.rtime || 60, brounds: r.opts.brounds || 5, btime: r.opts.btime || 90, elives: r.opts.elives || 1, etime: r.opts.etime || 15, erounds: r.opts.erounds || 8, emtime: r.opts.emtime || 45 });
+const optsView = (r, p) => ({ stack: !!r.opts.stack, powers: !!r.opts.powers, turn: r.opts.turn || 15, lock: !!r.opts.lock, hasPass: !!r.opts.pass, pass: r.host === p.id ? (r.opts.pass || '') : null, target: r.opts.target || 5, imps: r.opts.imps || 1, doctor: !!r.opts.doctor, map: r.opts.map || 'ship', nwords: r.opts.words ? r.opts.words.length : 0, wordsText: r.host === p.id ? (r.opts.wordsText || '') : '', mcount: r.opts.mcount || 0, dayT: r.opts.dayT || 90, reveal: r.opts.reveal !== false, mroles: Object.assign({ doc: 1, det: 1, sniper: 1, god: 1, jester: 1, mayor: 1 }, r.opts.mroles), blives: r.opts.blives || 3, bdiff: r.opts.bdiff || 'mid', frounds: r.opts.frounds || 7, psteps: r.opts.psteps || 0, pdraw: r.opts.pdraw || 90, aitems: r.opts.aitems || 8, drounds: r.opts.drounds || 4, fcount: r.opts.fcount || 10, fmode: r.opts.fmode || 'flags', fdiff: r.opts.fdiff || 'easy', mrounds: r.opts.mrounds || 5, mpack: r.opts.mpack || 'all', ctime: r.opts.ctime || 'none', clevel: r.opts.clevel || 'mid', ccolor: r.opts.ccolor || 'rand' , jrounds: r.opts.jrounds || 7, jtime: r.opts.jtime || 30, jn: r.opts.jn || 3, krounds: r.opts.krounds || 3, ktime: r.opts.ktime || 75, mlim: r.opts.mlim == null ? 25 : r.opts.mlim, bwins: r.opts.bwins || 2, fwins: r.opts.fwins || 2, trounds: r.opts.trounds || 10, ttime: r.opts.ttime || 30, rtime: r.opts.rtime || 60, brounds: r.opts.brounds || 5, btime: r.opts.btime || 90, elives: r.opts.elives || 1, etime: r.opts.etime || 15, erounds: r.opts.erounds || 8, emtime: r.opts.emtime || 45 });
 const maxOf = r => GAMES[r.game].max;
 
 const newRoom = (code, game = 'uno') => ({ code, game, g: null, opts: {}, owed: 0, botT: null, phase: 'lobby', players: [], host: null, deck: [], discard: [], color: null, dir: 1, turn: 0, pending: null, catchable: null, log: [], winner: null, chat: [], teams: false, score: [0, 0], winTeam: null, specs: [], recorded: false, banned: new Set(), turnSeq: 0, armed: -1, timer: null, deadline: 0, created: Date.now(), teamOnly: false });
@@ -141,6 +146,7 @@ const log = (r, s) => { r.log.push(s); if (r.log.length > 30) r.log.shift(); };
 function canPlay(r, p, c) {
   if (r.pending !== null && c.id !== r.pending) return false;
   const top = r.discard[r.discard.length - 1];
+  if (c.color === 'power') return c.v !== 'shield' && r.owed === 0;
   if (r.owed > 0) return top.v === 'draw2' ? (c.v === 'draw2' || c.v === 'wild4') : c.v === 'wild4'; // تراكم السحب
   if (c.v === 'wild4') return !p.hand.some(x => x.color === r.color); // الرسمي: ما تلعبها إلا ما عندك لون الطاولة
   if (c.v === 'wild') return true;
@@ -151,7 +157,7 @@ function drawCards(r, p, n) {
   for (let i = 0; i < n; i++) {
     if (!r.deck.length) {
       const top = r.discard.pop();
-      r.deck = shuffle(r.discard); r.discard = [top];
+      r.deck = shuffle(r.discard.concat(r.pdisc || [])); r.discard = [top]; r.pdisc = [];
     }
     if (!r.deck.length) break;
     const c = r.deck.pop(); p.hand.push(c); out.push(c);
@@ -161,7 +167,43 @@ function drawCards(r, p, n) {
 }
 function advance(r, steps) {
   r.turn = mod(r.turn + r.dir * steps, r.players.length);
+  // التجميد: اللاعب المجمّد يفوّت دوره
+  for (let k = 0; k < r.players.length && r.frozen && r.frozen[cur(r).id] > 0; k++) {
+    const f = cur(r); r.frozen[f.id]--; log(r, `🧊 ${f.name} مجمّد ويفوّت دوره`);
+    r.turn = mod(r.turn + r.dir, r.players.length);
+  }
   r.pending = null; r.turnSeq++;
+}
+const shieldOf = p => p.hand.find(c => c.color === 'power' && c.v === 'shield');
+function usePower(r, p, card, targetId) {
+  const others = r.players.filter(q => q !== p);
+  let t = others.find(q => q.id === targetId);
+  if (!t && PTARGET.includes(card.v)) {
+    // بدون هدف (بوت أو مهلة): نختار المنطقي
+    const by = f => others.slice().sort(f)[0];
+    t = card.v === 'swap' ? by((a, b) => a.hand.length - b.hand.length) : card.v === 'steal' ? by((a, b) => b.hand.length - a.hand.length) : card.v === 'freeze' ? r.players[mod(r.turn + r.dir, r.players.length)] : others[Math.random() * others.length | 0];
+  }
+  const nm = POWERS[card.v];
+  switch (card.v) {
+    case 'spy': send(p.ws, { t: 'peek', name: t.name, id: t.id, hand: t.hand, ms: 5000 }); log(r, `${nm}: ${p.name} يتجسّس على أوراق ${t.name}`); break;
+    case 'steal': { if (!t.hand.length) { log(r, `${nm}: ${t.name} ما عنده شي ينسرق`); break; } const c = t.hand.splice(Math.random() * t.hand.length | 0, 1)[0]; p.hand.push(c); send(p.ws, { t: 'pfx', k: 'got', card: c }); log(r, `${nm}: ${p.name} سرق ورقة من ${t.name}`); break; }
+    case 'rain': others.forEach(q => drawCards(r, q, 2)); log(r, `${nm}: كل الباقين سحبوا ٢!`); break;
+    case 'bomb': others.forEach(q => drawCards(r, q, 1)); log(r, `${nm}: انفجرت! الكل سحب ورقة`); break;
+    case 'swap': { const h = p.hand; p.hand = t.hand; t.hand = h; p.uno = t.uno = false; log(r, `${nm}: ${p.name} بدّل أوراقه مع ${t.name}`); break; }
+    case 'freeze': r.frozen = r.frozen || {}; r.frozen[t.id] = (r.frozen[t.id] || 0) + 2; log(r, `${nm}: ${t.name} بيفوّت دورين`); break;
+    case 'gift': { let n = 0; for (; n < 2 && p.hand.length; n++) t.hand.push(p.hand.splice(Math.random() * p.hand.length | 0, 1)[0]); t.uno = false; log(r, `${nm}: ${p.name} أهدى ${t.name} ${n === 2 ? 'ورقتين' : 'ورقة'} 🎁`); break; }
+  }
+  cast(r, { t: 'pfx', k: card.v, from: p.id, to: t ? t.id : null });
+  // أي أحد صار عنده ورقة وحدة بسبب القدرة ولا قال أونو ينمسك
+  r.players.forEach(q => { if (q.hand.length > 1) q.uno = false; });
+}
+function winIfEmpty(r, p) {
+  if (p.hand.length) return false;
+  r.phase = 'over'; r.winner = p.name;
+  if (r.teams) { r.winTeam = r.players.indexOf(p) % 2; r.score[r.winTeam]++; }
+  log(r, `${p.name} خلّص أوراقه`);
+  recordGame(r, p);
+  return true;
 }
 
 // وضع الفرق يحتاج عدد زوجي ٤ أو أكثر، والفريق = رقم المقعد زوجي/فردي (يتناوبون بالجلوس)
@@ -169,11 +211,11 @@ function fixTeams(r) { if (r.game !== 'uno') { r.teams = !!META[r.game].teams; r
 
 function start(r) {
   fixTeams(r);
-  r.deck = buildDeck(); r.discard = []; r.dir = 1; r.pending = null; r.catchable = null; r.winner = null; r.winTeam = null; r.log = []; r.recorded = false; r.owed = 0;
+  r.deck = buildDeck(!!r.opts.powers); r.discard = []; r.pdisc = []; r.frozen = {}; r.dir = 1; r.pending = null; r.catchable = null; r.winner = null; r.winTeam = null; r.log = []; r.recorded = false; r.owed = 0;
   r.players.forEach(p => { p.hand = []; p.uno = false; });
   for (let i = 0; i < 7; i++) r.players.forEach(p => p.hand.push(r.deck.pop()));
   let c;
-  while (true) { c = r.deck.pop(); if (/^\d$/.test(c.v)) break; r.deck.unshift(c); }
+  while (true) { c = r.deck.pop(); if (/^\d$/.test(c.v) && c.color !== 'power') break; r.deck.unshift(c); }
   r.discard.push(c); r.color = c.color;
   r.turn = Math.random() * r.players.length | 0;
   r.phase = 'play'; r.turnSeq++;
@@ -188,10 +230,19 @@ function recordGame(r, w) {
   r.players.forEach((q, i) => { if (isWin(q, i)) q.wins = (q.wins || 0) + 1; });
 }
 
-function play(r, p, id, color) {
+function play(r, p, id, color, target) {
   if (r.phase !== 'play' || cur(r) !== p) return;
   const card = p.hand.find(c => c.id === id);
   if (!card || !canPlay(r, p, card)) return;
+  if (card.color === 'power') {
+    p.hand.splice(p.hand.indexOf(card), 1); (r.pdisc = r.pdisc || []).push(card); r.pending = null; r.catchable = null;
+    usePower(r, p, card, target);
+    if (winIfEmpty(r, p)) return;
+    // ممكن الهدية/السرقة/التبديل تخلّي أحد ثاني بدون أوراق
+    const z = r.players.find(q => !q.hand.length); if (z && winIfEmpty(r, z)) return;
+    if (p.hand.length === 1 && !p.uno) r.catchable = p.id;
+    advance(r, 1); return;
+  }
   if (card.color === 'wild' && !COLORS.includes(color)) return;
   p.hand.splice(p.hand.indexOf(card), 1);
   r.discard.push(card); r.pending = null; r.catchable = null;
@@ -203,27 +254,23 @@ function play(r, p, id, color) {
   if (card.v === 'reverse') { r.dir *= -1; if (n === 2) steps = 2; } // مع لاعبين العكس يعمل مثل المنع
   if (card.v === 'skip') { steps = 2; log(r, `${r.players[mod(r.turn + r.dir, n)].name} انمنع`); }
   if ((card.v === 'draw2' || card.v === 'wild4') && r.opts.stack) {
-    r.owed += card.v === 'draw2' ? 2 : 4;
+    r.owed += card.v === 'draw2' ? 2 : 4; r.owedBy = p.id;
     log(r, `السحب صار ${r.owed} — ورّد عليه بنفس النوع أو اسحب`);
   } else if (card.v === 'draw2' || card.v === 'wild4') {
     const v = r.players[mod(r.turn + r.dir, n)];
     const k = card.v === 'draw2' ? 2 : 4;
-    drawCards(r, v, k); steps = 2;
-    log(r, `${v.name} سحب ${k} وانمنع`);
+    const sh = shieldOf(v);
+    if (sh) { v.hand.splice(v.hand.indexOf(sh), 1); (r.pdisc = r.pdisc || []).push(sh); drawCards(r, p, k); log(r, `🛡️ ${v.name} عنده درع! الـ +${k} رجعت على ${p.name}`); cast(r, { t: 'pfx', k: 'shield', from: v.id, to: p.id }); steps = 1; }
+    else { drawCards(r, v, k); steps = 2; log(r, `${v.name} سحب ${k} وانمنع`); }
   }
-  if (p.hand.length === 0) {
-    r.phase = 'over'; r.winner = p.name;
-    if (r.teams) { r.winTeam = r.players.indexOf(p) % 2; r.score[r.winTeam]++; }
-    log(r, `${p.name} خلّص أوراقه`);
-    recordGame(r, p);
-    return;
-  }
+  if (winIfEmpty(r, p)) return;
   if (p.hand.length === 1 && !p.uno) r.catchable = p.id;
   advance(r, steps);
 }
 function draw(r, p) {
   if (r.phase !== 'play' || cur(r) !== p || r.pending !== null) return;
   r.catchable = null;
+  if (r.owed > 0 && shieldOf(p)) { const k = r.owed, sh = shieldOf(p), a = r.players.find(q => q.id === r.owedBy) || p; r.owed = 0; p.hand.splice(p.hand.indexOf(sh), 1); (r.pdisc = r.pdisc || []).push(sh); if (a !== p) drawCards(r, a, k); log(r, `🛡️ ${p.name} عنده درع! الـ ${k} رجعت على ${a.name}`); cast(r, { t: 'pfx', k: 'shield', from: p.id, to: a.id }); advance(r, 1); return; }
   if (r.owed > 0) { const k = r.owed; r.owed = 0; drawCards(r, p, k); log(r, `${p.name} سحب ${k} وانمنع`); advance(r, 1); return; }
   drawCards(r, p, 1);
   log(r, `${p.name} سحب ورقة`);
@@ -378,7 +425,9 @@ function botAction(r) {
       if (r.pending !== null) { const c = p.hand.find(x => x.id === r.pending); return c ? botPlay(r, p, c) : pass(r, p); }
       const ok = p.hand.filter(c => canPlay(r, p, c));
       if (!ok.length) return draw(r, p);
-      const nw = ok.filter(c => c.color !== 'wild');
+      const pw = ok.filter(c => c.color === 'power');
+      if (pw.length && Math.random() < .45) return botPlay(r, p, pw[rnd(pw.length)]);
+      const nw = ok.filter(c => c.color !== 'wild' && c.color !== 'power');
       botPlay(r, p, (nw.length ? nw : ok)[rnd((nw.length ? nw : ok).length)]);
     } };
   }
@@ -604,7 +653,7 @@ wss.on('connection', (ws, req) => {
     if (r.game !== 'uno' && !['start', 'teams', 'shuffle', 'again', 'leave', 'kick', 'chat', 'emoji', 'setgame', 'opt', 'addbot', 'tolobby', 'look'].includes(m.t)) { if (GAMES[r.game].act(r, p, m) === 'quiet') return; return after(r); }
     switch (m.t) {
       case 'start': if (r.host === p.id && r.phase === 'lobby' && r.players.length >= GAMES[r.game].min) startGame(r); break;
-      case 'play': play(r, p, m.id, m.color); break;
+      case 'play': play(r, p, m.id, m.color, typeof m.target === 'string' ? m.target : null); break;
       case 'look': { const l = cleanLook(m.v); if (l && rate(p, 'lk', 400)) p.look = l; else return; break; }
       case 'emoji':
         if (EMOJIS.includes(m.e) && rate(p, 'e', 700)) cast(r, { t: 'react', from: p.id, e: m.e });
@@ -635,6 +684,7 @@ wss.on('connection', (ws, req) => {
         if (k === 'lock') r.opts.lock = !!v;
         else if (k === 'pass') r.opts.pass = String(v || '').replace(/\s/g, '').slice(0, 12);
         else if (k === 'stack' && r.game === 'uno') r.opts.stack = !!v;
+        else if (k === 'powers' && r.game === 'uno') r.opts.powers = !!v;
         else if (k === 'turn' && r.game === 'uno' && [10, 15, 25, 40].includes(+v)) r.opts.turn = +v;
         else if (k === 'imps' && r.game === 'sus' && [1, 2, 3].includes(+v)) r.opts.imps = +v;
         else if (k === 'doctor' && r.game === 'sus') r.opts.doctor = !!v;

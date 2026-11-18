@@ -467,7 +467,7 @@ function renderLobbySet(isHost) {
   const sig = JSON.stringify([isHost, S.game, o, S.players.length >= S.max]);
   box.hidden = false;
   if (sig === lsSig) return; lsSig = sig;
-  const sum = [o.lock ? '🔒 مقفلة بدون متفرجين' : '', o.hasPass ? '🔑 بكلمة سر' : '', S.game === 'uno' && o.stack ? 'تراكم +٢/+٤' : '', S.game === 'uno' && o.turn !== 15 ? `مهلة الدور ${o.turn} ث` : '', S.game === 'sus' ? (o.map === 'forest' ? '🌲 الغابة الملعونة' : '🚀 السفينة') : '', S.game === 'sus' ? `${o.imps || 1} ${(o.imps || 1) > 1 ? 'مندسين' : 'مندس'}` : '', S.game === 'sus' && o.doctor ? 'طور الدكتور 🩺' : '', S.game === 'typing' ? `الهدف ${o.target} نقاط` : '', S.game === 'codes' && o.nwords ? `كلمات مخصصة (${o.nwords})` : ''].filter(Boolean);
+  const sum = [o.lock ? '🔒 مقفلة بدون متفرجين' : '', o.hasPass ? '🔑 بكلمة سر' : '', S.game === 'uno' && o.stack ? 'تراكم +٢/+٤' : '', S.game === 'uno' && o.powers ? '✨ بالقدرات' : '', S.game === 'uno' && o.turn !== 15 ? `مهلة الدور ${o.turn} ث` : '', S.game === 'sus' ? (o.map === 'forest' ? '🌲 الغابة الملعونة' : '🚀 السفينة') : '', S.game === 'sus' ? `${o.imps || 1} ${(o.imps || 1) > 1 ? 'مندسين' : 'مندس'}` : '', S.game === 'sus' && o.doctor ? 'طور الدكتور 🩺' : '', S.game === 'typing' ? `الهدف ${o.target} نقاط` : '', S.game === 'codes' && o.nwords ? `كلمات مخصصة (${o.nwords})` : ''].filter(Boolean);
   if (S.game === 'chess') sum.push({ none: 'بدون ساعة', '3+2': '⚡ ٣+٢', '5': '٥ دقايق', '10': '١٠ دقايق' }[o.ctime] || 'بدون ساعة', 'البوت ' + ({ easy: 'سهل', mid: 'متوسط', hard: 'صعب' }[o.clevel] || 'متوسط'));
   if (S.game === 'mimic') sum.push(`${o.mrounds || 5} جولات`, { all: 'كل الأصوات', react: '🎭 رياكشنات', basic: '🎵 منوّعة' }[o.mpack] || 'كل الأصوات');
   if (S.game === 'auction') sum.push(`${o.aitems || 8} قطع`); else if (S.game === 'feud') sum.push(`${o.drounds || 4} جولات`); else if (S.game === 'boxing') sum.push(`البطل يحتاج ${o.bwins || 2}`); else if (S.game === 'brawl') sum.push(`البطل يحتاج ${o.fwins || 2}`); else if (S.game === 'redlight') { sum.push(`${o.rtime || 60} ثانية للسباق`); } else if (S.game === 'bwb') { sum.push(`${o.brounds || 5} جولات`); sum.push(`${o.btime || 90} ثانية`); } else if (S.game === 'elim') { sum.push(`${(o.elives || 1) === 1 ? 'غلطة وحدة وتطلع' : (o.elives) + ' قلوب'}`); sum.push(`${o.etime || 15} ثانية للسؤال`); } else if (S.game === 'emo') { sum.push(`${o.erounds || 8} أمثال`); sum.push(`${o.emtime || 45} ثانية`); } else if (S.game === 'tartayb') sum.push(`${o.trounds || 10} جولات`, `${o.ttime || 30} ثانية`); else if (S.game === 'rich') sum.push(o.mlim ? `${o.mlim} جولة` : 'لين يفلسون'); else if (S.game === 'cars') sum.push(`${o.krounds || 3} جولات`, `${o.ktime || 75} ثانية`); else if (S.game === 'jwb') sum.push(`${o.jrounds || 7} جولات`, `${o.jtime || 30} ثانية`, `${o.jn || 3} أجوبة`); else if (S.game === 'flags') sum.push({ flags: '🚩 أعلام', cap: '🏛️ عواصم', mix: '🌍 منوّع' }[o.fmode] || '🚩 أعلام', o.fdiff === 'all' ? 'كل الدول' : 'المشهورة', `${o.fcount || 10} سؤال`);
@@ -476,6 +476,7 @@ function renderLobbySet(isHost) {
   const gm = Object.keys(GNAME).map(k => `<button type="button" class="gsw${k === S.game ? ' on' : ''}" data-g="${k}"><i>${GEMO[k] || '🎲'}</i><span>${GNAME[k]}</span></button>`).join('');
   let extra = '';
   if (S.game === 'uno') extra = `<label class="chk"><input type="checkbox" id="oStack"${o.stack ? ' checked' : ''}> تراكم السحب (+٢ على +٢ و +٤ على +٤)</label>
+    <label class="chk"><input type="checkbox" id="oPow"${o.powers ? ' checked' : ''}> ✨ أونو بالقدرات (تجسّس، سرقة، تبديل، تجميد، درع…)</label>
     <label class="chk">مهلة الدور <select id="oTurn">${[10, 15, 25, 40].map(n => `<option value="${n}"${o.turn === n ? ' selected' : ''}>${n} ثانية</option>`).join('')}</select></label>`;
   else if (S.game === 'sus') extra = `<label class="chk">الماب <select id="oMap"><option value="ship"${o.map !== 'forest' ? ' selected' : ''}>🚀 السفينة</option><option value="forest"${o.map === 'forest' ? ' selected' : ''}>🌲 الغابة الملعونة (رعب)</option></select></label>
     <label class="chk">عدد المندسين <select id="oImps">${[1, 2, 3].map(n => `<option value="${n}"${o.imps === n ? ' selected' : ''}>${n}</option>`).join('')}</select></label>
@@ -532,6 +533,7 @@ function renderLobbySet(isHost) {
   box.querySelectorAll('.gsw').forEach(b => b.onclick = () => { lsOpen = false; if (b.dataset.g !== S.game) send({ t: 'setgame', game: b.dataset.g }); else { lsSig = ''; renderLobbySet(isHost); } });
   const bind = (id, ev, fn) => { const e = $('#' + id); if (e) e[ev] = fn; };
   bind('oStack', 'onchange', e => send({ t: 'opt', k: 'stack', v: e.target.checked }));
+  bind('oPow', 'onchange', e => send({ t: 'opt', k: 'powers', v: e.target.checked }));
   bind('oTurn', 'onchange', e => send({ t: 'opt', k: 'turn', v: +e.target.value }));
   bind('oMap', 'onchange', e => send({ t: 'opt', k: 'map', v: e.target.value }));
   bind('oImps', 'onchange', e => send({ t: 'opt', k: 'imps', v: +e.target.value }));

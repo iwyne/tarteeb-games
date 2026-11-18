@@ -8,7 +8,10 @@ const $ = s => document.querySelector(s);
 const $$ = s => [...document.querySelectorAll(s)];
 const HEX = { red: '#e8362d', yellow: '#ffc928', green: '#1fa35c', blue: '#2a5bd7', pink: '#ef6fae', teal: '#18a7a0', orange: '#f28a1c', purple: '#7b3fc7' };
 const SYM = { skip: '⊘', reverse: '⇄', draw2: '+2', wild: '', wild4: '+4', draw1: '+1', draw5: '+5', skipall: '⊗', flip: '⟳', wd2: '+2', wdc: '+🎨' };
-const CORDER = { red: 0, yellow: 1, green: 2, blue: 3, pink: 0, teal: 1, orange: 2, purple: 3, wild: 4 };
+const CORDER = { red: 0, yellow: 1, green: 2, blue: 3, pink: 0, teal: 1, orange: 2, purple: 3, wild: 4, power: 5 };
+// قدرات الأونو
+const PWR = { spy: ['👀', 'تجسّس', 'شوف أوراق لاعب ٥ ثواني'], steal: ['🫳', 'سرقة', 'خذ ورقة عشوائية من لاعب'], rain: ['🌧️', 'مطر أوراق', 'كل الباقين يسحبون ٢'], swap: ['🔄', 'بدّل اليد', 'بدّل أوراقك كلها مع لاعب'], shield: ['🛡️', 'درع', 'يرد +٢ و+٤ تلقائياً على اللي رماها'], freeze: ['🧊', 'تجميد', 'لاعب يفوّت دورين'], gift: ['🎁', 'هدية', 'أعط ورقتين عشوائية من يدك لأحد'], bomb: ['💣', 'قنبلة', 'كل الباقين يسحبون ورقة'] };
+const PTGT = ['spy', 'steal', 'swap', 'freeze', 'gift'];
 
 const store = {
   get(k) { try { return JSON.parse(localStorage.getItem(k)); } catch { return null; } },
@@ -80,6 +83,10 @@ function on(m) {
     if (typeof hauntNet === 'function') hauntNet(m);
   } else if (m.t === 'gnet') {
     const f = window['net_' + m.g]; if (typeof f === 'function') f(m);
+  } else if (m.t === 'peek') {
+    showPeek(m);
+  } else if (m.t === 'pfx') {
+    if (m.k === 'got') toast('🫳 سرقت ورقة!'); else powerFx(m);
   } else if (m.t === 'react') {
     showReact(m.from, m.e);
   } else if (m.t === 'state') {
@@ -188,6 +195,7 @@ function renderTeams(isHost) {
 // ---------- الكروت ----------
 function cardEl(c, tag = 'div') {
   const el = document.createElement(tag);
+  if (c.color === 'power') { const w = PWR[c.v] || ['✨', 'قدرة', '']; el.className = 'card power p-' + c.v; el.title = w[1] + ' — ' + w[2]; el.innerHTML = `<span class="tl">✨</span><span class="mid"><span>${w[0]}</span></span><span class="pn">${w[1]}</span>`; return el; }
   const lab = /^\d$/.test(c.v) ? c.v : SYM[c.v];
   el.className = 'card ' + c.color;
   el.innerHTML = `<span class="tl">${lab}</span><span class="mid"><span>${lab}</span></span><span class="br">${lab}</span>`;
@@ -216,6 +224,7 @@ function modalColors(side) {
 
 // ---------- اللعبة ----------
 function playCard(c) {
+  if (c.color === 'power' && PTGT.includes(c.v)) return pickTarget(c);
   if (c.color === 'wild') { wildId = c.id; modalColors(S.game === 'flip' && S.g.side === 'D' ? 'D' : 'L'); $('#colorModal').hidden = false; }
   else send({ t: 'play', id: c.id });
 }
@@ -224,6 +233,33 @@ $$('#colorModal [data-c]').forEach(b => b.onclick = () => {
   if (wildId !== null) send({ t: 'play', id: wildId, color: b.dataset.c });
   wildId = null;
 });
+// اختيار اللاعب للقدرة
+function pickTarget(c) {
+  const w = PWR[c.v], m = $('#pwrModal');
+  m.querySelector('h3').textContent = `${w[0]} ${w[1]} — على مين؟`;
+  m.querySelector('p').textContent = w[2];
+  const L = m.querySelector('.pwrlist'); L.innerHTML = '';
+  S.players.filter(p => p.id !== S.me).forEach(p => { const b = document.createElement('button'); b.type = 'button'; b.className = 'btn'; b.innerHTML = `${esc(p.av || '')} ${esc(p.name)} <small>${p.n} 🂠</small>`; b.onclick = () => { m.hidden = true; send({ t: 'play', id: c.id, target: p.id }); }; L.appendChild(b); });
+  m.hidden = false;
+}
+$('#pwrModal').addEventListener('click', e => { if (e.target.id === 'pwrModal' || e.target.closest('.pwrx')) e.currentTarget.hidden = true; });
+// التجسّس: أوراق اللاعب تطلع لك ٥ ثواني
+function showPeek(m) {
+  const o = $('#peekOv'); o.querySelector('b').textContent = `👀 أوراق ${m.name}`;
+  const h = o.querySelector('.peekhand'); h.innerHTML = ''; [...m.hand].sort((a, b) => CORDER[a.color] - CORDER[b.color] || vrank(a.v) - vrank(b.v)).forEach(c => h.appendChild(cardEl(c)));
+  o.hidden = false; sfx('whoosh'); let n = Math.round((m.ms || 5000) / 1000); const cd = o.querySelector('em'); cd.textContent = n;
+  clearInterval(showPeek.t); showPeek.t = setInterval(() => { n--; cd.textContent = n; if (n <= 0) { clearInterval(showPeek.t); o.hidden = true; } }, 1000);
+}
+function powerFx(m) {
+  const w = PWR[m.k]; if (!w) return;
+  const nm = id => (S.players.find(p => p.id === id) || {}).name || '';
+  const me = m.to === S.me, by = m.from === S.me;
+  if (m.k === 'got') return;
+  const txt = m.k === 'shield' ? `🛡️ ${nm(m.from)} صدّ السحب ورجّعه على ${nm(m.to)}!` : `${w[0]} ${nm(m.from)} استخدم «${w[1]}»${m.to ? ' على ' + nm(m.to) : ''}`;
+  const f = $('#pwrFx'); f.innerHTML = `<i>${w[0]}</i><span>${esc(txt)}</span>`; f.className = 'pwrfx show' + (me ? ' me' : '');
+  clearTimeout(powerFx.t); powerFx.t = setTimeout(() => f.classList.remove('show'), 2600);
+  sfx({ spy: 'whoosh', steal: 'pop', rain: 'penalty', bomb: 'bang', swap: 'shuffle', freeze: 'chime', gift: 'coin', shield: 'bell' }[m.k] || 'pop');
+}
 $('#colorModal').addEventListener('click', e => { if (e.target.id === 'colorModal') { e.currentTarget.hidden = true; wildId = null; } });
 $('#deck').onclick = () => { if (S.turn === S.me && S.phase === 'play' && S.pending === null) send({ t: 'draw' }); else if (S.turn === S.me && S.pending !== null) toast('لعب الورقة اللي سحبتها أو مرّر'); };
 $('#unoBtn').onclick = () => send({ t: 'uno' });
