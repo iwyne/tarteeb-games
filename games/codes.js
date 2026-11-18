@@ -15,7 +15,7 @@ module.exports = H => {
   }
   function endTurn(r) { const g = r.g; g.turn = other(g.turn); g.sub = 'clue'; g.clue = null; g.left = 0; }
   return {
-    min: 4, max: 10,
+    min: 4, max: 42,
     start(r) {
       const pool = r.opts.words && r.opts.words.length >= 25 ? r.opts.words : WORDS;
       const words = H.shuffle(pool.slice()).slice(0, 25);

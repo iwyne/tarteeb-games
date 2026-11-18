@@ -67,7 +67,7 @@ module.exports = H => {
     r.winner = ws.map(p => p.name).join(' و ') || 'انتهت اللعبة'; r.winTeam = null; H.win(r, ws); H.setTimer(r, 0, null);
   }
   return {
-    min: 1, max: 12,
+    min: 1, max: 42,
     start(r) {
       const count = [10, 15, 20].includes(r.opts.fcount) ? r.opts.fcount : 10;
       r.g = { count, k: 0, mode: ['flags', 'cap', 'mix'].includes(r.opts.fmode) ? r.opts.fmode : 'flags', diff: r.opts.fdiff === 'all' ? 'all' : 'easy', used: new Set(), scores: {}, streak: {}, gain: {}, ans: {}, q: null, sub: 'intro', bt: [], at: 0 };

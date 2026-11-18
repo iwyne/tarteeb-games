@@ -116,13 +116,13 @@ module.exports = H => {
     if (s !== g._last) { g._last = s; H.cast(r, { t: 'gnet', g: 'cars', k: 'pos', p }); }
   }
   return {
-    min: 2, max: 10,
+    min: 2, max: 42,
     start(r) {
       const rounds = [1, 3, 5].includes(+r.opts.krounds) ? +r.opts.krounds : 3;
       const playMs = ([60, 75, 90].includes(+r.opts.ktime) ? +r.opts.ktime : 75) * 1000 * SCALE;
       const g = r.g = { C: {}, round: 0, rounds, playMs, sub: 'intro', feed: [], res: null, endAt: 0, diff: 'mid' };
       const cols = H.shuffle([...Array(10).keys()]);
-      r.players.forEach((q, i) => { g.C[q.id] = { id: q.id, c: cols[i % 10], x: 0, y: 0, a: 0, v: 0, role: 'r', caught: false, pts: 0, rp: 0, hTimes: 0, freeze: 0, boostUntil: 0, boostAt: 0, lastMv: Date.now(), bot: q.bot ? { wp: null } : null }; });
+      r.players.forEach((q, i) => { g.C[q.id] = { id: q.id, c: i < 10 ? cols[i] : i, x: 0, y: 0, a: 0, v: 0, role: 'r', caught: false, pts: 0, rp: 0, hTimes: 0, freeze: 0, boostUntil: 0, boostAt: 0, lastMv: Date.now(), bot: q.bot ? { wp: null } : null }; });
       r.winner = null; r.winTeam = null; r.phase = 'play';
       newRound(r);
       clearInterval(g.iv);

@@ -3406,3 +3406,17 @@ body.stf-on{overflow:hidden}
   .fzbtns{display:grid;grid-template-columns:repeat(3,1fr);gap:.35em}.fzbtns .sup{grid-column:span 1}
   .fzctl button{min-width:3.6em;min-height:3.2em;font-size:1.25em}
 }
+
+/* القنبلة: لما يكثر العدد (لين ٤٢) */
+.bmring.crowd{width:min(760px,100%)}
+.bmring.crowd .bmseat{width:min(84px,16vw)}
+.bmring.crowd .bmav{width:36px;height:36px;font-size:1.05rem;border-width:2px;box-shadow:2px 2px 0 #16130f}
+.bmring.crowd .bmseat>b{font-size:.7rem}
+.bmring.packed .bmseat{width:min(66px,13vw);gap:0}
+.bmring.packed .bmav{width:28px;height:28px;font-size:.85rem}
+.bmring.packed .bmseat>b{font-size:.62rem}
+.bmring.packed .bmtyped{font-size:.7rem}
+@media (max-width:560px){.bmring.crowd .bmav{width:26px;height:26px;font-size:.8rem}.bmring.packed .bmav{width:20px;height:20px;font-size:.65rem;border-width:1.5px;box-shadow:none}.bmring.packed .bmseat>b{font-size:.5rem}.bmring.crowd .bmseat>b{font-size:.58rem}}
+.bmring.packed .bmbomb{width:min(100px,20vw)}
+.bmring.crowd .bmh{font-size:.6rem;letter-spacing:-1px}
+@media (max-width:560px){.bmring.packed .bmh{font-size:.42rem;letter-spacing:-1px}.bmring.packed .bmbomb{width:min(70px,18vw);border-width:3px}.bmring.packed .bmseat{width:13vw}}

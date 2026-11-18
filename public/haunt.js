@@ -1,7 +1,7 @@
 // القصر المسكون — واجهة ثري دي (Three.js من vendor، ينحمل بس لما تفتح اللعبة).
 // القصر ٤ طوابق مبني من خريطة haunt-map.js: أرضيات وجدران وسقوف بخامات Poly Haven، درج حقيقي،
 // أبواب تنفتح لما تقرّب، نوافذ يدخل منها البرق، أثاث حقيقي، وأصوات رعب حقيقية (ثلاثية الأبعاد).
-const HCOL = ['#e8362d', '#2a5bd7', '#1f9d55', '#ffc928', '#ff8a1f', '#8a4fd6', '#ff6fae', '#19c3d6', '#8a5a2b', '#9be22d'];
+const HCOL = ['#e8362d', '#2a5bd7', '#1f9d55', '#ffc928', '#ff8a1f', '#8a4fd6', '#ff6fae', '#19c3d6', '#8a5a2b', '#9be22d', '#c81c1c', '#557fe6', '#649c16', '#ed82df', '#2db7a0', '#d8a263', '#3e238e', '#90e28c', '#d41152', '#4bb2f0', '#98a50d', '#da7af4', '#39ac72', '#ce816d', '#2c3485', '#aedb93', '#c81c8f', '#55e1e6', '#9c7a16', '#b282ed', '#2db744', '#d86372', '#23508e', '#c9e28c', '#d311d4', '#4bf0bf', '#a54c0d', '#897af4', '#4cac39', '#ce6d9a', '#2c6f85', '#dbd893'];
 const HR = { WALK: 3.4, RUN: 5.8, GSPEED: 4.6, USE: 1.9, CATCH: 1.6, EYE: 1.62, GEYE: 1.9, SCREAM: 13 };
 const HU = { T: null, loading: false, built: false, me: null, lv: 1, oth: {}, keys: {}, joy: null, look: null, yaw: 0, pitch: 0, fl: true, stam: 100, tired: false, sent: 0, last: '', bob: 0, stepT: 0, near: 99, bat: 100, dark: 0, stun: 0, scr: 0, mir: 0, act: null, ward: {}, nextScare: 0, beat: 0, follow: 0, mapOn: false, mapLv: -1, vx: 0, vz: 0, camY: 1.6 };
 const hg = () => S && S.game === 'haunt' && S.g;

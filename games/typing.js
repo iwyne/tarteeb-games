@@ -21,7 +21,7 @@ module.exports = H => {
     });
   }
   const api = {
-    min: 2, max: 10,
+    min: 2, max: 42,
     start(r) {
       const target = Math.max(3, Math.min(15, +(r.opts.target || 5)));
       r.g = { target, round: 0, sub: 'wait', text: '', startAt: 0, scores: {}, last: null, used: new Set() };

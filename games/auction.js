@@ -77,7 +77,7 @@ module.exports = H => {
     });
   }
   return {
-    min: 2, max: 10,
+    min: 2, max: 42,
     start(r) {
       const count = [6, 8, 10].includes(r.opts.aitems) ? r.opts.aitems : 8;
       r.g = { count, k: 0, deck: makeDeck(count), P: {}, it: null, price: 0, top: null, bids: [], bidN: 0, sub: 'intro', tips: {}, hist: [], bt: [] };

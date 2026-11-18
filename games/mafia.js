@@ -179,7 +179,7 @@ module.exports = H => {
   }
 
   return {
-    min: 5, max: 16, ROLES,
+    min: 5, max: 42, ROLES,
     start(r) {
       const o = r.opts || {}, ids = H.shuffle(r.players.map(p => p.id)), n = ids.length;
       const want = o.mroles || { doc: 1, det: 1, sniper: 1, god: 1, jester: 1, mayor: 1 };

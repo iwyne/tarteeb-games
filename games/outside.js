@@ -46,7 +46,7 @@ module.exports = H => {
     } else finish(r, true, g.accused ? `صوّتوا على ${byId(r, g.accused)?.name || '؟'} وكان بريء — برا السالفة نجا!` : 'تعادل بالأصوات — برا السالفة نجا!');
   }
   return {
-    min: 3, max: 10,
+    min: 3, max: 42,
     start(r) {
       const cats = Object.keys(CATS), cat = cats[Math.random() * cats.length | 0];
       const word = CATS[cat][Math.random() * CATS[cat].length | 0];

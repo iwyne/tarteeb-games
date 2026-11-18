@@ -1,7 +1,7 @@
 // ================= مطاردة (سيارات) =================
 const CA = { me: null, oth: {}, keys: {}, joy: null, sent: 0, loop: false, lt: 0, spawnK: -1, skid: [], fx: [], shake: 0, bg: null, boostUntil: 0, boostAt: 0, freezeEnd: 0, endAt: 0, cam: null, snapAll: true, big: 0, lastSec: -1 };
 const cg = () => S && S.game === 'cars' && S.g;
-const KCOL = ['#e8362d', '#2a5bd7', '#ffc928', '#1fa35c', '#ff7a1a', '#9b59d0', '#19b5c9', '#ef6fae', '#f3ead8', '#5b5f6b'];
+const KCOL = ['#e8362d', '#2a5bd7', '#ffc928', '#1fa35c', '#ff7a1a', '#9b59d0', '#19b5c9', '#ef6fae', '#f3ead8', '#5b5f6b', '#c81c1c', '#557fe6', '#649c16', '#ed82df', '#2db7a0', '#d8a263', '#3e238e', '#90e28c', '#d41152', '#4bb2f0', '#98a50d', '#da7af4', '#39ac72', '#ce816d', '#2c3485', '#aedb93', '#c81c8f', '#55e1e6', '#9c7a16', '#b282ed', '#2db744', '#d86372', '#23508e', '#c9e28c', '#d311d4', '#4bf0bf', '#a54c0d', '#897af4', '#4cac39', '#ce6d9a', '#2c6f85', '#dbd893'];
 const KROOF = ['#efe0bf', '#c8553d', '#2f8f83', '#f2b134', '#7d6aa8'];
 const kName = id => { const p = S.players.find(q => q.id === id); return p ? p.name : '؟'; };
 const kNum = n => String(n).replace(/\d/g, d => '٠١٢٣٤٥٦٧٨٩'[d]);

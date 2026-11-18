@@ -255,7 +255,7 @@ module.exports = H => {
   }
 
   return {
-    min: 4, max: 12,
+    min: 4, max: 42,
     start(r) {
       const n = r.players.length, ids = H.shuffle(r.players.map(q => q.id));
       const want = Math.max(1, Math.min(3, +(r.opts.imps || 1))), nImp = Math.min(want, maxImps(n));
@@ -265,7 +265,7 @@ module.exports = H => {
       r.players.forEach((q, i) => {
         const imp = ids.indexOf(q.id) < nImp;
         const tasks = H.shuffle(M.tasks.map(t => t.id)).slice(0, TASKS_EACH).map(id => ({ id, done: false }));
-        g.P[q.id] = { id: q.id, c: cols[i], imp, role: imp ? 'imp' : 'crew', alive: true, known: false, x: 0, y: 0, lastMv: now, killAt: now + INTRO + FIRST_CD, btn: 1, tasks, cur: null, shield: false, shieldOn: null, docUsed: false, cams: false,
+        g.P[q.id] = { id: q.id, c: i < 12 ? cols[i] : i, imp, role: imp ? 'imp' : 'crew', alive: true, known: false, x: 0, y: 0, lastMv: now, killAt: now + INTRO + FIRST_CD, btn: 1, tasks, cur: null, shield: false, shieldOn: null, docUsed: false, cams: false,
           bot: q.bot ? { path: [], goal: null, wait: 0, task: null, k: i, sus: null, docAt: now + INTRO + 8000 + rnd(15000) } : null };
       });
       if (g.doctor) { const c = ids.slice(nImp); g.P[c[rnd(c.length)]].role = 'doc'; }

@@ -111,7 +111,7 @@ module.exports = H => {
     later(r, think + (w ? w.length * 140 + 300 : 0) * SCALE, () => { if (g.turnAt !== turn) return; if (w) word(r, b, w); });
   }
   return {
-    min: 2, max: 12,
+    min: 2, max: 42,
     start(r) {
       load();
       const order = H.shuffle(r.players.map(p => p.id)), lives = [2, 3, 4].includes(r.opts.blives) ? r.opts.blives : 3;

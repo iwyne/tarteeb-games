@@ -348,7 +348,7 @@ module.exports = H => {
   }
 
   return {
-    min: 2, max: 10,
+    min: 2, max: 42,
     start(r) {
       const n = r.players.length, ids = H.shuffle(r.players.map(q => q.id));
       const nG = n >= 7 ? 2 : 1, cols = H.shuffle([...Array(10).keys()]);
@@ -358,7 +358,7 @@ module.exports = H => {
       spawnItems(g);
       r.players.forEach((q, i) => {
         const ghost = ids.indexOf(q.id) < nG;
-        const P = g.P[q.id] = { id: q.id, c: cols[i], ghost, alive: true, trapped: false, strikes: 0, escaped: false, hidden: null, lv: 1, x: 0, z: 0, yaw: 0, fl: !ghost, bat: 100, darkTill: 0, stun: 0, burnCd: 0, reveal: 0, screamAt: now + INTRO + WAKE + 10000, mirrorAt: 0, checkAt: 0, catchAt: 0, hold: null, lastMv: now,
+        const P = g.P[q.id] = { id: q.id, c: i < 10 ? cols[i] : i, ghost, alive: true, trapped: false, strikes: 0, escaped: false, hidden: null, lv: 1, x: 0, z: 0, yaw: 0, fl: !ghost, bat: 100, darkTill: 0, stun: 0, burnCd: 0, reveal: 0, screamAt: now + INTRO + WAKE + 10000, mirrorAt: 0, checkAt: 0, catchAt: 0, hold: null, lastMv: now,
           bot: q.bot ? { path: [], goal: null, wait: 0, brave: .35 + Math.random() * .4, k: i } : null };
         if (ghost) { const k = ids.indexOf(q.id); [P.lv, P.x, P.z] = [M.ghostSpawn[0], M.ghostSpawn[1] - k * 1.2, M.ghostSpawn[2]]; P.yaw = 0; }
         else { const k = i % 8, a = k / 8 * Math.PI * 2; P.lv = M.spawn[0]; P.x = M.spawn[1] + Math.cos(a) * 1.3; P.z = M.spawn[2] + Math.sin(a) * 1.3; P.yaw = 0; }

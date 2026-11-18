@@ -79,7 +79,7 @@ module.exports = H => {
   }
   const brief = it => it && { by: it.by, k: it.k, v: it.k === 'w' ? it.v : null, auto: !!it.auto };
   return {
-    min: 3, max: 12,
+    min: 3, max: 42,
     start(r) {
       const order = H.shuffle(r.players.map(p => p.id)), n = order.length;
       const ps = [4, 6, 8].includes(r.opts.psteps) ? r.opts.psteps : 0;

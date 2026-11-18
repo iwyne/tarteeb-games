@@ -44,7 +44,7 @@ module.exports = H => {
     startTurn(r);
   }
   return {
-    min: 2, max: 10,
+    min: 2, max: 42,
     start(r) {
       const cycles = r.players.length <= 4 ? 2 : 1;
       let order = []; for (let c = 0; c < cycles; c++) order = order.concat(H.shuffle(r.players.map(p => p.id)));

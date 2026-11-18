@@ -104,7 +104,7 @@ module.exports = H => {
     r.winner = ws.map(p => p.name).join(' و ') || 'انتهت اللعبة'; r.winTeam = null; H.win(r, ws); H.setTimer(r, 0, null);
   }
   return {
-    min: 2, max: 12,
+    min: 2, max: 42,
     start(r) {
       const rounds = [5, 7, 10].includes(r.opts.jrounds) ? r.opts.jrounds : 7;
       r.g = {

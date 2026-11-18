@@ -85,7 +85,7 @@ module.exports = H => {
     r.winner = ws.map(p => p.name).join(' و ') || 'انتهت اللعبة'; r.winTeam = null; H.win(r, ws); H.setTimer(r, 0, null);
   }
   return {
-    min: 3, max: 10,
+    min: 3, max: 42,
     start(r) {
       const rounds = [5, 7, 10].includes(r.opts.frounds) ? r.opts.frounds : 7;
       const deck = H.shuffle(QS.slice()).slice(0, rounds);

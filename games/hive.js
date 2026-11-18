@@ -76,7 +76,7 @@ module.exports = H => {
     g.cell = i; g.picker = g.turn; g.q = pickQuestion(r, norm(c.l)); g.result = null; setSub(r, 'answer');
   }
   return {
-    min: 2, max: 10,
+    min: 2, max: 42,
     start(r) {
       r.players.forEach((p, i) => { p.team = i % 2; });
       const letters = H.shuffle(LETTERS.slice()).slice(0, N * N);

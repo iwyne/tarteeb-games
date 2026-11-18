@@ -112,7 +112,7 @@ module.exports = H => {
     H.setTimer(r, 0, null);
   }
   return {
-    min: 2, max: 12,
+    min: 2, max: 42,
     start(r) {
       r.players.forEach((p, i) => { p.team = i % 2; });
       const rounds = [4, 6].includes(r.opts.drounds) ? r.opts.drounds : 4;

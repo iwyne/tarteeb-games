@@ -15,7 +15,9 @@ function bmBuild(body) {
 }
 function bmSeatXY(i, n) {
   const a = -Math.PI / 2 + i / n * Math.PI * 2;
-  return [50 + Math.cos(a) * 40, 50 + Math.sin(a) * 39, a];
+  // لما يكثر العدد نوزعهم على دائرتين (داخلية وخارجية) عشان ما يتراكبون
+  const k = n > 16 && i % 2 ? .78 : 1;
+  return [50 + Math.cos(a) * 42 * k, 50 + Math.sin(a) * 41 * k, a];
 }
 function renderBomb(body) {
   const g = S.g; if (body.dataset.built !== 'bomb') bmBuild(body);
@@ -24,7 +26,7 @@ function renderBomb(body) {
   // لو المقعد تغيّر نعيد رسم الدائرة
   const ring = $('#bmRing');
   if (ring.dataset.sig !== ord.join()) {
-    ring.dataset.sig = ord.join();
+    ring.dataset.sig = ord.join(); ring.classList.toggle('crowd', n > 12); ring.classList.toggle('packed', n > 24);
     ring.querySelectorAll('.bmseat').forEach(e => e.remove());
     ord.forEach((id, i) => { const [x, y] = bmSeatXY(i, n), d = document.createElement('div'); d.className = 'bmseat'; d.dataset.id = id; d.style.left = x + '%'; d.style.top = y + '%'; d.innerHTML = `<span class="bmav">${bmFace(id)}</span><b class="nt">${bmName(id)}</b><em class="bmh"></em><span class="bmtyped nt"></span>`; ring.appendChild(d); });
   }
