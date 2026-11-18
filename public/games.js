@@ -449,6 +449,9 @@ function renderTyping(body) {
 }
 
 // ================= إعدادات الغرفة (اللوبي) =================
+// سطر قصير يطلع تحت اسم اللعبة في بانر الغرفة
+const LBLURB = { uno: 'نزّل أوراقك قبل الكل', codes: 'خمّن كلمات فريقك من تلميحة وحدة', hive: 'كوّن طريقك بالحروف قبل الخصم', liars: 'كذّب بثقة واكشف الكذاب', flip: 'أونو بوجهين، والورق ينقلب', chess: 'شطرنج كلاسيكي، الفايز يبقى', mimic: 'قلّد الصوت وخلهم يخمنون', auction: 'زايد على القطع واجمع أغلى مجموعة', jwb: 'جاوب مثل الأغلبية', feud: 'خمّن أشهر الأجوبة مع فريقك', flags: 'أعلام وعواصم، الأسرع يكسب', phone: 'اكتب وارسم والرسالة تتغير', fib: 'اكتب جواب كذب يصدقونه', bomb: 'كوّن كلمة قبل ما تنفجر', mafia: 'اكشف المافيا قبل ما تخلص المدينة', haunt: 'اهرب من البيت قبل ما يصيدك الشبح', sus: 'خلّص المهام واكشف المندس', outside: 'اعرف مين برا السالفة', typing: 'اكتب أسرع من الكل', jackaroo: 'وصّل كراتك البيت مع شريكك', draw: 'ارسم وخلهم يخمنون', baloot: 'بلوت سعودي أصلي', cars: 'طارد وصِد قبل ما يخلص الوقت', rich: 'اشترِ وابنِ وفلّس الباقين', boxing: 'ملاكمة ١ ضد ١، الفايز يبقى', brawl: 'اختر مقاتلك وادخل الساحة' };
+const LBCOL = { uno: '#d8342b', codes: '#d6452f', hive: '#d99a1e', liars: '#7a4ee0', flip: '#c2367a', chess: '#7a5434', mimic: '#c93c78', auction: '#8a5a1c', jwb: '#0f8b8d', feud: '#1c3f8f', flags: '#2a5bd7', phone: '#13a3b5', fib: '#b8281f', bomb: '#c48a12', mafia: '#5b1b2a', haunt: '#3a2140', sus: '#2b3a8f', outside: '#1f8f52', typing: '#e0761a', jackaroo: '#1a8a4c', draw: '#2a5bd7', baloot: '#1d6b47', cars: '#3a3c43', rich: '#1fa35c', boxing: '#2b1f45', brawl: '#3b1e5c' };
 let lsSig = '', lsOpen = false;
 const GEMO = { uno: '🃏', codes: '🕵️', hive: '🐝', liars: '🤥', outside: '🕶️', typing: '🏁', jackaroo: '🎱', draw: '✏️', flip: '🔄', sus: '🚀', haunt: '👻', mafia: '🎩', phone: '☎️', fib: '🤫', bomb: '💣', auction: '🔨', feud: '👨‍👩‍👧', flags: '🌍', mimic: '🎙️', chess: '♞', jwb: '🗣️', baloot: '🂡', cars: '🚓', rich: '💰', boxing: '🥊', brawl: '⚔️' };
 function renderLobbySet(isHost) {
@@ -509,7 +512,6 @@ function renderLobbySet(isHost) {
     <section class="ls-sec"><h4>🔐 الغرفة</h4><div class="ls-opts">
       <label class="chk"><input type="checkbox" id="oLock"${o.lock ? ' checked' : ''}> قفل الغرفة (بدون متفرجين)</label>
       <span class="passrow"><input id="oPass" maxlength="12" placeholder="كلمة سر (اختياري)" value="${esc(o.pass || '')}" autocomplete="off"><button type="button" id="oPassSave" class="btn sm">حفظ</button></span>
-      ${hasBots ? `<div class="botrow"><button type="button" id="addBot" class="btn sm"${S.players.length >= S.max ? ' disabled' : ''}>🤖 أضف بوت</button><small class="muted">يكمّل اللاعبين الناقصين، اطرده من ✕ لو ما تبيه</small></div>` : ''}
     </div></section>`;
   $('#lsToggle').onclick = () => { lsOpen = !lsOpen; lsSig = ''; renderLobbySet(isHost); };
   box.querySelectorAll('.gsw').forEach(b => b.onclick = () => { lsOpen = false; if (b.dataset.g !== S.game) send({ t: 'setgame', game: b.dataset.g }); else { lsSig = ''; renderLobbySet(isHost); } });

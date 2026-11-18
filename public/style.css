@@ -3420,3 +3420,66 @@ body.stf-on{overflow:hidden}
 .bmring.packed .bmbomb{width:min(100px,20vw)}
 .bmring.crowd .bmh{font-size:.6rem;letter-spacing:-1px}
 @media (max-width:560px){.bmring.packed .bmh{font-size:.42rem;letter-spacing:-1px}.bmring.packed .bmbomb{width:min(70px,18vw);border-width:3px}.bmring.packed .bmseat{width:13vw}}
+/* ================= اللوبي: بانر اللعبة + تذكرة الكود + شريط البدء ================= */
+.lbanner{--gc:#8a5a2b;position:relative;display:flex;align-items:center;gap:22px;padding:20px 24px;border:3px solid var(--ink);border-radius:22px;box-shadow:var(--sh);overflow:hidden;color:#fff;
+  background:linear-gradient(120deg,color-mix(in srgb,var(--gc) 92%,#fff),color-mix(in srgb,var(--gc) 55%,#000) 75%)}
+.lbanner::before{content:'';position:absolute;inset:0;background:radial-gradient(rgba(255,255,255,.12) 1.2px,transparent 1.2px) 0 0/16px 16px;pointer-events:none}
+.lb-ic{position:relative;font-size:clamp(3rem,9vw,5.4rem);line-height:1;filter:drop-shadow(4px 4px 0 rgba(0,0,0,.55));transform:rotate(-8deg);flex:none}
+.lb-tx{position:relative;flex:1;min-width:0;display:grid;gap:2px}
+.lb-tx small{font-size:.8rem;opacity:.8}
+.lbanner #lobbyTitle{font:400 clamp(2rem,6vw,3.3rem)/1.05 Lalezar,Tajawal,sans-serif;color:#fff3c4;text-shadow:3px 3px 0 rgba(0,0,0,.7);-webkit-text-stroke:0;background:none;padding:0;transform:none;font-style:normal;margin:0}
+.lbanner #lobbyTitle::before{display:none}
+.lb-tx p i{font-style:normal;opacity:.7}
+.lb-tx p{font-size:.95rem;opacity:.95;text-shadow:1px 1px 0 rgba(0,0,0,.4)}
+.lbanner .ticket{position:relative;flex:none;max-width:none;padding:12px 20px;gap:4px;border-radius:16px;background:#f3d9a4;color:#2a160c;border:3px dashed #2a160c;box-shadow:inset 0 0 0 4px #f3d9a4,4px 4px 0 rgba(0,0,0,.45);transform:rotate(2deg)}
+.lbanner .ticket small{font-size:.75rem}
+.lbanner .roomcode{font-size:clamp(2.4rem,7vw,3.4rem);color:#2a160c}
+.lbanner .ticket .btn{font-size:.8rem;padding:4px 12px;background:transparent;color:#2a160c;border-color:#2a160c;box-shadow:none;text-decoration:underline}
+#lobby .lbanner+.sect,#lobby .act-only+.lbanner{margin-top:6px}
+/* اللاعبين: شرايح صغيرة */
+#lobby .plist{gap:8px}
+#lobby .plist li{display:inline-flex;align-items:center;gap:7px;padding:4px 12px 4px 5px;border-radius:99px;border-width:2.5px;box-shadow:2px 2px 0 var(--ink);font-size:.98rem;background:var(--surf)!important;color:var(--ink)!important}
+#lobby .plist li .pav{display:grid;place-items:center;width:30px;height:30px;border-radius:50%;border:2px solid var(--ink);font:400 .95rem Lalezar,Tajawal,sans-serif;color:#16130f;background:var(--yellow);flex:none;margin:0}
+#lobby .plist li:nth-child(4n+1) .pav{background:#ff8fc0}#lobby .plist li:nth-child(4n+2) .pav{background:#7fa6ff}#lobby .plist li:nth-child(4n+3) .pav{background:#5ed38c}#lobby .plist li:nth-child(4n) .pav{background:#ffb35c}
+#lobby .plist li.me{background:var(--yellow)!important;color:#16130f!important}
+#lobby .plist li.me .pav{background:#fff}
+#lobby .plist li.t0{box-shadow:0 0 0 3px var(--red),2px 2px 0 var(--ink)}#lobby .plist li.t1{box-shadow:0 0 0 3px var(--blue),2px 2px 0 var(--ink)}
+#lobby .plist li em{font-size:.8rem}
+#lobby .plist .crown{margin-inline-start:2px}
+#lobby .plist .kick{margin-inline-start:2px;width:22px;height:22px;padding:0;font-size:.75rem}
+#lobby .plist li.addchip{padding:0;border:2.5px dashed color-mix(in srgb,var(--ink) 45%,transparent);box-shadow:none;background:transparent!important}
+#lobby .plist li.addchip button{font:800 .95rem Tajawal,sans-serif;background:none;border:0;color:inherit;opacity:.75;padding:8px 16px;cursor:pointer}
+#lobby .plist li.addchip button:hover{opacity:1}
+#lobby .plist.specs li{background:var(--surf)!important;opacity:.85}
+/* الإعدادات: صفوف بخط متقطع، و«غيّر اللعبة» تحت */
+#lobby .lobbyset{display:flex;flex-direction:column}
+#lobby .ls-game{order:9}
+#lobby .ls-game:not(.open) .ls-cur>div,#lobby .ls-game:not(.open) .ls-ic{display:none}
+#lobby .ls-game:not(.open) .ls-cur{justify-content:flex-start}
+#lobby .ls-opts{grid-template-columns:1fr;gap:0}
+#lobby .ls-opts>.chk,#lobby .ls-opts>.passrow,#lobby .ls-opts>.mfroles,#lobby .ls-opts>.wdet{background:none;border:0;border-radius:0;padding:10px 2px;min-height:0;border-bottom:2px dashed color-mix(in srgb,var(--ink) 25%,transparent)}
+#lobby .ls-opts>:last-child{border-bottom:0}
+#lobby .ls-opts>.passrow{display:flex;gap:8px;align-items:center}
+#lobby .ls-opts>.passrow input{flex:1;min-width:0}
+/* الشرح والفيديو بسطر */
+.lhelp{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-start;margin:4px 0}
+.lhelp>details{flex:0 1 auto}.lhelp>details[open]{flex-basis:100%;order:2}
+.lhelp>.tutb{margin:0}
+/* شريط البدء الثابت تحت */
+#lobby .lbar{position:sticky;bottom:0;z-index:30;display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:18px -14px 0;padding:12px 14px calc(12px + env(safe-area-inset-bottom));background:color-mix(in srgb,var(--paper) 92%,#000);border-top:3px solid var(--ink);box-shadow:0 -6px 18px rgba(0,0,0,.18);border-radius:16px 16px 0 0}
+#lobby .lbar .hint{flex:1;min-width:180px;margin:0;font-size:.9rem}
+#lobby .lbar .row{margin:0;gap:10px;flex-wrap:nowrap}
+#lobby .lbar #start{min-width:220px;font-size:1.3rem}
+@media (max-width:640px){
+  .lbanner{flex-wrap:wrap;gap:10px 14px;padding:16px}
+  .lbanner .ticket{flex:1 1 100%;flex-direction:row;display:flex;align-items:center;justify-content:space-between;transform:none;padding:8px 14px}
+  .lbanner .roomcode{font-size:2.3rem}
+  .lb-ic{font-size:3.2rem}
+  #lobby .lbar .row{width:100%}#lobby .lbar #start{flex:1;min-width:0}
+}
+body .lbanner #lobbyTitle::before,body[data-gt] .lbanner #lobbyTitle::before{display:none!important;content:none}
+#lobby .plist li .botx{display:none}
+#lobby .lobbyset .ls-sec+.ls-sec{border-top:0;padding-top:0}
+#lobby .lobbyset .ls-sec:not(:first-child){border-top:2.5px dashed color-mix(in srgb,var(--ink) 30%,transparent);padding-top:12px}
+#lobby .lobbyset .ls-game{border-top:2.5px dashed color-mix(in srgb,var(--ink) 30%,transparent);padding-top:12px}
+#lobby .lobbyset>.ls-sec:nth-child(2){border-top:0;padding-top:0}

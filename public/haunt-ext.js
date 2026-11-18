@@ -191,7 +191,7 @@ function hauntLobby(ph) {
   if (!st) {
     st = document.createElement('div'); st.id = 'hStage'; st.className = 'hstage';
     st.innerHTML = `<div class="hstagebox" id="hStageBox"></div><div class="hstageload" id="hStageLoad">جاري تجهيز البيت…</div><button type="button" class="btn hcustb" id="hCustB">🎭 صمّم شخصيتك</button><button type="button" class="hreplay" id="hReplay" title="شوف المقدمة">🎬</button><button type="button" class="hreplay hvolb" id="hVolL" title="الصوت">🔊</button><div class="hvolp" id="hVolLP" hidden></div>`;
-    const l = $('#lobby'); l.insertBefore(st, l.querySelector('.ticket').nextSibling);
+    const l = $('#lobby'), ref = $('#lbanner') || l.querySelector('.ticket'); ref.after(st);
     $('#hCustB').onclick = () => hCust();
     $('#hReplay').onclick = () => { hxStop(); hCine(() => hauntLobby('lobby')); };
     $('#hVolL').onclick = () => hVolPanel($('#hVolLP'));

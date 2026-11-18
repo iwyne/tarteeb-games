@@ -147,11 +147,16 @@ function renderLobby() {
   const amHost = !!host && host.id === S.me;
   $('#roomcode').textContent = S.code;
   $('#pcount').textContent = `(${S.players.length}/${S.max})`;
-  $('#lobbyTitle').textContent = 'غرفة ' + GNAME[S.game];
+  $('#lobbyTitle').textContent = GNAME[S.game];
+  $('#lbIc').textContent = (typeof GEMO !== 'undefined' && GEMO[S.game]) || '🎲';
+  $('#lbDesc').innerHTML = [(typeof LBLURB !== 'undefined' && LBLURB[S.game]) || '', (GINFO[S.game] || '').replace(/ \(.*\)$/, '')].filter(Boolean).map(t => `<span>${esc(t)}</span>`).join('<i> · </i>');
+  $('#lbanner').style.setProperty('--gc', (typeof LBCOL !== 'undefined' && LBCOL[S.game]) || '#8a5a2b');
   const plist = S.teams ? [...S.players].sort((a, b) => a.tm - b.tm) : S.players;
+  const canBot = amHost && !S.spec && typeof BOTGAMES !== 'undefined' && BOTGAMES.includes(S.game) && S.players.length < S.max;
   $('#plist').innerHTML = plist.map(p =>
-    `<li data-id="${p.id}" class="${p.on ? '' : 'off'}${S.teams ? ' t' + p.tm : ''}">${p.av ? `<span class="pav">${esc(p.av)}</span>` : ''}${esc(p.name)}${p.bot ? ' <span class="botx">بوت</span>' : ''}${p.w ? `<span class="wins">🏆 ${p.w}</span>` : ''}${S.teams ? `<span class="tag">فريق ${['أ', 'ب'][p.tm]}</span>` : ''}${p.id === S.me ? ' <em>(أنت)</em>' : ''}${p.h ? '<span class="crown">المضيف</span>' : ''}${amHost && !p.h && p.id !== S.me ? `<button class="kick" data-id="${p.id}" title="طرد">✕</button>` : ''}</li>`
-  ).join('');
+    `<li data-id="${p.id}" class="${p.on ? '' : 'off'}${S.teams ? ' t' + p.tm : ''}${p.id === S.me ? ' me' : ''}"><span class="pav">${esc(p.av || (p.bot ? '🤖' : [...String(p.name).trim()][0] || '؟'))}</span>${esc(p.name)}${p.bot ? ' <span class="botx">بوت</span>' : ''}${p.w ? `<span class="wins">🏆 ${p.w}</span>` : ''}${S.teams ? `<span class="tag">فريق ${['أ', 'ب'][p.tm]}</span>` : ''}${p.id === S.me ? ' <em>(أنت)</em>' : ''}${p.h ? '<span class="crown">المضيف</span>' : ''}${amHost && !p.h && p.id !== S.me ? `<button class="kick" data-id="${p.id}" title="طرد">✕</button>` : ''}</li>`
+  ).join('') + (canBot ? '<li class="addchip"><button type="button" id="addBot2">+ أضف بوت</button></li>' : '');
+  const ab = $('#addBot2'); if (ab) ab.onclick = () => send({ t: 'addbot' });
   const isHost = host && host.id === S.me, enough = S.players.length >= S.min;
   $('#specwrap').hidden = !S.specs.length;
   $('#scount').textContent = `(${S.specs.length})`;

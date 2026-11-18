@@ -395,12 +395,15 @@
 
   <!-- اللوبي -->
   <section id="lobby" hidden>
-    <h2 class="sect" id="lobbyTitle">غرفتكم جاهزة</h2>
     <p class="hint act-only">هذي غرفة الروم الصوتي. أي واحد يشغّل اللعبة من نفس الروم ينضم هنا تلقائيًا.</p>
-    <div class="ticket">
-      <small>كود الغرفة</small>
-      <div id="roomcode" class="roomcode">----</div>
-      <button id="copy" class="btn sm">انسخ رابط الدعوة</button>
+    <div class="lbanner" id="lbanner">
+      <div class="lb-ic" id="lbIc" aria-hidden="true">🎲</div>
+      <div class="lb-tx"><small>تلعبون الحين</small><h2 id="lobbyTitle">غرفتكم جاهزة</h2><p id="lbDesc"></p></div>
+      <div class="ticket">
+        <small>🎟 كود الغرفة</small>
+        <div id="roomcode" class="roomcode">----</div>
+        <button id="copy" class="btn sm">انسخ رابط الدعوة</button>
+      </div>
     </div>
     <h2 class="sect">اللاعبين <span id="pcount"></span></h2>
     <ul id="plist" class="plist"></ul>
@@ -409,16 +412,18 @@
       <ul id="slist" class="plist specs"></ul>
     </div>
     <div id="lobbyset" class="lobbyset"></div>
-    <details id="ghelp" class="jhelp" hidden><summary>كيف تلعب؟</summary><p id="ghelpTxt" class="ghelptxt"></p></details>
-    <p id="hint" class="hint"></p>
+    <div class="lhelp"><details id="ghelp" class="jhelp" hidden><summary>كيف تلعب؟</summary><p id="ghelpTxt" class="ghelptxt"></p></details></div>
     <p id="scoreline" class="hint" hidden></p>
     <div id="teamrow" class="row" hidden>
       <button id="teamBtn" class="btn dark"></button>
       <button id="shuffleBtn" class="btn" hidden>اخلط الفرق</button>
     </div>
-    <div class="row">
-      <button id="start" class="btn green">ابدأ اللعبة</button>
-      <button id="leave" class="btn">اطلع</button>
+    <div class="lbar">
+      <p id="hint" class="hint"></p>
+      <div class="row">
+        <button id="leave" class="btn">اطلع</button>
+        <button id="start" class="btn green">ابدأ اللعبة ▶</button>
+      </div>
     </div>
   </section>
 
