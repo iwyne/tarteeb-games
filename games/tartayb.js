@@ -6,33 +6,46 @@ const rnd = n => Math.random() * n | 0;
 // نوحّد الكتابة عشان المقارنة (همزات، تاء مربوطة، ى)
 const norm = s => String(s || '').replace(/[ً-ْـ\s]/g, '').replace(/[أإآ]/g, 'ا').replace(/ى/g, 'ي').replace(/ة/g, 'ه').replace(/ؤ/g, 'و').replace(/ئ/g, 'ي');
 const POOL = [];
-for (const [hint, list] of W) for (const w of list.split(/\s+/)) if (w.length >= 3 && w.length <= 9) POOL.push({ w, hint });
+for (const [hint, list] of W) for (const w of list.split(/\s+/)) if (w.length >= 3 && w.length <= 10) POOL.push({ w, hint });
 module.exports = H => {
   const byId = (r, id) => r.players.find(p => p.id === id);
   function later(r, ms, fn) { const g = r.g; const t = setTimeout(() => { if (!H.alive(r) || r.g !== g || r.phase !== 'play') return; fn(); H.push(r); }, ms); g.bt.push(t); }
+  // لخبطة قوية: ما تطلع الكلمة نفسها، وأغلب الحروف تتحرك من مكانها، وما يبقى زوج حروف متلاصق بنفس ترتيبه
+  function messy(a, w) {
+    const t = [...w]; if (norm(a.join('')) === norm(w)) return false;
+    const same = a.filter((c, i) => c === t[i]).length;
+    if (same > Math.floor(t.length / 4)) return false;
+    let pairs = 0; for (let i = 0; i < a.length - 1; i++) { const j = t.indexOf(a[i]); if (j >= 0 && t[j + 1] === a[i + 1]) pairs++; }
+    return pairs <= (t.length >= 7 ? 1 : 0);
+  }
   function scramble(w) {
-    const a = [...w];
-    for (let k = 0; k < 20; k++) { const s = H.shuffle([...a]); if (norm(s.join('')) !== norm(w)) return s; }
-    return a.reverse();
+    const a = [...w]; let best = null;
+    for (let k = 0; k < 400; k++) { const s = H.shuffle([...a]); if (messy(s, w)) return s; if (!best && norm(s.join('')) !== norm(w)) best = s; }
+    return best || a.reverse();
   }
   function pick(g) {
     let c = POOL.filter(x => !g.used.has(x.w) && x.w.length >= g.minL && x.w.length <= g.maxL);
+    // لو ما فيه كلمات بالطول المطلوب نوسّع شوي
+    for (let d = 1; !c.length && d <= 4; d++) c = POOL.filter(x => !g.used.has(x.w) && x.w.length >= g.minL - d && x.w.length <= g.maxL + d);
     if (!c.length) { g.used.clear(); c = POOL; }
     const x = c[rnd(c.length)]; g.used.add(x.w); return x;
   }
   function ask(r) {
     const g = r.g; g.k++; g.bt.forEach(clearTimeout); g.bt = [];
-    // تكبر الكلمات شوي مع الجولات
-    g.minL = g.k <= 3 ? 3 : 4; g.maxL = g.k <= 3 ? 5 : g.k <= 7 ? 6 : 8;
-    const x = pick(g);
+    // كل جولة أصعب وأطول: تبدأ ٤ حروف وتوصل ٨–٩ بآخر جولة
+    const pr = g.count > 1 ? (g.k - 1) / (g.count - 1) : 1;
+    g.minL = 4 + Math.round(pr * 4); g.maxL = g.minL + (pr > .7 ? 2 : 1);
+    const x = pick(g), len = [...x.w].length;
     g.cur = { w: x.w, hint: x.hint, tiles: scramble(x.w) };
     g.sub = 'q'; g.at = Date.now(); g.win = null; g.tries = {};
-    H.setTimer(r, g.ms, () => show(r, null));
+    // الكلمة الطويلة تاخذ وقت أكثر (٣ ثواني لكل حرف فوق الخمسة)
+    g.rms = g.ms + Math.max(0, len - 5) * 3000 * SCALE;
+    H.setTimer(r, g.rms, () => show(r, null));
     // البوتات: كل واحد يحاول يحلها بوقت عشوائي (الكلمة الأطول تاخذ وقت أكثر)
     r.players.filter(p => p.bot).forEach(b => {
       if (Math.random() < .35) return;
-      const ms = (2600 + x.w.length * 900 + rnd(9000)) * SCALE;
-      if (ms < g.ms) later(r, ms, () => guess(r, b, x.w));
+      const ms = (2600 + len * 1400 + rnd(10000)) * SCALE;
+      if (ms < g.rms) later(r, ms, () => guess(r, b, x.w));
     });
   }
   function guess(r, p, w) {
@@ -69,7 +82,7 @@ module.exports = H => {
     start(r) {
       const count = [5, 10, 15].includes(+r.opts.trounds) ? +r.opts.trounds : 10;
       const sec = [20, 30, 45].includes(+r.opts.ttime) ? +r.opts.ttime : 30;
-      r.g = { count, k: 0, ms: sec * 1000 * SCALE, sec, used: new Set(), scores: {}, tries: {}, cur: null, sub: 'intro', bt: [], at: 0, win: null, last: null, best: null, minL: 3, maxL: 5, hist: [] };
+      r.g = { count, k: 0, ms: sec * 1000 * SCALE, sec, used: new Set(), scores: {}, tries: {}, cur: null, sub: 'intro', bt: [], at: 0, win: null, last: null, best: null, minL: 4, maxL: 5, hist: [], rms: 0 };
       r.players.forEach(p => { r.g.scores[p.id] = 0; });
       r.winner = null; r.winTeam = null; r.phase = 'play';
       H.log(r, `🔤 تراتيب: ${count} جولات — رتّب الحروف وأسرع واحد ياخذ النقطة`);
@@ -77,6 +90,12 @@ module.exports = H => {
     },
     act(r, p, m) {
       const g = r.g; if (!g || r.phase !== 'play') return 'quiet';
+      if (m.t === 'tmix') {
+        if (g.sub !== 'q' || !H.rate(p, 'tmix', 300)) return 'quiet';
+        const idx = H.shuffle(g.cur.tiles.map((_, i) => i));
+        for (let k = 0; k < 200; k++) { const o = H.shuffle([...idx]); if (messy(o.map(i => g.cur.tiles[i]), g.cur.w)) { H.sendTo(p, { t: 'gnet', g: 'tartayb', k: 'mix', k2: g.k, order: o }); return 'quiet'; } }
+        H.sendTo(p, { t: 'gnet', g: 'tartayb', k: 'mix', k2: g.k, order: idx }); return 'quiet';
+      }
       if (m.t === 'tw') { if (!H.rate(p, 'tw', 250)) return 'quiet'; guess(r, p, String(m.w || '').slice(0, 20)); return g.sub === 'q' ? 'quiet' : undefined; }
       return 'quiet';
     },
@@ -84,7 +103,7 @@ module.exports = H => {
       const g = r.g; if (!g) return null;
       const c = g.cur, sh = g.sub !== 'q';
       return { sub: g.sub, k: g.k, count: g.count, sec: g.sec, scores: g.scores, tiles: c ? c.tiles : null, hint: c ? c.hint : null, len: c ? [...c.w].length : 0,
-        word: sh && c ? c.w : null, win: sh ? g.win : null, last: g.last, best: g.best, hist: g.hist.slice(-12), left: g.sub === 'q' ? Math.max(0, g.ms - (Date.now() - g.at)) : 0 };
+        word: sh && c ? c.w : null, win: sh ? g.win : null, last: g.last, best: g.best, hist: g.hist.slice(-12), rsec: Math.round((g.rms || g.ms) / 1000 / SCALE), left: g.sub === 'q' ? Math.max(0, g.rms - (Date.now() - g.at)) : 0 };
     },
     leave(r) { if (r.phase === 'play' && r.players.length < 1) end(r); }
   };

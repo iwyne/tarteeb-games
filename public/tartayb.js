@@ -35,14 +35,17 @@ function trPick(i) {
 }
 function trUnpick(s) { if (!trCan() || s >= TR.pick.length) return; TR.pick.splice(s, 1); sfx('gclick', { gain: .4 }); trDraw(); }
 function trUndo() { if (!trCan() || !TR.pick.length) return; TR.pick.pop(); trDraw(); }
-function trMix() { if (!trCan()) return; for (let i = TR.order.length - 1; i > 0; i--) { const j = Math.random() * (i + 1) | 0; [TR.order[i], TR.order[j]] = [TR.order[j], TR.order[i]]; } sfx('shuffle', { gain: .5 }); trDraw(); }
+// اللخبطة من السيرفر عشان ما تطلع الكلمة مرتبة بالغلط
+function trMix() { if (!trCan()) return; send({ t: 'tmix' }); }
 function trSend() {
   if (!trCan() || !TR.pick.length) return;
   const w = TR.pick.map(i => S.g.tiles[i]).join('');
   send({ t: 'tw', w });
 }
 window.net_tartayb = m => {
-  if (m.k !== 'no' || !S || S.game !== 'tartayb') return;
+  if (!S || S.game !== 'tartayb') return;
+  if (m.k === 'mix') { if (S.g && m.k2 === S.g.k && Array.isArray(m.order) && m.order.length === TR.order.length) { TR.order = m.order; sfx('shuffle', { gain: .5 }); trDraw(); } return; }
+  if (m.k !== 'no') return;
   const sl = $('#trSlots'); if (!sl) return;
   TR.busy = true; sl.classList.remove('bad'); void sl.offsetWidth; sl.classList.add('bad'); sfx('lose', { gain: .5 });
   setTimeout(() => { TR.busy = false; TR.pick = []; sl.classList.remove('bad'); trDraw(); }, 520);
@@ -96,7 +99,7 @@ function renderTartayb(body) {
   TR.endT = g.sub === 'q' ? performance.now() + g.left : 0;
   if (!TR.tm) TR.tm = setInterval(() => {
     const c = $('#trClock'), arc = $('#trArc'); if (!c) { clearInterval(TR.tm); TR.tm = 0; return; }
-    const left = TR.endT ? Math.max(0, TR.endT - performance.now()) : 0, tot = ((S.g && S.g.sec) || 30) * 1000;
+    const left = TR.endT ? Math.max(0, TR.endT - performance.now()) : 0, tot = ((S.g && (S.g.rsec || S.g.sec)) || 30) * 1000;
     c.textContent = TR.endT ? trNum(Math.ceil(left / 1000)) : '--'; c.parentNode.classList.toggle('low', !!TR.endT && left < 6000);
     arc.style.strokeDashoffset = 119.4 * (1 - (TR.endT ? left / tot : 0));
   }, 200);
