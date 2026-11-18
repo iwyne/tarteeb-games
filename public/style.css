@@ -3586,3 +3586,31 @@ body .lbanner #lobbyTitle::before,body[data-gt] .lbanner #lobbyTitle::before{dis
   .trslot,.trt{width:4.4em;height:5em}.trt span{font-size:2.7em}
   .trslots,.trrack{gap:.45em;min-height:5.6em}
 }
+/* ================= إشارة حمرا خضرا ================= */
+.gti-redlight{--gtc:#fff;background:linear-gradient(#1a1236,#7a2f5c 55%,#ff7a59)}
+.gti-redlight .sig{position:absolute;left:50%;top:22%;transform:translateX(-50%);width:90px;padding:10px;background:#1c1c22;border:5px solid #16130f;border-radius:20px;display:grid;gap:8px;animation:trDrop .6s cubic-bezier(.3,1.5,.5,1) both}
+.gti-redlight .sig i{height:62px;border-radius:50%;background:#2a2a30}.gti-redlight .sig i:nth-child(1){animation:rlL1 1.6s .5s both}.gti-redlight .sig i:nth-child(3){animation:rlL3 1.6s .5s both}
+@keyframes rlL1{0%,45%{background:#2a2a30}55%,100%{background:#ff3b30;box-shadow:0 0 30px #ff3b30}}
+@keyframes rlL3{0%,40%{background:#30ff6a;box-shadow:0 0 30px #30ff6a}50%,100%{background:#2a2a30;box-shadow:none}}
+.rlw{--W:min(1700px,calc(100vw - 20px));width:var(--W);margin-inline:calc((100% - var(--W)) / 2);display:grid;gap:10px;font-size:clamp(12px,min(1.15vw,1.8dvh),22px)}
+.rlstage{position:relative;height:max(26em,calc(100dvh - 10em));border:4px solid var(--ink);border-radius:20px;box-shadow:var(--sh);overflow:hidden;background:linear-gradient(#1a1236,#ff7a59);user-select:none;-webkit-user-select:none;touch-action:none}
+.rlstage canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+.rlload{position:absolute;inset:0;display:grid;place-content:center;justify-items:center;gap:.4em;color:#fff;font:400 1.4em Lalezar,Tajawal,sans-serif;background:rgba(10,8,20,.6)}
+.rlload b{font-size:3em;animation:pulse .6s infinite alternate}.rlload[hidden]{display:none}
+.rltop{position:absolute;top:.8em;inset-inline:.8em;display:flex;justify-content:space-between;align-items:center;gap:.6em;pointer-events:none}
+.rlpill{background:rgba(22,19,15,.75);color:#fff;border:2px solid rgba(255,255,255,.4);border-radius:99px;padding:.25em .9em;font-size:.95em}
+.rlclock{font:400 2.2em Lalezar,Tajawal,sans-serif;color:#fff;background:rgba(22,19,15,.75);border:3px solid #ffc928;border-radius:14px;padding:0 .4em;min-width:2.2em;text-align:center}.rlclock.low{color:#ff5a4f;border-color:#ff5a4f;animation:pulse .5s infinite alternate}
+.rlprog{position:absolute;top:4.2em;left:50%;transform:translateX(-50%);width:min(40em,70%);height:.7em;border-radius:9px;background:rgba(0,0,0,.35);border:2px solid rgba(255,255,255,.5);direction:ltr}
+.rlprog i{display:block;height:100%;width:0;border-radius:9px;background:#ffc928;transition:width .15s}.rlprog span{position:absolute;right:-1.4em;top:-.55em}
+.rlban{position:absolute;left:50%;top:32%;transform:translate(-50%,-50%) scale(.6);opacity:0;pointer-events:none;font:400 4.6em/1 Lalezar,Tajawal,sans-serif;color:#fff;-webkit-text-stroke:3px #16130f;text-shadow:5px 5px 0 #16130f;white-space:nowrap;display:grid;justify-items:center;gap:.15em;transition:transform .25s cubic-bezier(.2,1.6,.4,1),opacity .2s}
+.rlban.show{opacity:1;transform:translate(-50%,-50%) scale(1)}
+.rlban small{font:800 .3em Tajawal,sans-serif;-webkit-text-stroke:0;text-shadow:2px 2px 0 #16130f;background:rgba(22,19,15,.6);padding:.2em .8em;border-radius:99px}
+.rlban.g{color:#7dff9f}.rlban.y{color:#ffd84d}.rlban.r{color:#ff5a4f;font-size:5.2em}.rlban.res{color:#ffd84d}
+.rlfeed{position:absolute;top:6em;inset-inline-start:.8em;display:grid;gap:.3em;pointer-events:none}
+.rlfeed div{background:rgba(22,19,15,.75);color:#fff;border-radius:10px;padding:.25em .7em;font-size:.9em;transition:opacity .6s}.rlfeed div.old{opacity:.35}
+.rlrun{position:absolute;bottom:1em;left:50%;transform:translateX(-50%);display:grid;justify-items:center;padding:.5em 2.2em;border:4px solid #16130f;border-radius:20px;background:#5ed38c;color:#16130f;font:400 1.9em Lalezar,Tajawal,sans-serif;box-shadow:0 .25em 0 #16130f;cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:none}
+.rlrun small{font:800 .38em Tajawal,sans-serif;opacity:.75}
+.rlrun.on{transform:translate(-50%,.18em);box-shadow:0 .07em 0 #16130f;background:#ffc928}
+.rlrun:disabled{opacity:.45;cursor:default}.rlrun[hidden]{display:none}
+@media (pointer:coarse){.rlrun small{display:none}}
+@media (max-width:760px){.rlw{font-size:clamp(10px,2.8vw,14px)}.rlstage{height:calc(100dvh - 8.5em)}.rlban{font-size:3.4em}.rlban.r{font-size:3.8em}.rlrun{width:80%;padding:.7em 0}}

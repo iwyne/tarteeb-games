@@ -17,6 +17,7 @@ const GTI = {
   fib: { s: 'ding', t: 'صدّقني', html: () => `<div class="bulbs">${Array.from({ length: 14 }, (_, i) => `<i style="--k:${i}"></i>`).join('')}</div><div class="pg"><svg viewBox="0 0 200 60" preserveAspectRatio="none"><path d="M0 30h30l8-18 8 34 8-26 6 14h20l6-24 10 44 8-30 6 10h20l8-14 8 22 6-8h28"/></svg></div><em class="lie">كذّاب؟</em>` },
   bomb: { s: 'tick', t: 'القنبلة', html: () => `<div class="hz"></div><div class="bm"><i class="cap"></i><i class="fz"></i><i class="sp"></i><i class="sh"></i></div><div class="kb"></div>` },
   auction: { s: 'bell', t: 'المزاد', html: () => `<div class="pod"></div><div class="lot">🏺<small>قطعة رقم ١</small></div><div class="gv">🔨</div><em class="sold">بيع!</em>` },
+  redlight: { s: 'whistle', t: 'إشارة حمرا خضرا', html: () => `<div class="sig"><i></i><i></i><i></i></div>` },
   tartayb: { s: 'shuffle', t: 'تراتيب', html: () => `<i class="tl">ب</i><i class="tl">ي</i><i class="tl">ت</i><i class="tl">ر</i>` },
   brawl: { s: 'thunder', t: 'ساحة القتال', html: () => `<i class="gl a">👊</i><i class="gl b">🦵</i><b class="pw">FIGHT!</b>` },
   boxing: { s: 'bell', t: 'حلبة الملاكمة', html: () => `<i class="gl a">🥊</i><i class="gl b">🥊</i><b class="pw">POW!</b>` },
