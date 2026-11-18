@@ -12,7 +12,8 @@
     { n: 'هدهد', img: 'team/m8.webp', c: '#420000' },
     { n: 'لافي', img: 'team/m9.webp', c: '#ff8fc0' },
     { n: 'دانية', img: 'team/m10.webp', c: '#7fa6ff' },
-    { n: 'بانا', img: 'team/m11.webp', c: '#d99a6c' }
+    { n: 'بانا', img: 'team/m11.webp', c: '#d99a6c' },
+    { n: 'اشجان', img: 'team/m12.webp', c: '#b9a8ff' }
   ];
   const SKEW = -8, reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
   const root = document.getElementById('ttTeam'); if (!root) return;
