@@ -54,6 +54,7 @@ module.exports = H => {
     g.sub = 'show'; g.bt.forEach(clearTimeout); g.bt = [];
     if (!winId) H.log(r, `⏱ محد حلّها — الكلمة كانت «${g.cur.w}»`);
     g.last = { w: g.cur.w, id: winId, ms: g.win ? g.win.ms : null };
+    g.hist.push({ k: g.k, w: g.cur.w, hint: g.cur.hint, id: winId, ms: g.last.ms });
     const top = Math.max(0, ...Object.values(g.scores));
     H.setTimer(r, SHOW_MS * SCALE, () => (g.k >= g.count || (g.target && top >= g.target)) ? end(r) : ask(r));
     H.push(r);
@@ -68,7 +69,7 @@ module.exports = H => {
     start(r) {
       const count = [5, 10, 15].includes(+r.opts.trounds) ? +r.opts.trounds : 10;
       const sec = [20, 30, 45].includes(+r.opts.ttime) ? +r.opts.ttime : 30;
-      r.g = { count, k: 0, ms: sec * 1000 * SCALE, sec, used: new Set(), scores: {}, tries: {}, cur: null, sub: 'intro', bt: [], at: 0, win: null, last: null, best: null, minL: 3, maxL: 5 };
+      r.g = { count, k: 0, ms: sec * 1000 * SCALE, sec, used: new Set(), scores: {}, tries: {}, cur: null, sub: 'intro', bt: [], at: 0, win: null, last: null, best: null, minL: 3, maxL: 5, hist: [] };
       r.players.forEach(p => { r.g.scores[p.id] = 0; });
       r.winner = null; r.winTeam = null; r.phase = 'play';
       H.log(r, `🔤 تراتيب: ${count} جولات — رتّب الحروف وأسرع واحد ياخذ النقطة`);
@@ -83,7 +84,7 @@ module.exports = H => {
       const g = r.g; if (!g) return null;
       const c = g.cur, sh = g.sub !== 'q';
       return { sub: g.sub, k: g.k, count: g.count, sec: g.sec, scores: g.scores, tiles: c ? c.tiles : null, hint: c ? c.hint : null, len: c ? [...c.w].length : 0,
-        word: sh && c ? c.w : null, win: sh ? g.win : null, last: g.last, best: g.best, left: g.sub === 'q' ? Math.max(0, g.ms - (Date.now() - g.at)) : 0 };
+        word: sh && c ? c.w : null, win: sh ? g.win : null, last: g.last, best: g.best, hist: g.hist.slice(-12), left: g.sub === 'q' ? Math.max(0, g.ms - (Date.now() - g.at)) : 0 };
     },
     leave(r) { if (r.phase === 'play' && r.players.length < 1) end(r); }
   };
