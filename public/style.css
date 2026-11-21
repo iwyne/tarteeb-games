@@ -4190,3 +4190,12 @@ body[data-gt=bingo] #lobbyTitle{color:#f3e2c0;text-shadow:3px 3px 0 #120a05}
 }
 @keyframes ptsInM{from{transform:translate(50%,-130%)}to{transform:translate(50%,0)}}
 @keyframes ptsOutM{to{transform:translate(50%,-130%);opacity:0}}
+/* باركود الدعوة */
+.tkbtns{display:flex;gap:6px;flex-wrap:wrap;justify-content:center}
+.qrmodal{z-index:95}
+.qrbox{width:min(320px,100%);background:var(--surf2);color:var(--ink);border:3px solid var(--ink);border-radius:22px;box-shadow:var(--sh);padding:16px;text-align:center;display:grid;gap:8px;justify-items:center}
+.qrbox h3{width:100%;font:400 1.6rem Lalezar,Tajawal,sans-serif;background:var(--ink);color:#fff;border-radius:12px;padding:4px}
+.qrimg{width:min(230px,70vw);background:#fff;border:3px solid var(--ink);border-radius:16px;padding:10px}
+.qrimg svg{display:block;width:100%;height:auto}
+.qrbox .qrcode{font:400 2.1rem Lalezar,Tajawal,sans-serif;letter-spacing:6px;direction:ltr}
+.qrbox small{font-size:.85rem;opacity:.8}
