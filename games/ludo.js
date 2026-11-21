@@ -32,7 +32,11 @@ module.exports = H => {
   function roll(r, p, f) {
     const g = r.g; if (!p || g.sub !== 'roll' || g.turn !== p.id) return;
     f = p.boss && f >= 1 && f <= 6 ? f | 0 : 0; if (f) (r.noPts = r.noPts || new Set()).add(p.id); // رقم مختار: ما ياخذ نقاط سيرفر على هالجولة
-    const d = f || 1 + rnd(6); g.die = d; g.rolls++; g.dice.push(d);
+    // لو ما عندك ولا قطعة برا البيت: الستة تطلع أكثر (٣٥٪)، ولو ما طلعت ٣ أدوار ورا بعض تطلع غصب
+    const stuck = !g.dice.length && g.pcs[p.id].every(x => x === -1 || x === 56); g.miss = g.miss || {};
+    const d = f || (stuck ? (g.miss[p.id] >= 3 || Math.random() < .35 ? 6 : 1 + rnd(5)) : 1 + rnd(6));
+    if (stuck) g.miss[p.id] = d === 6 ? 0 : (g.miss[p.id] || 0) + 1;
+    g.die = d; g.rolls++; g.dice.push(d);
     fx(r, { k: 'roll', id: p.id, d });
     if (g.dice.length >= 3 && g.dice.slice(-3).every(x => x === 6)) { H.log(r, `🎲 ${p.name} طلعت له ثلاث ستات وضاع دوره`); g.dice = []; g.sub = 'wait'; H.push(r); return H.setTimer(r, ms(1400), () => next(r)); }
     if (d === 6) { g.dl = Date.now() + ms(tsec(r)); H.push(r); H.setTimer(r, ms(tsec(r)), () => roll(r, p)); return bot(r); }
