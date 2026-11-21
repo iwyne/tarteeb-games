@@ -88,7 +88,7 @@ function on(m) {
   } else if (m.t === 'pfx') {
     if (m.k === 'got') toast('🫳 سرقت ورقة!'); else powerFx(m);
   } else if (m.t === 'react') {
-    showReact(m.from, m.e);
+    showReact(m.from, m.e, m.c);
   } else if (m.t === 'state') {
     m.t0 = Date.now(); flipAdapt(m); prevS = S; S = m; renderSoon(); notifyTurn();
   }
@@ -468,13 +468,27 @@ function render() {
 // ---------- شات وتفاعل بالايموجي ----------
 let chatLog = [], unread = 0;
 const EMOJIS = ['😂', '😡', '😭', '👏', '🔥', '😎', '🤯', '❤️'];
-$('#emojiBar').innerHTML = EMOJIS.map(e => `<button data-e="${e}">${e}</button>`).join('');
-$('#emojiBtn').onclick = () => { $('#emojiBar').hidden = !$('#emojiBar').hidden; $('#chatbox').hidden = true; };
-$$('#emojiBar button').forEach(b => b.onclick = () => { send({ t: 'emoji', e: b.dataset.e }); $('#emojiBar').hidden = true; });
+// عجلة التفاعل بشخصيات مرسومة: كل لاعب يختار شخصيته (تنحفظ) وتطلع فوق اسمه
+let myChar = store.get('tarteeb-char'); if (!RC_WHO[myChar]) myChar = 'abu';
+function drawWheel(pick) {
+  const W = $('#emojiBar'), n = pick ? Object.keys(RC_WHO).length : EMOJIS.length, R = 92;
+  const items = pick ? Object.keys(RC_WHO).map(k => [k, rcChar(k, 'laugh', 64), RC_WHO[k]]) : EMOJIS.map(e => [e, rcChar(myChar, RC_EMO[e], 64), RC_EXN[RC_EMO[e]]]);
+  W.innerHTML = items.map(([k, svg, t], i) => { const a = -Math.PI / 2 + i / n * Math.PI * 2; return `<button type="button" class="rwi${pick && k === myChar ? ' on' : ''}" data-${pick ? 'c' : 'e'}="${k}" title="${t}" style="left:calc(50% + ${(Math.cos(a) * R).toFixed(1)}px);top:calc(50% + ${(Math.sin(a) * R).toFixed(1)}px)">${svg}<small>${pick ? t : ''}</small></button>`; }).join('')
+    + `<button type="button" class="rwc" id="rwMid">${pick ? 'رجوع' : 'شخصيتك'}<small>${pick ? '' : RC_WHO[myChar]}</small></button>`;
+  W.querySelectorAll('[data-e]').forEach(b => b.onclick = () => { send({ t: 'emoji', e: b.dataset.e, c: myChar }); W.hidden = true; });
+  W.querySelectorAll('[data-c]').forEach(b => b.onclick = () => { myChar = b.dataset.c; store.set('tarteeb-char', myChar); drawDockIc(); drawWheel(false); });
+  $('#rwMid').onclick = () => drawWheel(!pick);
+}
+function drawDockIc() { $('#emojiIc').innerHTML = rcChar(myChar, 'laugh', 34); }
+drawDockIc();
+$('#emojiBtn').onclick = () => { const W = $('#emojiBar'); W.hidden = !W.hidden; if (!W.hidden) drawWheel(false); $('#chatbox').hidden = true; };
 function badge() { const u = $('#unread'); u.hidden = !unread; u.textContent = unread; }
 function drawMsgs() {
   const box = $('#msgs');
-  box.innerHTML = chatLog.map(m => `<div class="msg${S && m.from === S.me ? ' me' : ''}"><b>${esc(m.name)}:</b> <span class="nt">${esc(m.text)}</span></div>`).join('');
+  const ids = S ? S.players.map(p => p.id) : [], CC = ['#c62828', '#7b3fc7', '#1c5fd0', '#1f8f52', '#e07a1f', '#c2185b', '#00838f', '#6b5634'];
+  box.innerHTML = chatLog.map(m => { const me = S && m.from === S.me, c = CC[Math.max(0, ids.indexOf(m.from)) % CC.length];
+    return `<div class="msg${me ? ' me' : ''}"><span class="mav" style="background:${me ? '#2fbf6a' : c}">${esc([...String(m.name).trim()][0] || '؟')}</span><div class="mtx"><b style="color:${me ? '#ffc928' : c}">${esc(m.name)}</b><span class="nt">${esc(m.text)}</span></div></div>`; }).join('');
+  const cc = $('#chatCount'); if (cc) cc.textContent = S ? `${(S.players || []).length + (S.specs || []).length} بالغرفة` : '';
   box.scrollTop = box.scrollHeight;
 }
 function openChat(open) {
@@ -538,7 +552,7 @@ setInterval(tick, 250);
 // فقاعة رسالة فوق صاحبها
 function showBubble(id, text) {
   document.querySelectorAll(`.bubble[data-id="${id}"]`).forEach(b => b.remove());
-  const el = document.querySelector(`.seat[data-id="${id}"], .lp[data-id="${id}"], .pchip[data-id="${id}"]`) || document.querySelector(`#plist li[data-id="${id}"]`);
+  const el = document.querySelector(`.seat[data-id="${id}"], .lp[data-id="${id}"], .pchip[data-id="${id}"], .dlop[data-id="${id}"], .qfop[data-id="${id}"]`) || document.querySelector(`#plist li[data-id="${id}"]`);
   const pos = el ? ctr(el) : { x: innerWidth / 2, y: innerHeight - 190 };
   const b = document.createElement('div'); b.className = 'bubble'; b.dataset.id = id; b.textContent = text;
   b.style.left = Math.min(Math.max(pos.x, 120), innerWidth - 120) + 'px';
@@ -552,10 +566,10 @@ function showBubble(id, text) {
   ], { duration: 4200, easing: 'ease-out' }).onfinish = () => b.remove();
 }
 // ايموجي يطلع فوق مقعد صاحبه ويطير
-function showReact(id, e) {
-  const el = document.querySelector(`.seat[data-id="${id}"], .lp[data-id="${id}"], .pchip[data-id="${id}"]`) || document.querySelector(`#plist li[data-id="${id}"]`);
+function showReact(id, e, c) {
+  const el = (S && S.me === id && document.getElementById('dlMine')) || document.querySelector(`.seat[data-id="${id}"], .lp[data-id="${id}"], .pchip[data-id="${id}"], .dlop[data-id="${id}"], .qfop[data-id="${id}"]`) || document.querySelector(`#plist li[data-id="${id}"]`);
   const pos = el ? ctr(el) : { x: innerWidth / 2, y: innerHeight - 200 };
-  const d = document.createElement('div'); d.className = 'react'; d.textContent = e;
+  const d = document.createElement('div'); d.className = 'react'; if (RC_EMO[e]) d.innerHTML = rcChar(RC_WHO[c] ? c : 'abu', RC_EMO[e], 96); else d.textContent = e;
   d.style.left = pos.x + 'px'; d.style.top = pos.y + 'px';
   document.body.appendChild(d);
   d.animate([

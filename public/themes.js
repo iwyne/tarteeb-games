@@ -22,6 +22,8 @@ const GTI = {
   elim: { s: 'bell', t: 'مسابقة الإقصاء', html: () => `<i class="mic">🎤</i>` },
   emo: { s: 'pop', t: 'خمّن المثل', html: () => `<div class="bub">🧘⏳🔑🎉</div>` },
   chairs: { s: 'pop', t: 'الكراسي الموسيقية', html: () => `<i class="dl">🪑</i>` },
+  deal: { s: 'card', t: 'ترتيب ديل', html: () => `<div class="dlgc"><img src="deal/land_riyadh.webp?v=1"><img src="deal/act_big.webp?v=1"><img src="deal/land_ula.webp?v=1"></div>` },
+  qfl: { s: 'card', t: 'ترتيب قفل', html: () => `<div class="qfgc"><img src="qfl/back.webp?v=1"><img src="qfl/nm1.webp?v=1"><img src="qfl/n25.webp?v=1"></div>` },
   tartayb: { s: 'shuffle', t: 'تراتيب', html: () => `<i class="tl">ب</i><i class="tl">ي</i><i class="tl">ت</i><i class="tl">ر</i>` },
   brawl: { s: 'thunder', t: 'ساحة القتال', html: () => `<i class="gl a">👊</i><i class="gl b">🦵</i><b class="pw">FIGHT!</b>` },
   boxing: { s: 'bell', t: 'حلبة الملاكمة', html: () => `<i class="gl a">🥊</i><i class="gl b">🥊</i><b class="pw">POW!</b>` },
