@@ -130,7 +130,7 @@ const face = p => p.av ? esc(p.av) : esc([...p.name][0] || '?');
 function myName() { const n = nameEl.value.trim(); if (n) store.set('tarteeb-name', n); return n; }
 $('#create').onclick = () => {
   const name = myName(); if (!name) { toast('اكتب اسمك أول'); return nameEl.focus(); }
-  session = {}; lastJoin = null; send({ t: 'create', name, game: SEL, av: myAv, dev: DEV });
+  session = {}; lastJoin = null; send({ t: 'create', name, game: SEL, av: myAv, dev: DEV, teamTok: window.teamTok && teamTok() });
 };
 $('#join').onclick = () => {
   const name = myName(); if (!name) { toast('اكتب اسمك أول'); return nameEl.focus(); }

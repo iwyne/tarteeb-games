@@ -144,7 +144,24 @@ function luHud() {
     ${g.die ? `<span class="ludie">${luNum(g.die)}</span>` : ''}
     <button class="lub" id="luRoll" ${mine && g.sub === 'roll' ? '' : 'disabled'}>ارمِ النرد</button>
     <span class="luhint">${mine && g.sub === 'move' ? 'اضغط على قطعة منوّرة تحرّكها' : mine && g.sub === 'roll' ? (myC !== undefined ? 'الستة تطلّعك من البيت' : '') : ''}</span>`;
-  const b = document.getElementById('luRoll'); if (b) b.onclick = () => send({ t: 'lroll' });
+  const b = document.getElementById('luRoll'); if (b) {
+    b.onclick = () => { if (LU.held) { LU.held = false; return; } send({ t: 'lroll' }); };
+    // حركة سرية لصاحب الموقع: اضغط مطوّل على زر النرد ويطلع لك صف أرقام صغير تختار منه (على مستوى الصفحة لأن الزر يتبدّل مع كل تحديث)
+    if (S.boss && !LU.bossOn) {
+      LU.bossOn = true; let tm = 0;
+      document.addEventListener('pointerdown', e => { if (!S || !S.boss || !e.target.closest('#luRoll')) return; clearTimeout(tm); tm = setTimeout(() => { LU.held = true; const x = document.getElementById('luRoll'); if (x) luPick(x); }, 650); }, true);
+      document.addEventListener('pointerup', () => clearTimeout(tm), true);
+      document.addEventListener('contextmenu', e => { if (S && S.boss && e.target.closest('#luRoll')) e.preventDefault(); }, true);
+    }
+  }
+}
+function luPick(b) {
+  let d = document.getElementById('luPick'); if (d) d.remove();
+  d = document.createElement('div'); d.id = 'luPick'; d.className = 'lupick';
+  d.innerHTML = [1, 2, 3, 4, 5, 6].map(n => `<button data-f="${n}">${luNum(n)}</button>`).join('');
+  d.onclick = e => { const x = e.target.closest('[data-f]'); if (x) send({ t: 'lroll', f: +x.dataset.f }); d.remove(); };
+  const rc = b.getBoundingClientRect(); d.style.left = rc.left + 'px'; d.style.top = Math.max(4, rc.top - 26) + 'px';
+  document.body.appendChild(d); setTimeout(() => d.isConnected && d.remove(), 6000);
 }
 function net_ludo(m) {
   if (!S || S.game !== 'ludo' || !S.g || !LU.built) return;

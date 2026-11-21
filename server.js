@@ -305,7 +305,7 @@ function votesView(r, p) {
 function view(r, p) {
   if (r.game !== 'uno') {
     return {
-      t: 'state', game: r.game, min: GAMES[r.game].min, max: maxOf(r), code: r.code, phase: r.phase, me: p.id, spec: !!p.spec, specs: r.specs.map(s => ({ id: s.id, name: s.name })), vt: votesView(r, p),
+      t: 'state', game: r.game, min: GAMES[r.game].min, max: maxOf(r), code: r.code, phase: r.phase, me: p.id, spec: !!p.spec, specs: r.specs.map(s => ({ id: s.id, name: s.name })), vt: votesView(r, p), boss: !!p.boss,
       players: r.players.map((q, i) => ({ id: q.id, name: q.name, n: q.hand ? q.hand.length : 0, on: q.online, h: q.id === r.host, tm: r.phase === 'lobby' ? i % 2 : q.team, w: q.wins || 0, av: q.av || '', bot: !!q.bot, lk: q.look || null })),
       opts: optsView(r, p), teams: !!META[r.game].teams, score: r.score, winTeam: r.winTeam, hand: [], top: null, color: null, dir: 1, turn: null, deck: 0,
       left: r.phase === 'play' && r.deadline ? Math.max(0, r.deadline - Date.now()) : 0, ok: [], pending: null, catch: null,
@@ -575,6 +575,8 @@ function admit(ws, r, name, extra = {}) {
   r.specs.push(s); return s;
 }
 
+// صاحب الموقع (علي، داخل مكان التيم): يقدر يختار رقم النرد بلودو بحركة سرية
+const markBoss = (p, m) => { if (m.teamTok && STAFF && STAFF.check(m.teamTok) === 'علي') p.boss = true; };
 function join(ws, m) {
   const r = rooms.get(String(m.code || '').toUpperCase().trim());
   if (!r) return send(ws, { t: 'err', msg: 'الغرفة غير موجودة', reset: true });
@@ -592,6 +594,7 @@ function join(ws, m) {
     if (!p) return;
   }
   if (dev) p.dev = dev;
+  markBoss(p, m);
   ws.ctx = { r, p };
   send(ws, { t: 'joined', code: r.code, token: p.token, name: p.name });
   send(ws, { t: 'chathist', list: r.chat });
@@ -649,7 +652,7 @@ wss.on('connection', (ws, req) => {
       const r = newRoom(newCode(), GAMES[m.game] ? m.game : 'uno');
       if (m.teamOnly && STAFF && STAFF.check(m.teamTok)) r.teamOnly = true;
       rooms.set(r.code, r);
-      const p = addPlayer(r, cleanName(m.name), cleanAv(m.av)); p.ws = ws; ws.ctx = { r, p }; if (m.dev) p.dev = String(m.dev).slice(0, 40);
+      const p = addPlayer(r, cleanName(m.name), cleanAv(m.av)); p.ws = ws; ws.ctx = { r, p }; if (m.dev) p.dev = String(m.dev).slice(0, 40); markBoss(p, m);
       send(ws, { t: 'joined', code: r.code, token: p.token, name: p.name });
       return after(r);
     }

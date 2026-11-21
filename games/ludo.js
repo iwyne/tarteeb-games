@@ -26,9 +26,10 @@ module.exports = H => {
     if (!again) { g.six = 0; const i = g.order.indexOf(g.turn); g.turn = g.order[(i + 1) % g.order.length]; }
     startTurn(r);
   }
-  function roll(r, p) {
+  function roll(r, p, f) {
     const g = r.g; if (!p || g.sub !== 'roll' || g.turn !== p.id) return;
-    const d = 1 + rnd(6); g.die = d; g.rolls++;
+    f = p.boss && f >= 1 && f <= 6 ? f | 0 : 0; if (f) (r.noPts = r.noPts || new Set()).add(p.id); // رقم مختار: ما ياخذ نقاط سيرفر على هالجولة
+    const d = f || 1 + rnd(6); g.die = d; g.rolls++;
     fx(r, { k: 'roll', id: p.id, d });
     if (d === 6) g.six++; else g.six = 0;
     if (g.six >= 3) { H.log(r, `🎲 ${p.name} طلعت له ثلاث ستات وضاع دوره`); g.sub = 'wait'; g.six = 0; H.push(r); return H.setTimer(r, ms(1400), () => next(r)); }
@@ -88,7 +89,7 @@ module.exports = H => {
     },
     act(r, p, m) {
       const g = r.g; if (!g || r.phase !== 'play' || !H.rate(p, 'lu', 200)) return 'quiet';
-      if (m.t === 'lroll') roll(r, p); else if (m.t === 'lmove') move(r, p, +m.i);
+      if (m.t === 'lroll') roll(r, p, +m.f); else if (m.t === 'lmove') move(r, p, +m.i);
       return 'quiet';
     },
     view(r) {

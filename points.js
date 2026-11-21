@@ -21,7 +21,7 @@ const lvl = pts => { const l = Math.floor(pts / LVL) + 1; return { lvl: l, into:
 
 module.exports = ({ send }) => ({
   // بداية الجولة: نحفظ مين يلعب وكم فوز عنده
-  start(r) { r.pts = { at: Date.now(), done: false, base: new Map(r.players.filter(p => !p.bot).map(p => [p, p.wins || 0])) }; },
+  start(r) { r.noPts = null; r.pts = { at: Date.now(), done: false, base: new Map(r.players.filter(p => !p.bot).map(p => [p, p.wins || 0])) }; },
   // نهاية الجولة: نوزّع النقاط مرة وحدة
   end(r) {
     const P = r.pts; if (!P || P.done || r.phase !== 'over') return;
@@ -30,6 +30,7 @@ module.exports = ({ send }) => ({
     const humans = r.players.filter(p => !p.bot).length, solo = humans < 2, wk = week();
     for (const p of r.players) {
       if (!P.base.has(p)) continue; // دخل بنص الجولة
+      if (r.noPts && r.noPts.has(p.id)) continue;
       const k = keyOf(p); if (!k) continue;
       const won = (p.wins || 0) > P.base.get(p);
       const u = D[k] = D[k] || { n: p.name, pts: 0, wins: 0, games: 0, st: 0, wk, wp: 0 };
