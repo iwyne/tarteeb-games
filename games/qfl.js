@@ -236,7 +236,7 @@ module.exports = H => {
         hands: Object.fromEntries(g.order.map(id => [id, g.hands[id].map(c => c.id)])),
         drawn: me && g.turn === p.id && g.drawn ? { c: g.drawn, from: g.from } : g.drawn ? { from: g.from } : null,
         pend: g.pend ? { k: g.pend.k, by: g.pend.by, picks: g.pend.picks, mode: g.pend.mode, wait: g.pend.wait } : null, res: g.res,
-        left: g.dl ? Math.max(0, g.dl - Date.now()) : 0, canCall: g.sub === 'turn' && !g.drawn && !g.called && g.turns > g.order.length, spec: !me
+        left: g.dl ? Math.max(0, g.dl - Date.now()) : 0, pk: me && g.sub === 'peek' ? g.hands[p.id].slice(2).map(c => [c.id, c.v]) : null, canCall: g.sub === 'turn' && !g.drawn && !g.called && g.turns > g.order.length, spec: !me
       };
     },
     leave(r, p) {

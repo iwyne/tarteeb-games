@@ -83,6 +83,8 @@ function qfSlotPos(seat, i, n) {
 function qfSync() {
   if (!QF.built || !S.g) return;
   const T = QF.T, g = S.g, seats = qfSeats(), live = {};
+  // بداية الجولة: ورقتينك القريبة تنكشف من الحالة نفسها (لو رسالة الكشف وصلت قبل ما تجهز اللعبة أو رجعت بنص الجولة)
+  if (g.sub === 'peek' && g.pk) { const now = performance.now(); g.pk.forEach(([sid, v]) => { if (!(QF.seen[sid] > now) && !QF.seeQ[sid]) QF.seeQ[sid] = { v, until: now + Math.max(1500, (g.left || 0) - (Date.now() - (S.t0 || Date.now()))) }; }); }
   const dn = Math.min(12, Math.ceil(g.deck / 4));
   if (QF.deckG.children.length !== dn) { QF.deckG.clear(); for (let i = 0; i < dn; i++) { const m = qfCardMesh(); m.position.y = .02 + i * .026; QF.deckG.add(m); } }
   if (g.top) { qfSetFace(QF.discM, g.top.v); QF.discM.userData.flip = 1; QF.discM.visible = true; QF.discM.rotation.z = Math.PI; } else QF.discM.visible = false;
@@ -259,15 +261,16 @@ function qfFinal(force) {
 }
 // ============ المؤثرات ============
 function net_qfl(m) {
-  if (!S || S.game !== 'qfl' || !S.g) return; const fx = document.getElementById('qfFx'); if (!fx) return;
+  if (!S || S.game !== 'qfl') return;
   const now = performance.now();
   if (m.k === 'see') {
     const sids = m.sids || [m.sid], vs = m.vs || [m.v], dur = m.ms || 4000;
     sids.forEach((sid, i) => { QF.seeQ[sid] = { v: vs[i], until: performance.now() + dur }; });
     if (QF.built) qfSync();
-    if (m.owner !== S.me) qfToast(`شفت ورقة ${esc(qfPl(m.owner).name)}: <b>${qfName(vs[0])}</b>`);
+    if (m.owner !== S.me && S.g) qfToast(`شفت ورقة ${esc(qfPl(m.owner).name)}: <b>${qfName(vs[0])}</b>`);
     return;
   }
+  if (!S.g || !document.getElementById('qfFx')) return;
   if (m.k === 'look') {
     const c = QF.cards[m.sid]; if (c) c.userData.look = now + 2500;
     qfFloat(m.id, `<svg viewBox="0 0 48 48" width="44" height="44"><circle cx="24" cy="24" r="22" fill="${m.owner === m.id ? '#e7b54a' : '#1c5fd0'}" stroke="#3a2416" stroke-width="3"/><path d="M8 24 Q24 10 40 24 Q24 38 8 24Z" fill="#fff" stroke="#3a2416" stroke-width="2.5"/><circle cx="24" cy="24" r="6" fill="#3a2416"/></svg>`);
