@@ -1,6 +1,6 @@
-// ================= بلاد ولد بنت — سبورة =================
+// ================= اسم جماد حيوان بلاد نبات — سبورة =================
 const BW = { k: -1, t: {}, endT: 0, tm: 0 };
-const BWEMO = ['👦', '👧', '🌍', '🐾', '🌿', '📦'];
+const BWEMO = ['🙂', '📦', '🐾', '🌍', '🌿'];
 const bwNum = n => String(n).replace(/\d/g, d => '٠١٢٣٤٥٦٧٨٩'[d]);
 const bwNorm = s => String(s || '').trim().replace(/[أإآ]/g, 'ا').replace(/ى/g, 'ي').replace(/ة/g, 'ه');
 const bwOk = (w, L) => { const n = bwNorm(w), l = bwNorm(L); return n.length >= 2 && (n.startsWith(l) || (n.startsWith('ال') && n.slice(2).startsWith(l)) || (l === 'ا' && n.startsWith('ال'))); };
@@ -20,7 +20,7 @@ function bwWrite(g) {
   const box = $('#bwBody');
   if (box.dataset.k !== 'w' + g.k) {
     box.dataset.k = 'w' + g.k;
-    const mine = g.mine || ['', '', '', '', '', ''];
+    const mine = g.mine || g.cols.map(() => '');
     box.innerHTML = `<div class="bwcols">${g.cols.map((c, i) => `<label class="bwcol"><span>${BWEMO[i]} ${esc(c)}</span><input type="text" id="bwI${i}" data-c="${i}" maxlength="24" autocomplete="off" spellcheck="false" placeholder="${esc(g.L)}…" value="${esc(mine[i] || '')}"><i class="bwok"></i></label>`).join('')}</div>
       <div class="bwfoot"><div class="bwprog" id="bwProg"></div><button type="button" class="bwstop" id="bwStop">ستوب ✋</button></div>`;
     box.querySelectorAll('input').forEach(inp => {
@@ -36,7 +36,7 @@ function bwWrite(g) {
   bwStopState();
   // تقدّم الباقين
   const ps = S.players.filter(p => g.filled[p.id] != null && p.id !== S.me);
-  $('#bwProg').innerHTML = ps.map(p => `<span class="${g.filled[p.id] >= 6 ? 'done' : ''}"><b>${esc((p.av || [...p.name.trim()][0] || '؟'))}</b>${esc(p.name)} ${g.filled[p.id] >= 6 ? '✅' : bwNum(g.filled[p.id]) + '/٦'}</span>`).join('');
+  $('#bwProg').innerHTML = ps.map(p => `<span class="${g.filled[p.id] >= g.cols.length ? 'done' : ''}"><b>${esc((p.av || [...p.name.trim()][0] || '؟'))}</b>${esc(p.name)} ${g.filled[p.id] >= g.cols.length ? '✅' : bwNum(g.filled[p.id]) + '/' + bwNum(g.cols.length)}</span>`).join('');
 }
 function bwStopState() {
   const b = $('#bwStop'), g = S.g; if (!b || !g) return;
@@ -48,14 +48,20 @@ function bwReview(g) {
   const box = $('#bwBody'); box.dataset.k = 'r' + g.k;
   const ids = S.players.map(p => p.id).filter(id => g.all && g.all[id]);
   const cell = (id, c) => {
-    const w = g.all[id][c], s = g.st[id][c], vk = id + ':' + c, v = g.votes[vk];
-    const tag = s === 1 ? '<small class="s1">+١٠</small>' : s === 2 ? '<small class="s2">+٥</small>' : s === 3 ? '<small class="s3">✗</small>' : '';
-    const canVote = g.sub === 'rev' && id !== S.me && w && !S.spec;
-    return `<td class="st${s}${v && v.me ? ' voted' : ''}"${canVote ? ` data-vote="${vk}" title="اضغط لو الجواب غلط"` : ''}><span class="nt">${w ? esc(w) : '—'}</span>${tag}${v ? `<em>👎${bwNum(v.n)}</em>` : ''}</td>`;
+    const w = g.all[id][c], s = g.st[id][c], vk = id + ':' + c, v = g.votes[vk], kn = g.kn && g.kn[id] ? g.kn[id][c] : true;
+    const tag = s === 1 ? '<small class="s1">+١٠</small>' : s === 2 ? '<small class="s2">+٥</small>' : s === 3 ? '<small class="s3">✗</small>' : s === 4 ? '<small class="s4">؟</small>' : '';
+    const canVote = g.sub === 'rev' && id !== S.me && w && !S.spec && s !== 3 || (g.sub === 'rev' && id !== S.me && !S.spec && v && v.me);
+    const tip = kn ? 'اضغط لو الجواب غلط' : 'مو بالقاموس — اضغط لو هي صح عشان تنقبل';
+    return `<td class="st${s}${v && v.me ? ' voted' : ''}${kn ? '' : ' unk'}"${canVote ? ` data-vote="${vk}" title="${tip}"` : ''}><span class="nt">${w ? esc(w) : '—'}</span>${tag}${v ? `<em>${kn ? '👎' : '👍'}${bwNum(v.n)}</em>` : ''}</td>`;
   };
-  box.innerHTML = `<div class="bwtbl"><table class="nt-cells"><thead><tr><th></th>${g.cols.map((c, i) => `<th>${BWEMO[i]} ${esc(c)}</th>`).join('')}<th>المجموع</th></tr></thead>
+  box.innerHTML = `<div class="bwtbl"><table class="nt-cells"><thead><tr><th>حرف «${esc(g.L)}»</th>${g.cols.map((c, i) => `<th>${BWEMO[i]} ${esc(c)}</th>`).join('')}<th>المجموع</th></tr></thead>
     <tbody>${ids.map(id => `<tr class="${id === S.me ? 'me' : ''}"><th>${esc(pn(id))}${g.stopBy === id ? ' ✋' : ''}</th>${g.cols.map((_, c) => cell(id, c)).join('')}<td class="tot">${bwNum(g.pts[id] || 0)}</td></tr>`).join('')}</tbody></table></div>
-    <p class="bwnote">${g.sub === 'rev' ? '✓ صح · 🟡 مكرر · ✗ غلط — شايف جواب غلط؟ اضغط عليه تصوّت (لو صوّت عليه أغلب اللاعبين ينلغي)' : '⭐ انضافت النقاط — الجولة الجاية بعد شوي'}</p>`;
+    <p class="bwnote">${g.sub === 'rev' ? '+١٠ صح · +٥ مكرر · ✗ غلط · ؟ مو بالقاموس — شايف جواب غلط؟ اضغط عليه وينلغي لو صوّت أغلب اللاعبين. والكلمة اللي عليها ؟ ما تنحسب إلا لو أغلب الباقين ضغطوا إنها صح' : '⭐ انضافت النقاط — الجولة الجاية بعد شوي'}</p>`;
+}
+function bwSheet(g) {
+  const h = g.hist || []; if (!h.length) return '';
+  const cell = (w, st) => `<td class="st${st}"><span class="nt">${w ? esc(w) : '—'}</span></td>`;
+  return `<div class="bwsheet"><h4>ورقتك</h4><div class="bwtbl"><table class="nt-cells"><thead><tr><th>حرف</th>${g.cols.map(c => `<th>${esc(c)}</th>`).join('')}<th>مجموع</th></tr></thead><tbody>${h.map(r => `<tr><th class="bwlt">${esc(r.L)}</th>${r.a.map((w, i) => cell(w, r.s[i])).join('')}<td class="tot">${bwNum(r.p)}</td></tr>`).join('')}<tr class="me"><th colspan="${g.cols.length + 1}">المجموع الكلي</th><td class="tot">${bwNum(h.reduce((a, r) => a + r.p, 0))}</td></tr></tbody></table></div></div>`;
 }
 function renderBwb(body) {
   if (body.dataset.built !== 'bwb' || !$('#bwBody')) bwBuild(body);
@@ -66,6 +72,8 @@ function renderBwb(body) {
   $('#bwSub').textContent = over ? (S.winner || '') : g.sub === 'write' ? `الجولة ${bwNum(g.k)} من ${bwNum(g.count)} · اكتب كلمة تبدأ بـ «${g.L}» بكل خانة` : g.sub === 'stopping' ? 'باقي ثواني وتنقفل الخانات — كمّل بسرعة!' : `الجولة ${bwNum(g.k)} من ${bwNum(g.count)}`;
   $('#bwBoard').classList.toggle('stopping', g.sub === 'stopping');
   if (g.sub === 'write' || g.sub === 'stopping') bwWrite(g); else if (g.all) bwReview(g);
+  let sh = $('#bwSheet'); if (!sh) { sh = document.createElement('div'); sh.id = 'bwSheet'; $('#bwBoard').appendChild(sh); }
+  const hk = (g.hist || []).length + g.sub; if (sh.dataset.k !== hk) { sh.dataset.k = hk; sh.innerHTML = g.sub === 'rev' ? '' : bwSheet(g); }
   if (g.sub === 'stopping' && BW.stopK !== g.k) { BW.stopK = g.k; sfx('bell'); }
   // النقاط
   const ps = [...S.players].sort((a, b) => (g.scores[b.id] || 0) - (g.scores[a.id] || 0));

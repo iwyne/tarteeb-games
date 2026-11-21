@@ -3,7 +3,8 @@
 // «قفّل!» = الباقين لفة وحدة وبعدها تنكشف الأوراق. اللي قفّل ومو الأقل تتضاعف نقاطه. بعد كل الجولات الأقل يفوز.
 const SCALE = +process.env.QFL_SCALE || 1;
 const PEEK_MS = 6000, REV_MS = 9000, PICK_MS = 15000, SEE_MS = 4000;
-const POW = { 7: 'own', 8: 'own', 9: 'spy', 10: 'spy', swap: 'swap', eye: 'eye', mix: 'mix' };
+const POW = { 7: 'own', 8: 'own', 9: 'spy', 10: 'spy', swap: 'swap', eye: 'eye', mix: 'mix', ss: 'ss', take: 'take', any: 'any' };
+const ANYK = ['own', 'spy', 'swap', 'eye', 'mix', 'ss', 'take'];
 const num = n => String(n).replace(/\d/g, d => '٠١٢٣٤٥٦٧٨٩'[d]);
 module.exports = H => {
   const ms = x => x * SCALE, rnd = n => Math.random() * n | 0;
@@ -11,11 +12,12 @@ module.exports = H => {
   const nm = (r, id) => (P(r, id) || {}).name || '؟';
   const opt = (r, k, d) => r.opts[k] || d;
   const val = c => typeof c.v === 'number' ? c.v : 10;
-  const cname = c => c.v === 'swap' ? 'بدّل' : c.v === 'eye' ? 'عين' : c.v === 'mix' ? 'زي بعض' : num(c.v);
+  const SPN = { swap: 'بدّل', eye: 'عين', mix: 'زي بعض', ss: 'شوف وبدّل', take: 'خذ بس', any: 'على كيفك' };
+  const cname = c => SPN[c.v] || num(c.v);
   const same = (a, b) => a && b && a.v === b.v;
   function deck(g) {
     const d = [], add = (v, n) => { for (let i = 0; i < n; i++) d.push({ id: g.nid++, v }); };
-    add(-1, 2); for (let v = 1; v <= 10; v++) add(v, 4); add(20, 2); add(25, 2); add('swap', 3); add('eye', 2); add('mix', 2);
+    add(-1, 2); for (let v = 1; v <= 10; v++) add(v, 4); add(20, 2); add(25, 2); add('swap', 3); add('eye', 2); add('mix', 2); add('ss', 2); add('take', 2); add('any', 2);
     return H.shuffle(d);
   }
   function draw1(r) { const g = r.g; if (!g.deck.length) { const top = g.disc.pop(); g.deck = H.shuffle(g.disc); g.disc = top ? [top] : []; } return g.deck.pop(); }
@@ -75,7 +77,7 @@ module.exports = H => {
     if (!pw) { H.log(r, `🗑️ ${p.name} رمى ${cname(c)}`); return next(r); }
     // القدرات: تحتاج اختيار ورقة
     if (pw === 'mix' && !g.hands[p.id].length) { return next(r); }
-    g.sub = 'pick'; g.pend = { k: pw, by: p.id, picks: [] }; H.log(r, `✨ ${p.name} استخدم ${cname(c)}`);
+    g.sub = 'pick'; g.pend = { k: pw, by: p.id, picks: [], mode: null, wait: false }; H.log(r, `✨ ${p.name} استخدم ${cname(c)}`);
     fx(r, { k: 'power', id: p.id, p: pw });
     H.setTimer(r, ms(PICK_MS), () => timeout(r)); bots(r); H.push(r);
   }
@@ -85,7 +87,19 @@ module.exports = H => {
     const mine = owner === p.id;
     if (pd.k === 'own') { if (!mine) return; reveal(r, p.id, owner, sid); fx(r, { k: 'look', id: p.id, owner, sid }); return finish(r); }
     if (pd.k === 'spy') { if (mine) return; reveal(r, p.id, owner, sid); fx(r, { k: 'look', id: p.id, owner, sid }); return finish(r); }
-    if (pd.k === 'eye') { if (pd.picks.some(x => x[1] === sid)) return; pd.picks.push([owner, sid]); reveal(r, p.id, owner, sid); fx(r, { k: 'look', id: p.id, owner, sid }); if (pd.picks.length >= 2) return finish(r); return H.push(r); }
+    if (pd.k === 'eye') {
+      if (!pd.mode || pd.picks.some(x => x[1] === sid)) return;
+      if (pd.mode === 'own' ? !mine : (mine || pd.picks.some(x => x[0] === owner))) return;
+      pd.picks.push([owner, sid]); reveal(r, p.id, owner, sid); fx(r, { k: 'look', id: p.id, owner, sid });
+      const need = pd.mode === 'own' ? Math.min(2, g.hands[p.id].length) : g.order.filter(id => id !== p.id && g.hands[id].length).length;
+      if (pd.picks.length >= need) return finish(r); return H.push(r);
+    }
+    if (pd.k === 'take') { if (mine) return; const c2 = draw1(r); if (c2) g.hands[owner].push(c2); fx(r, { k: 'take2', id: p.id, owner }); H.log(r, `📥 ${p.name} خلّى ${nm(r, owner)} ياخذ ورقة زيادة`); return finish(r); }
+    if (pd.k === 'ss') {
+      if (pd.wait) return;
+      if (!pd.picks.length) { if (!mine) return; pd.picks.push([owner, sid]); reveal(r, p.id, owner, sid); return H.push(r); }
+      if (mine) return; pd.picks.push([owner, sid]); reveal(r, p.id, owner, sid); fx(r, { k: 'look', id: p.id, owner, sid }); pd.wait = true; return H.push(r);
+    }
     if (pd.k === 'mix') { if (!mine) return; const i = g.hands[owner].indexOf(c); g.hands[owner].splice(i, 1); g.disc.push(c); fx(r, { k: 'drop', id: p.id, sid, v: c.v }); H.log(r, `🧹 ${p.name} تخلّص من ${cname(c)}`); return finish(r); }
     if (pd.k === 'swap') {
       if (!pd.picks.length) { if (!mine) return; pd.picks.push([owner, sid]); return H.push(r); }
@@ -94,6 +108,18 @@ module.exports = H => {
       for (const id of g.order) { delete mem(r, id)[h1[i1].id]; delete mem(r, id)[h2[i2].id]; }
       fx(r, { k: 'swapc', id: p.id, a: [o1, h1[i1].id], b: [owner, h2[i2].id] }); H.log(r, `🔀 ${p.name} بدّل ورقة مع ${nm(r, owner)}`); return finish(r);
     }
+  }
+  function doSwap(r, p, a, b) {
+    const g = r.g, h1 = g.hands[a[0]], h2 = g.hands[b[0]], i1 = h1 ? h1.findIndex(x => x.id === a[1]) : -1, i2 = h2 ? h2.findIndex(x => x.id === b[1]) : -1; if (i1 < 0 || i2 < 0) return;
+    [h1[i1], h2[i2]] = [h2[i2], h1[i1]];
+    for (const id of g.order) if (id !== p.id) { delete mem(r, id)[h1[i1].id]; delete mem(r, id)[h2[i2].id]; }
+    fx(r, { k: 'swapc', id: p.id, a: [a[0], h1[i1].id], b: [b[0], h2[i2].id] }); H.log(r, `🔀 ${p.name} بدّل ورقة مع ${nm(r, b[0])}`);
+  }
+  function setMode(r, p, m) {
+    const g = r.g, pd = g.pend; if (g.sub !== 'pick' || !pd || pd.by !== p.id) return;
+    if (pd.k === 'any' && ANYK.includes(m.k)) { pd.k = m.k; fx(r, { k: 'power', id: p.id, p: m.k }); bots(r); return H.push(r); }
+    if (pd.k === 'eye' && !pd.mode && ['own', 'opp'].includes(m.m)) { pd.mode = m.m; bots(r); return H.push(r); }
+    if (pd.k === 'ss' && pd.wait) { if (m.ok) doSwap(r, p, pd.picks[0], pd.picks[1]); return finish(r); }
   }
   function finish(r) { const g = r.g; g.pend = null; H.push(r); setTimeout(() => { if (r.g === g && g.sub === 'pick') next(r); }, ms(700)); }
   // رمي نفس الرقم بأي وقت (حتى مو بدورك)
@@ -169,7 +195,18 @@ module.exports = H => {
       if (!opp.length) return finish(r);
       const o = opp[rnd(opp.length)], oc = g.hands[o][rnd(g.hands[o].length)];
       if (pd.k === 'spy') return pick(r, p, o, oc.id);
-      if (pd.k === 'eye') { const a = unknown[0] || mine[0]; if (!pd.picks.length && a) pick(r, p, p.id, a.id); if (g.pend) pick(r, p, o, oc.id); return; }
+      if (pd.k === 'any') { setMode(r, p, { k: unknown.length ? 'own' : ['spy', 'take', 'swap'][rnd(3)] }); return; }
+      if (pd.k === 'eye') {
+        if (!pd.mode) return setMode(r, p, { m: unknown.length >= 2 ? 'own' : 'opp' });
+        if (pd.mode === 'own') { for (const c of (unknown.length ? unknown : mine).slice(0, 2)) if (g.pend) pick(r, p, p.id, c.id); if (g.pend && g.pend.k === 'eye') finish(r); return; }
+        for (const id of opp) if (g.pend) pick(r, p, id, g.hands[id][rnd(g.hands[id].length)].id); return;
+      }
+      if (pd.k === 'take') return pick(r, p, o, oc.id);
+      if (pd.k === 'ss') {
+        if (!pd.wait) { const gs = guess(r, p.id); let wi = 0, wv = -99; gs.forEach((x, i) => { const v = x === null ? 6 : x; if (v > wv) { wv = v; wi = i; } }); if (!pd.picks.length) pick(r, p, p.id, mine[wi].id); if (g.pend && !g.pend.wait) pick(r, p, o, oc.id); }
+        const q = g.pend; if (!q || !q.wait) return; const mv = m[q.picks[0][1]], tv = m[q.picks[1][1]];
+        return setMode(r, p, { ok: mv !== undefined && tv !== undefined && val({ v: tv }) < val({ v: mv }) });
+      }
       if (pd.k === 'swap') { const gs = guess(r, p.id); let wi = 0, wv = -99; gs.forEach((x, i) => { const v = x === null ? 6 : x; if (v > wv) { wv = v; wi = i; } }); if (wv < 6) return finish(r); pick(r, p, p.id, mine[wi].id); if (g.pend) pick(r, p, o, oc.id); }
     });
   }
@@ -188,6 +225,7 @@ module.exports = H => {
       if (m.t === 'qdraw') drawDeck(r, p); else if (m.t === 'qtake') takeDisc(r, p); else if (m.t === 'qswap') swapIn(r, p, +m.sid);
       else if (m.t === 'qthrow') throwDrawn(r, p, !!m.use); else if (m.t === 'qpick') pick(r, p, m.owner, +m.sid); else if (m.t === 'qcall') call(r, p);
       else if (m.t === 'qskip' && g.sub === 'pick') { g.pend = null; next(r); }
+      else if (m.t === 'qmode') setMode(r, p, m);
       return 'quiet';
     },
     view(r, p) {
@@ -197,7 +235,7 @@ module.exports = H => {
         top: g.disc.length ? g.disc[g.disc.length - 1] : null, ndisc: g.disc.length,
         hands: Object.fromEntries(g.order.map(id => [id, g.hands[id].map(c => c.id)])),
         drawn: me && g.turn === p.id && g.drawn ? { c: g.drawn, from: g.from } : g.drawn ? { from: g.from } : null,
-        pend: g.pend ? { k: g.pend.k, by: g.pend.by, picks: g.pend.picks } : null, res: g.res,
+        pend: g.pend ? { k: g.pend.k, by: g.pend.by, picks: g.pend.picks, mode: g.pend.mode, wait: g.pend.wait } : null, res: g.res,
         left: g.dl ? Math.max(0, g.dl - Date.now()) : 0, canCall: g.sub === 'turn' && !g.drawn && !g.called && g.turns > g.order.length, spec: !me
       };
     },

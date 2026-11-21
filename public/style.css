@@ -3628,7 +3628,7 @@ body .lbanner #lobbyTitle::before,body[data-gt] .lbanner #lobbyTitle::before{dis
 @keyframes bwPop{from{transform:rotate(-200deg) scale(.2);opacity:0}}
 .bwttl h3{font:400 2em Lalezar,Tajawal,sans-serif;margin:0}.bwttl small{opacity:.75;font-size:.95em}
 .bwclock{margin-inline-start:auto;font:400 2.4em Lalezar,Tajawal,sans-serif;color:#ffd84d}.bwclock.low{color:#ff8a7a;animation:pulse .5s infinite alternate}
-.bwcols{display:grid;grid-template-columns:repeat(6,1fr);gap:.8em}
+.bwcols{display:grid;grid-template-columns:repeat(5,1fr);gap:.8em}
 .bwcol{position:relative;display:grid;gap:.4em;border:2px dashed rgba(244,241,234,.45);border-radius:.6em;padding:.7em .6em}
 .bwcol>span{font:400 1.35em Lalezar,Tajawal,sans-serif;text-align:center}
 .bwcol input{width:100%;background:transparent;border:0;border-bottom:3px solid rgba(244,241,234,.6);color:#fff;font:400 1.7em Lalezar,Tajawal,sans-serif;text-align:center;padding:.15em 0;outline:none;caret-color:#ffd84d}
@@ -4048,3 +4048,9 @@ body[data-gt=qfl] #lobbyTitle{color:#e7b54a;text-shadow:3px 3px 0 #120a05}
   .qfdrawn img{width:9em}.qft{font-size:1.15em;padding:0 .5em}
   .qfstamp{font-size:4em}.qfcs img{width:1.9em}
 }
+
+.bwtbl td small.s4{color:#9fd8ff}.bwtbl td.st4 span{opacity:.6;border-bottom:2px dotted #9fd8ff}
+.bwsheet{margin-top:1em;border-top:3px dashed rgba(244,241,234,.35);padding-top:.6em}.bwsheet h4{font:400 1.4em Lalezar,Tajawal,sans-serif;margin:0 0 .3em}
+.bwsheet td{font-size:1.1em}.bwsheet .bwlt{text-align:center;font:400 1.4em Lalezar;color:#ffd84d}.bwsheet tr.me th{text-align:start}
+
+.qfdrawn.peek{background:rgba(0,0,0,.15);justify-content:flex-start;padding-top:5.5em}.qfdrawn.peek img{display:none}

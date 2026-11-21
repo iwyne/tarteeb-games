@@ -1,12 +1,13 @@
 // ================= ترتيب قفل (سكرو) — مجلس ثري دي =================
 const QF = { seeQ: {}, T: null, libs: null, built: false, sc: null, cam: null, ren: null, raf: 0, clock: null, sz: '', tex: {}, mats: {}, cards: {}, seen: {}, mode: null, sel: null, tmr: 0, portrait: false, ray: null, deckG: null, discM: null, chips: {}, revK: '', overK: '' };
-const QFV = 1;
+const QFV = 2;
 const qfNum = n => String(n).replace(/\d/g, d => '٠١٢٣٤٥٦٧٨٩'[d]);
-const qfImg = v => v === 'swap' || v === 'eye' || v === 'mix' ? v : v === -1 ? 'nm1' : 'n' + v;
+const QFSP = { swap: 'بدّل', eye: 'عين', mix: 'زي بعض', ss: 'شوف وبدّل', take: 'خذ بس', any: 'على كيفك' };
+const qfImg = v => QFSP[v] ? v : v === -1 ? 'nm1' : 'n' + v;
 const qfSrc = n => `qfl/${n}.webp?v=${QFV}`;
-const qfName = v => v === 'swap' ? 'بدّل' : v === 'eye' ? 'عين' : v === 'mix' ? 'زي بعض' : v === -1 ? '−١' : qfNum(v);
-const QFPOW = { 7: ['شوف ورقة من أوراقك', 'own'], 8: ['شوف ورقة من أوراقك', 'own'], 9: ['شوف ورقة عند غيرك', 'spy'], 10: ['شوف ورقة عند غيرك', 'spy'], swap: ['بدّل ورقة من عندك بورقة خصم', 'swap'], eye: ['شوف أي ورقتين', 'eye'], mix: ['تخلّص من ورقة من عندك', 'mix'] };
-const QFHINT = { own: 'اختر ورقة من أوراقك تشوفها', spy: 'اختر ورقة عند خصم تشوفها', eye: 'اختر أي ورقتين تشوفهم', mix: 'اختر ورقة من عندك ترميها', swap: 'اختر ورقتك أول، بعدين ورقة الخصم' };
+const qfName = v => QFSP[v] || (v === -1 ? '−١' : qfNum(v));
+const QFPOW = { 7: ['شوف ورقة من أوراقك', 'own'], 8: ['شوف ورقة من أوراقك', 'own'], 9: ['شوف ورقة عند غيرك', 'spy'], 10: ['شوف ورقة عند غيرك', 'spy'], swap: ['بدّل ورقة من عندك بورقة خصم', 'swap'], eye: ['ورقة من كل خصم أو ورقتين لك', 'eye'], mix: ['تخلّص من ورقة من عندك', 'mix'], ss: ['شوف ورقتك وورقة خصم وقرر تبدّل', 'ss'], take: ['خصم ياخذ ورقة زيادة', 'take'], any: ['اختر أي قدرة تبيها', 'any'] };
+const QFHINT = { own: 'اختر ورقة من أوراقك تشوفها', spy: 'اختر ورقة عند خصم تشوفها', eyeown: 'اختر ورقتين من أوراقك تشوفهم', eyeopp: 'اختر ورقة من كل خصم', mix: 'اختر ورقة من عندك ترميها', swap: 'اختر ورقتك أول، بعدين ورقة الخصم', ss: 'اختر ورقتك أول، بعدين ورقة الخصم وتشوفهم', take: 'اختر الخصم اللي ياخذ ورقة زيادة' };
 const QFCOL = ['#2fbf6a', '#7b3fc7', '#1c5fd0', '#c4560f', '#c2185b', '#00838f'];
 const qfPl = id => S.players.find(p => p.id === id) || { name: '؟' };
 const qfCol = id => QFCOL[Math.max(0, (S.g.order || []).indexOf(id)) % QFCOL.length];
@@ -143,9 +144,9 @@ function qfPickable() {
   if (g.sub === 'pick' && g.pend && g.pend.by === S.me) {
     const k = g.pend.k, others = g.order.filter(id => id !== S.me).flatMap(id => g.hands[id] || []);
     if (k === 'own' || k === 'mix') return mineIds;
-    if (k === 'spy') return others;
-    if (k === 'eye') return mineIds.concat(others).filter(c => !g.pend.picks.some(p => p[1] === c));
-    if (k === 'swap') return g.pend.picks.length ? others : mineIds;
+    if (k === 'spy' || k === 'take') return others;
+    if (k === 'eye') { if (g.pend.mode === 'own') return mineIds.filter(c => !g.pend.picks.some(p => p[1] === c)); if (g.pend.mode === 'opp') return g.order.filter(id => id !== S.me && !g.pend.picks.some(p => p[0] === id)).flatMap(id => g.hands[id] || []); return []; }
+    if (k === 'swap' || k === 'ss') return g.pend.wait ? [] : g.pend.picks.length ? others : mineIds;
   }
   return [];
 }
@@ -199,7 +200,7 @@ function qfHud() {
   if (g.sub === 'peek') ht = 'احفظ ورقتينك القريبة منك!';
   else if (QF.mode === 'swap') ht = 'اضغط على ورقة من أوراقك تبدّلها';
   else if (QF.mode === 'match') ht = 'اضغط على ورقتك اللي نفس رقم المكشوفة';
-  else if (g.sub === 'pick' && g.pend && g.pend.by === S.me) ht = QFHINT[g.pend.k] + (g.pend.k === 'eye' && g.pend.picks.length ? ' (باقي وحدة)' : '');
+  else if (g.sub === 'pick' && g.pend && g.pend.by === S.me) ht = g.pend.k === 'eye' ? (g.pend.mode ? QFHINT['eye' + g.pend.mode] : '') : g.pend.k === 'any' || (g.pend.k === 'ss' && g.pend.wait) ? '' : QFHINT[g.pend.k];
   else if (g.sub === 'pick' && g.pend) ht = `${esc(qfPl(g.pend.by).name)} يستخدم قدرة…`;
   hint.hidden = !ht; hint.innerHTML = ht;
   // الورقة المسحوبة
@@ -211,7 +212,19 @@ function qfHud() {
     dw.innerHTML = `<img src="${qfSrc(qfImg(d.v))}"><div class="qft">${g.drawn.from === 'disc' ? 'أخذت المكشوفة — لازم تبدّلها' : `سحبت ${qfName(d.v)}${pw ? ' — ' + pw[0] : ''}`}</div>
       <div class="qfbtns"><button class="qfb" data-a="swap">بدّلها بورقة من عندي</button>${pw && g.drawn.from === 'deck' ? `<button class="qfb gold" data-a="use">استخدم قدرتها (${pw[0]})</button>` : ''}${g.drawn.from === 'deck' ? '<button class="qfb red" data-a="throw">ارمها</button>' : ''}</div>`;
     dw.querySelectorAll('[data-a]').forEach(b => b.onclick = () => { const a = b.dataset.a; if (a === 'swap') { QF.mode = 'swap'; qfHud(); } else send({ t: 'qthrow', use: a === 'use' ? 1 : 0 }); });
-  } else { dw.hidden = true; dw.dataset.k = ''; }
+  } else if (mine && g.sub === 'pick' && g.pend && g.pend.by === S.me && (g.pend.k === 'any' || (g.pend.k === 'eye' && !g.pend.mode) || (g.pend.k === 'ss' && g.pend.wait))) {
+    const pd = g.pend, key = 'c' + pd.k + pd.wait; dw.hidden = false;
+    if (dw.dataset.k !== key) {
+      dw.dataset.k = key;
+      if (pd.k === 'any') dw.innerHTML = `<img src="${qfSrc('any')}"><div class="qft">على كيفك — اختر القدرة</div><div class="qfbtns">${[['own', 'شوف ورقتك'], ['spy', 'شوف ورقة غيرك'], ['eye', 'عين'], ['swap', 'بدّل'], ['ss', 'شوف وبدّل'], ['take', 'خذ بس'], ['mix', 'زي بعض']].map(([k, t]) => `<button class="qfb${k === 'take' || k === 'swap' ? ' gold' : ''}" data-k="${k}">${t}</button>`).join('')}</div>`;
+      else if (pd.k === 'eye') dw.innerHTML = `<img src="${qfSrc('eye')}"><div class="qft">عين — وش تبي تشوف؟</div><div class="qfbtns"><button class="qfb gold" data-m="opp">ورقة من كل خصم</button><button class="qfb" data-m="own">ورقتين من عندي</button></div>`;
+      else dw.innerHTML = `<img src="${qfSrc('ss')}"><div class="qft">شفت الورقتين — تبدّلهم؟</div><div class="qfbtns"><button class="qfb gold" data-ok="1">بدّل</button><button class="qfb red" data-ok="0">لا خلهم</button></div>`;
+      dw.querySelectorAll('[data-k]').forEach(b => b.onclick = () => send({ t: 'qmode', k: b.dataset.k }));
+      dw.querySelectorAll('[data-m]').forEach(b => b.onclick = () => send({ t: 'qmode', m: b.dataset.m }));
+      dw.querySelectorAll('[data-ok]').forEach(b => b.onclick = () => send({ t: 'qmode', ok: b.dataset.ok === '1' }));
+    }
+    dw.classList.toggle('peek', pd.k === 'ss');
+  } else { dw.hidden = true; dw.dataset.k = ''; dw.classList.remove('peek'); }
   // شريط الأزرار
   const can = mine && g.sub === 'turn' && !g.drawn, top = g.top;
   const myTot = g.tot[S.me] || 0;
@@ -264,7 +277,8 @@ function net_qfl(m) {
   if (m.k === 'match') { qfToast(`${esc(qfPl(m.id).name)} رمى ${qfName(m.v)} مع المكشوفة!`); qfSnd('ding'); }
   if (m.k === 'bad') { const c = QF.cards[m.sid]; if (c) { qfSetFace(c, m.v); c.userData.flip = 1; QF.seen[m.sid] = now + 1800; c.userData.shake = now + 700; } qfToast(`${esc(qfPl(m.id).name)} رمى غلط وأخذ عقوبة`, 'warn'); qfSnd('nope'); }
   if (m.k === 'swapc') { qfToast(`${esc(qfPl(m.id).name)} بدّل ورقة مع ${esc(qfPl(m.b[0]).name)}`); qfSnd('whoosh'); for (const [, sid] of [m.a, m.b]) { const c = QF.cards[sid]; if (c) c.userData.look = now + 1500; } }
-  if (m.k === 'power' && m.id !== S.me) qfToast(`${esc(qfPl(m.id).name)} يستخدم ${{ own: '٧/٨', spy: '٩/١٠', swap: 'بدّل', eye: 'عين', mix: 'زي بعض' }[m.p]}`);
+  if (m.k === 'power' && m.id !== S.me) qfToast(`${esc(qfPl(m.id).name)} يستخدم ${{ own: '٧/٨', spy: '٩/١٠', swap: 'بدّل', eye: 'عين', mix: 'زي بعض', ss: 'شوف وبدّل', take: 'خذ بس', any: 'على كيفك' }[m.p]}`);
+  if (m.k === 'take2') { qfToast(m.owner === S.me ? `${esc(qfPl(m.id).name)} خلاك تاخذ ورقة زيادة!` : `${esc(qfPl(m.id).name)} خلّى ${esc(qfPl(m.owner).name)} ياخذ ورقة زيادة`, m.owner === S.me ? 'warn' : ''); qfSnd('card'); }
   if (m.k === 'throw' || m.k === 'swapin' || m.k === 'drop') qfSnd('card');
   if (m.k === 'rev') qfSnd('bell');
 }
