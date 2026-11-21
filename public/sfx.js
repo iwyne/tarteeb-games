@@ -79,7 +79,11 @@ const sfx = (() => {
     tick: () => tone(1000, 0, .05, 'square', .06),
     nope: () => tone(150, 0, .1, 'square', .08),
     win: () => [523, 659, 784, 1047, 784, 1047, 1319].forEach((f, i) => tone(f, i * .11, .22, 'triangle', .2)),
-    lose: () => [392, 330, 262].forEach((f, i) => tone(f, i * .16, .28, 'triangle', .16))
+    lose: () => [392, 330, 262].forEach((f, i) => tone(f, i * .16, .28, 'triangle', .16)),
+    // بدائل لو الملفات ما تحمّلت للحين
+    chime: () => [880, 1175, 1568].forEach((f, i) => tone(f, i * .08, .5, 'sine', .12)),
+    coin: () => { tone(1319, 0, .08, 'square', .07); tone(1760, .07, .2, 'square', .07); },
+    whistle: () => tone(1800, 0, .35, 'sine', .12, 2400)
   };
   // ---- أصوات حقيقية مسجّلة (CC0: Kenney Casino Audio + freesound) — لو ما تحمّلت نرجع للصوت المركّب ----
   const SMP = {

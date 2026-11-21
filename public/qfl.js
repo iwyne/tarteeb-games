@@ -179,7 +179,7 @@ function renderQfl(body) {
   if (!QF.tmr) QF.tmr = setInterval(qfTick, 200);
 }
 function qfTick() {
-  const el = document.getElementById('qfTime'); if (!el || !S.g) { if (!document.getElementById('qfStage')) { clearInterval(QF.tmr); QF.tmr = 0; } return; }
+  const el = document.getElementById('qfTime'); if (!el || !S || !S.g) { if (!document.getElementById('qfStage')) { clearInterval(QF.tmr); QF.tmr = 0; } return; }
   const left = Math.max(0, QF.endAt - performance.now()); el.textContent = qfNum(Math.ceil(left / 1000));
   el.parentNode.classList.toggle('low', left < 6000 && S.g.turn === S.me);
 }

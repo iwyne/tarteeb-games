@@ -261,7 +261,7 @@ function renderDeal(body) {
   if (!DL.tmr) DL.tmr = setInterval(dlTick, 200);
 }
 function dlTick() {
-  const el = document.getElementById('dlTime'); if (!el || !S.g) { if (!document.getElementById('dlW')) { clearInterval(DL.tmr); DL.tmr = 0; } return; }
+  const el = document.getElementById('dlTime'); if (!el || !S || !S.g) { if (!document.getElementById('dlW')) { clearInterval(DL.tmr); DL.tmr = 0; } return; }
   const left = Math.max(0, DL.endAt - performance.now()), tot = S.g.total || 60000;
   el.style.width = (left / tot * 100) + '%'; const t = document.getElementById('dlSec'); if (t) t.textContent = dlNum(Math.ceil(left / 1000)) + ' ثانية';
   const mb = document.getElementById('dlModT'); if (mb) mb.style.width = (left / tot * 100) + '%';

@@ -89,8 +89,10 @@ function on(m) {
     if (m.k === 'got') toast('🫳 سرقت ورقة!'); else powerFx(m);
   } else if (m.t === 'react') {
     showReact(m.from, m.e, m.c);
+  } else if (m.t === 'pts') {
+    showPts(m);
   } else if (m.t === 'state') {
-    m.t0 = Date.now(); flipAdapt(m); prevS = S; S = m; renderSoon(); notifyTurn();
+    m.t0 = Date.now(); flipAdapt(m); prevS = S; S = m; renderSoon(); notifyTurn(); lvUpdate();
   }
 }
 // لو اللاعب ضاغط بإصبعه على زر، نأجل إعادة الرسم لين يرفع إصبعه (أقصى شي ٦٠٠ms)
@@ -107,7 +109,7 @@ function renderSoon() {
   }
   RPEND = false; render();
 }
-function reset() { session = {}; store.set('tarteeb-session', {}); S = null; prevS = null; render(); }
+function reset() { session = {}; store.set('tarteeb-session', {}); S = null; prevS = null; render(); lvUpdate(); }
 
 // ---------- الرئيسية ----------
 const nameEl = $('#name'), codeEl = $('#code');
@@ -568,8 +570,9 @@ function showBubble(id, text) {
 // ايموجي يطلع فوق مقعد صاحبه ويطير
 function showReact(id, e, c) {
   const el = (S && S.me === id && document.getElementById('dlMine')) || document.querySelector(`.seat[data-id="${id}"], .lp[data-id="${id}"], .pchip[data-id="${id}"], .dlop[data-id="${id}"], .qfop[data-id="${id}"]`) || document.querySelector(`#plist li[data-id="${id}"]`);
-  const pos = el ? ctr(el) : { x: innerWidth / 2, y: innerHeight - 200 };
-  const d = document.createElement('div'); d.className = 'react'; if (RC_EMO[e]) d.innerHTML = rcChar(RC_WHO[c] ? c : 'abu', RC_EMO[e], 96); else d.textContent = e;
+  const fromSpec = !el && S && S.specs && S.specs.some(q => q.id === id); // المتفرجين: تطلع على جنب الشاشة مثل البث
+  const pos = el ? ctr(el) : fromSpec ? { x: innerWidth - 50 - Math.random() * 40, y: innerHeight * .7 } : { x: innerWidth / 2, y: innerHeight - 200 };
+  const d = document.createElement('div'); d.className = 'react' + (fromSpec ? ' fromspec' : ''); if (RC_EMO[e]) d.innerHTML = rcChar(RC_WHO[c] ? c : 'abu', RC_EMO[e], 96); else d.textContent = e;
   d.style.left = pos.x + 'px'; d.style.top = pos.y + 'px';
   document.body.appendChild(d);
   d.animate([
