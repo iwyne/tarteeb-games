@@ -4217,3 +4217,8 @@ body[data-gt=bingo] #lobbyTitle{color:#f3e2c0;text-shadow:3px 3px 0 #120a05}
 @media (prefers-reduced-motion:reduce){.qrmodal,.qrmodal *,.qrimg::after{animation:none!important}}
 .lupick{position:fixed;z-index:200;display:flex;gap:2px;opacity:.4;transition:opacity .2s;color:#fff;background:rgba(0,0,0,.25);border-radius:6px;padding:1px 3px}.lupick:hover{opacity:1}
 .lupick button{all:unset;cursor:pointer;width:18px;text-align:center;font-size:.75rem;border-radius:4px}.lupick button:hover{background:rgba(255,255,255,.2)}
+button.ludie{padding:0;cursor:default}
+.ludie+.ludie{margin-inline-start:-.2em}
+.ludie.pick{cursor:pointer;transition:transform .15s}.ludie.pick:hover{transform:translateY(-2px)}
+.ludie.sel{background:#ffc928;transform:translateY(-3px) scale(1.08);box-shadow:0 0 0 3px #fff}
+.ludie.dead{opacity:.4}

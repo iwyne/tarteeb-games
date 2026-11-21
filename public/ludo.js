@@ -46,12 +46,13 @@ function luWorld() {
   sc.add(sun);
   const M = o => lite ? new T.MeshLambertMaterial(o) : new T.MeshStandardMaterial(Object.assign({ roughness: .6 }, o));
   const fm = M({ color: 0x6b3a1c }), bm = M({ map: luBoardTex() });
-  const board = new T.Mesh(new T.BoxGeometry(10, .3, 10), [fm, fm, bm, fm, fm, fm]); board.position.y = -.15; board.receiveShadow = !lite; sc.add(board);
-  const fr = new T.Mesh(new T.BoxGeometry(10.8, .5, 10.8), M({ color: 0x4a2a14 })); fr.position.y = -.35; fr.receiveShadow = !lite; sc.add(fr);
+  LU.root = new T.Group(); sc.add(LU.root); // الرقعة والقطع بمجموعة وحدة تندار عشان لونك يكون تحت يسار
+  const board = new T.Mesh(new T.BoxGeometry(10, .3, 10), [fm, fm, bm, fm, fm, fm]); board.position.y = -.15; board.receiveShadow = !lite; LU.root.add(board);
+  const fr = new T.Mesh(new T.BoxGeometry(10.8, .5, 10.8), M({ color: 0x4a2a14 })); fr.position.y = -.35; fr.receiveShadow = !lite; LU.root.add(fr);
   const tb = new T.Mesh(new T.CylinderGeometry(11, 11, .4, 64), M({ color: 0x2a170b })); tb.position.y = -.8; tb.receiveShadow = !lite; sc.add(tb);
   // النرد
   const faces = []; for (let f = 1; f <= 6; f++) { const k = document.createElement('canvas'); k.width = k.height = 128; const x = k.getContext('2d'); x.fillStyle = '#fffaf0'; x.fillRect(0, 0, 128, 128); x.strokeStyle = '#c9a877'; x.lineWidth = 6; x.strokeRect(3, 3, 122, 122); x.fillStyle = '#8a1c1c'; ({ 1: [[64, 64]], 2: [[32, 32], [96, 96]], 3: [[32, 32], [64, 64], [96, 96]], 4: [[32, 32], [96, 32], [32, 96], [96, 96]], 5: [[32, 32], [96, 32], [64, 64], [32, 96], [96, 96]], 6: [[32, 30], [96, 30], [32, 64], [96, 64], [32, 98], [96, 98]] })[f].forEach(([a, b]) => { x.beginPath(); x.arc(a, b, 13, 0, 7); x.fill(); }); const t = new T.CanvasTexture(k); t.colorSpace = T.SRGBColorSpace; faces.push(M({ map: t, roughness: .3 })); }
-  LU.dice = new T.Mesh(new T.BoxGeometry(.8, .8, .8), [faces[0], faces[5], faces[4], faces[1], faces[2], faces[3]]); LU.dice.castShadow = !lite; LU.dice.position.set(0, .1, 0); sc.add(LU.dice);
+  LU.dice = new T.Mesh(new T.BoxGeometry(.8, .8, .8), [faces[0], faces[5], faces[4], faces[1], faces[2], faces[3]]); LU.dice.castShadow = !lite; LU.dice.position.set(0, .1, 0); LU.root.add(LU.dice);
   LU.pmat = LUCOL.map(c => M({ color: c, roughness: .35 }));
   LU.ring = new T.Mesh(new T.RingGeometry(.3, .42, 32), new T.MeshBasicMaterial({ color: 0xffc928, transparent: true, opacity: .9, side: 2, depthWrite: false }));
   LU.ray = new T.Raycaster();
@@ -66,11 +67,13 @@ function luPawn(c) {
 }
 function luSync() {
   if (!LU.built || !S.g) return; const g = S.g, T = LU.T;
+  // القواعد على الشاشة: ٠ فوق يسار، ١ فوق يمين، ٢ تحت يمين، ٣ تحت يسار. ندوّر لين يصير لونك تحت يسار
+  const myC = g.seat[S.me] !== undefined ? g.seat[S.me] : 3; LU.root.rotation.y = -((3 - myC + 4) % 4) * Math.PI / 2;
   for (const id of g.order) {
-    const c = g.seat[id]; if (!LU.pw[id]) LU.pw[id] = [0, 1, 2, 3].map(i => { const m = luPawn(c); m.userData = { id, i, p: -1, tx: 0, tz: 0 }; const [x, z] = luW(luCell(c, -1, i)); m.position.set(x, 0, z); LU.sc.add(m); return m; });
+    const c = g.seat[id]; if (!LU.pw[id]) LU.pw[id] = [0, 1, 2, 3].map(i => { const m = luPawn(c); m.userData = { id, i, p: -1, tx: 0, tz: 0 }; const [x, z] = luW(luCell(c, -1, i)); m.position.set(x, 0, z); LU.root.add(m); return m; });
     g.pcs[id].forEach((p, i) => { const m = LU.pw[id][i]; if (m.userData.p !== p && !m.userData.busy) { const [x, z] = luW(luCell(c, p, i)); m.position.set(x, 0, z); m.userData.p = p; } });
   }
-  for (const id of Object.keys(LU.pw)) if (!g.order.includes(id)) { LU.pw[id].forEach(m => LU.sc.remove(m)); delete LU.pw[id]; }
+  for (const id of Object.keys(LU.pw)) if (!g.order.includes(id)) { LU.pw[id].forEach(m => LU.root.remove(m)); delete LU.pw[id]; }
   // قطع مكدّسة بنفس الخانة: نزحزحها شوي
   const at = {}; for (const id of g.order) LU.pw[id].forEach(m => { if (m.userData.busy || m.userData.p < 0 || m.userData.p === 56) return; const k = luCell(g.seat[id], m.userData.p, 0).join(','); (at[k] = at[k] || []).push(m); });
   for (const ms of Object.values(at)) if (ms.length > 1) ms.forEach((m, j) => { const [x, z] = luW(luCell(g.seat[m.userData.id], m.userData.p, 0)); m.position.x = x + (j - (ms.length - 1) / 2) * .22; m.position.z = z + (j % 2 ? .12 : -.12); m.scale.setScalar(.85); }); else ms[0].scale.setScalar(1);
@@ -100,10 +103,11 @@ function luFrame() {
   // حلقة القطع اللي تقدر تحركها
   const can = luCan(); LU.ring.visible = false;
   for (const id of Object.keys(LU.pw)) LU.pw[id].forEach(m => { const on = can.includes(m.userData.i) && id === S.me; m.children.forEach(o => { if (o.material.emissive) o.material = on ? (m.userData.hl || (m.userData.hl = o.material.clone())) : LU.pmat[S.g.seat[id]]; }); if (on && m.userData.hl) m.userData.hl.emissive && m.userData.hl.emissive.setRGB(.22 + Math.sin(now * 6) * .18, .16 + Math.sin(now * 6) * .12, .02); });
-  if (LU.chipPos) for (const [id, el] of Object.entries(LU.chips)) { const c = S.g.seat[id]; if (c === undefined) continue; const [bx, by] = LUBASE[c], v = new T.Vector3(...(() => { const [x, z] = luW([bx + 2.5, by + 2.5]); return [x, .3, z]; })()).project(LU.cam); el.style.left = ((v.x + 1) / 2 * w) + 'px'; el.style.top = ((1 - v.y) / 2 * h) + 'px'; }
+  if (LU.chipPos) for (const [id, el] of Object.entries(LU.chips)) { const c = S.g.seat[id]; if (c === undefined) continue; const [bx, by] = LUBASE[c], v = new T.Vector3(...(() => { const [x, z] = luW([bx + 2.5, by + 2.5]); return [x, .3, z]; })()).applyMatrix4(LU.root.matrixWorld).project(LU.cam); el.style.left = ((v.x + 1) / 2 * w) + 'px'; el.style.top = ((1 - v.y) / 2 * h) + 'px'; }
   LU.ren.render(LU.sc, LU.cam);
 }
-function luCan() { const g = S.g; return g && g.sub === 'move' && g.turn === S.me ? g.can : []; }
+function luSelK() { const g = S.g; if (!g || !g.opts || !g.opts.length) return -1; if (!g.opts.some(o => o.k === LU.selK)) LU.selK = g.opts[0].k; return LU.selK; }
+function luCan() { const g = S.g; if (!g || g.sub !== 'move' || g.turn !== S.me) return []; const k = luSelK(); return (g.opts || []).filter(o => o.k === k).map(o => o.i); }
 function luInit(stage) {
   const T = LU.T, cv = stage.querySelector('#luCv');
   let q = 'full'; try { q = localStorage.getItem('tdeal-q') || (matchMedia('(pointer:coarse)').matches ? 'lite' : 'full'); } catch {}
@@ -116,7 +120,7 @@ function luInit(stage) {
     const can = luCan(); if (!can.length) { if (S.g.turn === S.me && S.g.sub === 'roll') send({ t: 'lroll' }); return; }
     const r = cv.getBoundingClientRect(); LU.ray.setFromCamera(new T.Vector2((e.clientX - r.left) / r.width * 2 - 1, -(e.clientY - r.top) / r.height * 2 + 1), LU.cam);
     const hit = LU.ray.intersectObjects((LU.pw[S.me] || []).flatMap(m => m.children))[0]; if (!hit) return;
-    const i = hit.object.parent.userData.i; if (can.includes(i)) send({ t: 'lmove', i });
+    const i = hit.object.parent.userData.i; if (can.includes(i)) send({ t: 'lmove', i, k: luSelK() });
   });
 }
 function renderLudo(body) {
@@ -141,9 +145,10 @@ function luHud() {
   }
   const bar = document.getElementById('luBar'), myC = g.seat[S.me];
   bar.innerHTML = over ? `<span class="lust">${esc(S.winner || '')} فاز!</span>` : `<span class="lust" style="--c:${LUCOL[g.seat[g.turn]]}">${mine ? 'دورك' : 'دور ' + esc(luPl(g.turn).name)} · <b id="luTime"></b>ث</span>
-    ${g.die ? `<span class="ludie">${luNum(g.die)}</span>` : ''}
+    ${(g.dice && g.dice.length ? g.dice : g.die ? [g.die] : []).map((d, k) => `<button class="ludie${mine && g.sub === 'move' && g.dice.length > 1 ? ' pick' : ''}${mine && g.sub === 'move' && k === luSelK() && g.dice.length > 1 ? ' sel' : ''}${mine && g.sub === 'move' && g.dice.length > 1 && !(g.opts || []).some(o => o.k === k) ? ' dead' : ''}" data-k="${k}">${luNum(d)}</button>`).join('')}
     <button class="lub" id="luRoll" ${mine && g.sub === 'roll' ? '' : 'disabled'}>ارمِ النرد</button>
-    <span class="luhint">${mine && g.sub === 'move' ? 'اضغط على قطعة منوّرة تحرّكها' : mine && g.sub === 'roll' ? (myC !== undefined ? 'الستة تطلّعك من البيت' : '') : ''}</span>`;
+    <span class="luhint">${mine && g.sub === 'move' ? (g.dice.length > 1 ? 'اختر الرقم وبعدين القطعة' : 'اضغط على قطعة منوّرة تحرّكها') : mine && g.sub === 'roll' ? (g.dice && g.dice.length ? 'طلعت ستة! ارمِ مرة ثانية' : myC !== undefined ? 'الستة تطلّعك من البيت' : '') : ''}</span>`;
+  bar.querySelectorAll('.ludie.pick').forEach(x => x.onclick = () => { if (x.classList.contains('dead')) return; LU.selK = +x.dataset.k; luHud(); luSnd('gclick'); });
   const b = document.getElementById('luRoll'); if (b) {
     b.onclick = () => { if (LU.held) { LU.held = false; return; } send({ t: 'lroll' }); };
     // حركة سرية لصاحب الموقع: اضغط مطوّل على زر النرد ويطلع لك صف أرقام صغير تختار منه (على مستوى الصفحة لأن الزر يتبدّل مع كل تحديث)
