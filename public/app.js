@@ -153,8 +153,8 @@ $('#qrBtn').onclick = async () => {
   if (!window.qrcode || !S) return toast('ما قدرت أطلع الباركود، جرّب مرة ثانية');
   const q = qrcode(0, 'M'); q.addData(`${location.origin}/?room=${S.code}`); q.make();
   const m = document.createElement('div'); m.className = 'overlay qrmodal';
-  m.innerHTML = `<div class="qrbox"><h3>صوّرها وادخل</h3><div class="qrimg">${q.createSvgTag({ cellSize: 4, margin: 0, scalable: true })}</div><b class="qrcode">${esc(S.code)}</b><small>افتح كاميرا جوالك ووجهها على الباركود</small><button type="button" class="btn sm">تم</button></div>`;
-  m.onclick = e => { if (e.target === m || e.target.closest('button')) m.remove(); };
+  m.innerHTML = `<div class="qrbox"><h3>صوّرها وادخل</h3><div class="qrimg">${q.createSvgTag({ cellSize: 4, margin: 0, scalable: true })}</div><b class="qrcode">${[...S.code].map((ch, i) => `<i style="--i:${i}">${esc(ch)}</i>`).join('')}</b><small>افتح كاميرا جوالك ووجهها على الباركود</small><button type="button" class="btn sm">تم</button></div>`;
+  m.onclick = e => { if (e.target === m || e.target.closest('button')) { m.classList.add('out'); setTimeout(() => m.remove(), 250); } };
   document.body.appendChild(m); sfx('pop');
 };
 $('#start').onclick = () => send({ t: 'start' });

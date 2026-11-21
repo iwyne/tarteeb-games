@@ -4199,3 +4199,19 @@ body[data-gt=bingo] #lobbyTitle{color:#f3e2c0;text-shadow:3px 3px 0 #120a05}
 .qrimg svg{display:block;width:100%;height:auto}
 .qrbox .qrcode{font:400 2.1rem Lalezar,Tajawal,sans-serif;letter-spacing:6px;direction:ltr}
 .qrbox small{font-size:.85rem;opacity:.8}
+/* انميشن نافذة الباركود: تطلع بنطة، الباركود ينرسم من فوق لتحت وفيه خط سكان، وحروف الكود تنزل ورا بعض */
+.qrmodal{animation:qrFade .25s ease-out}
+.qrmodal.out{animation:qrFade .25s ease-in reverse forwards}
+.qrmodal .qrbox{animation:qrPop .55s cubic-bezier(.2,1.5,.4,1)}
+.qrmodal.out .qrbox{animation:qrPop .25s ease-in reverse forwards}
+@keyframes qrFade{from{opacity:0}to{opacity:1}}
+@keyframes qrPop{from{transform:scale(.4) rotate(-8deg);opacity:0}to{transform:none;opacity:1}}
+.qrimg{position:relative;overflow:hidden}
+.qrimg svg{animation:qrDraw .8s .2s steps(14) both}
+@keyframes qrDraw{from{clip-path:inset(0 0 100% 0)}to{clip-path:inset(0)}}
+.qrimg::after{content:'';position:absolute;left:6px;right:6px;top:0;height:4px;border-radius:4px;background:var(--yellow);box-shadow:0 0 12px 3px rgba(255,201,40,.8);animation:qrScan 1.6s 1s ease-in-out 1 both;opacity:0}
+@keyframes qrScan{0%{top:6px;opacity:0}10%{opacity:1}85%{opacity:1}100%{top:calc(100% - 10px);opacity:0}}
+.qrbox .qrcode i{display:inline-block;font-style:normal;animation:qrDrop .45s calc(.9s + var(--i) * .12s) cubic-bezier(.2,1.6,.4,1) both}
+@keyframes qrDrop{from{transform:translateY(-30px) scale(.5);opacity:0}to{transform:none;opacity:1}}
+.qrbox h3{animation:qrPop .5s .1s cubic-bezier(.2,1.5,.4,1) both}
+@media (prefers-reduced-motion:reduce){.qrmodal,.qrmodal *,.qrimg::after{animation:none!important}}
