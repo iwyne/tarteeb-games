@@ -7,6 +7,9 @@
 const crypto = require('crypto'), fs = require('fs'), path = require('path');
 const MAXF = 240, FRAME_MAX = 160 * 1024, FINAL_MAX = 2400 * 1024, LIVE_MAX = 450 * 1024, LYR_MAX = 2600 * 1024, COLLECT_MS = 12000;
 const ST = require('../store');
+const MURAL = { v: 0, hist: [] }; ST.get('mural').then(o => { if (o && o.v) Object.assign(MURAL, o); }).catch(() => {}); // جدارية ترتيب: رسمة جماعية تكمل من جولة لجولة
+const GALX = {}; ST.load('galx:').then(o => { for (const k in o) GALX[k.slice(5)] = o[k]; }).catch(() => {}); // لايكات وتعليقات المعرض
+const MONO = ['#e63946', '#1d4ed8', '#0f766e', '#7c3aed', '#c2410c', '#be185d', '#15803d', '#0e7490'];
 const GALS = {}; ST.load('gal:').then(o => { for (const k in o) GALS[k.slice(4)] = o[k]; }).catch(e => console.error('gallery load', e.message));
 const PK = p => { const k = p.bot ? null : p.uid ? 'd:' + p.uid : p.dev ? 'v:' + p.dev : null; return k && crypto.createHash('sha256').update('tarteeb|' + k).digest('base64url').slice(0, 10); }; // نفس pid بـ points.js
 module.exports = H => {
@@ -29,6 +32,7 @@ module.exports = H => {
       g.order = id ? [id] : [];
     } else g.order = H.shuffle(Object.keys(g.art).filter(id => g.art[id].final || g.art[id].frames.length)); // اللي رسم شي بس
     if (!g.order.length) { H.log(r, '🎨 محد رسم شي!'); return end(r); }
+    if (g.mode === 'mural' && g.order[0]) saveMural(r, g.order[0]);
     g.sub = 'show'; g.i = 0; g.mins = Math.max(1, Math.round((Date.now() - g.t0) / 60000));
     H.log(r, g.collab ? '🖼️ وقت العرض! رسمتكم الجماعية' : `🖼️ وقت العرض! ${g.order.length} رسمات`); H.push(r);
   }
@@ -46,6 +50,14 @@ module.exports = H => {
     g.tally = c; g.best = ws.map(p => p.id);
     if (ws.length) { r.winner = ws.map(p => p.name).join(' و '); H.win(r, ws); H.log(r, `👑 أحلى رسمة: ${r.winner}`); }
     end(r); if (Object.keys(g.galSel || {}).length) saveGallery(r);
+  }
+  function saveMural(r, id) { // نسخة جديدة من الجدارية، ونخلي آخر ٤٠ نسخة
+    const a = r.g.art[id], f = a && (a.final || a.frames[a.frames.length - 1]); if (!f || r.g.muralSaved) return; r.g.muralSaved = true;
+    const v = MURAL.v + 1, names = humans(r).map(p => p.name).slice(0, 12);
+    ST.putFile(`mural/${v}.img`, f, f[0] === 0xff ? 'image/jpeg' : f[0] === 0x89 ? 'image/png' : 'image/webp').then(() => {
+      MURAL.v = v; MURAL.hist.push({ v, t: Date.now(), names, theme: r.g.theme || '' }); while (MURAL.hist.length > 40) { const o = MURAL.hist.shift(); ST.delFiles([`mural/${o.v}.img`]); }
+      ST.put('mural', MURAL); H.log(r, `🧱 انحفظت نسخة ${v} من الجدارية`);
+    }).catch(e => console.error('mural', e.message));
   }
   // المعرض الدايم: نحفظ الرسومات والتسريع على القرص
   // المعرض الدايم: الأونر يختار وش يروح له (agal). نرفع الملفات للي انختار، ونشيل اللي انلغى
@@ -71,6 +83,21 @@ module.exports = H => {
       const all = Object.keys(GALS).sort(); if (all.length > 300) for (const d of all.slice(0, all.length - 300)) { const n = Math.max(0, ...GALS[d].items.map(x => x.i)) + 1; delete GALS[d]; ST.del('gal:' + d); ST.delFiles([].concat(...Array.from({ length: n }, (_, i) => [`gal/${d}/${i}.img`, `gal/${d}/${i}.tl`]))); }
     })();
   }
+  // أكمل الرسمة: نطلب من الكل يرفعون رسمتهم، وبعد شوي نلفها على اللي بعدهم
+  function passTurn(r) {
+    const g = r.g; if (!g || g.sub !== 'draw' || g.mode !== 'pass') return;
+    if (g.pr + 1 >= g.prn) { H.log(r, '⏰ خلصت الأدوار!'); return collect(r); }
+    g.passing = true; H.cast(r, { t: 'gnet', g: 'art', k: 'preq' }); H.push(r);
+    H.setTimer(r, 4000, () => {
+      if (g.sub !== 'draw') return; g.passing = false; const ring = g.ring.filter(id => r.players.some(q => q.id === id)), nh = {};
+      ring.forEach((id, i) => { const prev = ring[(i - 1 + ring.length) % ring.length]; nh[id] = g.hold[prev]; });
+      g.hold = nh; g.pr++; g.dl = Date.now() + g.ps;
+      ring.forEach(id => { const p = r.players.find(q => q.id === id), ch = g.hold[id], st = r.players.find(q => q.id === ch); if (!g.who[ch]) g.who[ch] = []; if (p && !g.who[ch].includes(p.name)) g.who[ch].push(p.name);
+        if (p) H.sendTo(p, { t: 'gnet', g: 'art', k: 'pass', ch, n: st ? st.name : '', last: g.pr + 1 >= g.prn }); });
+      H.log(r, `🔁 الدور ${g.pr + 1} من ${g.prn}: كمّلوا الرسمة اللي جتكم`);
+      H.setTimer(r, g.ps, () => passTurn(r)); H.push(r);
+    });
+  }
   const relay = (r, list, o) => list.forEach(q => H.sendTo(q, o));
   const watchersOf = (r, id) => everyone(r).filter(q => r.g.watch[q.id] === id);
   return {
@@ -78,9 +105,15 @@ module.exports = H => {
     start(r) {
       const o = r.opts;
       r.g = { key: crypto.randomBytes(6).toString('base64url'), sub: 'draw', art: {}, order: [], i: 0, t0: Date.now(), theme: String(o.atheme || '').slice(0, 60),
-        collab: !!o.acollab && humans(r).length > 0, jmode: o.ajmode || 'all', judges: (o.ajudges || []).slice(), dl: o.atime ? Date.now() + o.atime * 60000 : 0, watch: {}, lyr: {} };
+        mode: o.amode || '', seed: crypto.randomInt(1e9), mono: MONO[crypto.randomInt(MONO.length)],
+        collab: (!!o.acollab || o.amode === 'mural') && humans(r).length > 0, jmode: o.ajmode || 'all', judges: (o.ajudges || []).slice(), dl: o.atime ? Date.now() + o.atime * 60000 : 0, watch: {}, lyr: {} };
       r.winner = null; r.phase = 'play';
-      if (r.g.dl) H.setTimer(r, o.atime * 60000, () => { H.log(r, '⏰ خلص وقت المسابقة!'); collect(r); });
+      const g = r.g; if (g.mode === 'mural') g.mural = MURAL.v; if (g.collab && g.mode !== 'mural' && ['pass'].includes(g.mode)) g.mode = '';
+      if (g.mode === 'pass') { // أكمل الرسمة: كل واحد يرسم شوي وبعدين الرسمة تنتقل للي بعده
+        const hs = humans(r); g.hold = {}; hs.forEach(p => { g.hold[p.id] = p.id; }); g.ring = hs.map(p => p.id); g.pr = 0; g.prn = Math.min(6, Math.max(2, hs.length)); g.ps = (o.apass || 60) * 1000; g.dl = Date.now() + g.ps; g.who = {}; hs.forEach(p => { g.who[p.id] = [p.name]; });
+        H.setTimer(r, g.ps, () => passTurn(r));
+      } else if (g.dl) H.setTimer(r, o.atime * 60000, () => { H.log(r, '⏰ خلص وقت المسابقة!'); collect(r); });
+      if (g.mode) H.log(r, { pass: '🔁 أكمل الرسمة: كل شوي الرسمات تنتقل للي جنبك', blind: '🙈 رسم أعمى: ما تشوف اللي ترسمه لين تخلص', mono: '🎨 لون واحد بس', oneline: '〰️ خط واحد بدون ما ترفع', memory: '🧠 احفظ الصورة بعشر ثواني وارسمها', mural: '🧱 جدارية ترتيب: كملوا على الرسمة اللي قبل' }[g.mode] || '');
       H.log(r, (r.g.collab ? '🤝 رسم جماعي! ' : '') + (r.g.theme ? `🎨 الموضوع: ${r.g.theme}` : '🎨 ارسم اللي تبي') + (o.atime ? ` · ⏱️ ${o.atime} دقيقة` : ''));
     },
     act(r, p, m) {
@@ -89,7 +122,7 @@ module.exports = H => {
       if (m.t === 'afr') { // لقطة للتسريع
         if (!drawing || p.spec || !H.rate(p, 'afr', 250)) return 'quiet';
         const x = b64(m.d); if (!x || x.b.length > FRAME_MAX) return 'quiet';
-        const a = A(g, p.id); a.frames.push(x.b); a.n++; a.at = Date.now();
+        const a = A(g, g.hold ? g.hold[p.id] || p.id : p.id); a.frames.push(x.b); a.n++; a.at = Date.now();
         if (a.frames.length > MAXF) a.frames = a.frames.filter((_, i) => i % 2 === 0 || i === a.frames.length - 1); // نخفف: نشيل لقطة كل ثنتين
         if (Date.now() - (g.pushAt || 0) > 6000) { g.pushAt = Date.now(); return; } // كل شوي نحدّث الكل
         return 'quiet';
@@ -97,7 +130,8 @@ module.exports = H => {
       if (m.t === 'afin') { // الرسمة كاملة
         if (!drawing || p.spec || !H.rate(p, 'afin', 1500)) return 'quiet';
         const x = b64(m.d); if (!x || x.b.length > FINAL_MAX) { H.sendTo(p, { t: 'err', msg: 'الرسمة كبيرة، جرّب مرة ثانية' }); return 'quiet'; }
-        const a = A(g, p.id); a.final = x.b; a.ft = x.t; a.done = true;
+        if (g.hold) { const a = A(g, g.hold[p.id] || p.id); a.final = x.b; a.ft = x.t; if (g.passing || m.pass || g.pr + 1 < g.prn) return 'quiet'; a.done = true; } // أكمل الرسمة: رفع بين الأدوار
+        const a = A(g, g.hold ? g.hold[p.id] || p.id : p.id); a.final = x.b; a.ft = x.t; a.done = true;
         if (g.sub === 'draw') H.log(r, `✅ ${p.name} خلّص`);
         if (g.sub === 'draw' ? allDone(r) : Object.keys(g.art).every(id => g.art[id].done || !r.players.some(q => q.id === id && q.online !== false))) show(r);
         return;
@@ -111,6 +145,10 @@ module.exports = H => {
         if (!g.collab || !H.rate(p, 'alyr', 800) || String(m.d || '').length > LYR_MAX) return 'quiet';
         g.lyr[p.id] = { d: m.d, v: (g.lyr[p.id] ? g.lyr[p.id].v : 0) + 1, n: p.name };
         relay(r, humans(r).filter(q => q !== p), { t: 'gnet', g: 'art', k: 'lyr', from: p.id, d: m.d, n: p.name }); return 'quiet';
+      }
+      if (m.t === 'acur' && drawing && !p.spec) { // مؤشرات الرسم الجماعي (وين كل واحد يرسم)
+        if (!g.collab || !H.rate(p, 'acur', 90)) return 'quiet'; const x = +m.x, y = +m.y; if (!isFinite(x) || !isFinite(y)) return 'quiet';
+        relay(r, humans(r).filter(q => q !== p), { t: 'gnet', g: 'art', k: 'cur', from: p.id, n: p.name, x: Math.round(x), y: Math.round(y), c: String(m.c || '').slice(0, 7) }); return 'quiet';
       }
       if (m.t === 'aneed' && !p.spec) { for (const id in g.lyr) if (id !== p.id) H.sendTo(p, { t: 'gnet', g: 'art', k: 'lyr', from: id, d: g.lyr[id].d, n: g.lyr[id].n }); return 'quiet'; }
       if (m.t === 'awatch') { // الأونر بس يتابع رسام لايف (الباقين ما يشوفون رسمات غيرهم لين يخلص الرسم)
@@ -149,6 +187,7 @@ module.exports = H => {
       const wc = p ? Object.values(g.watch).filter(x => x === p.id).length : 0;
       return { sub: g.sub, key: g.key, theme: g.theme, st, order: g.order, i: g.i, t0: g.t0, mins: g.mins || 0, dl: g.dl, collab: g.collab, jmode: g.jmode, judges: g.judges,
         canVote: g.sub === 'vote' && !!p && voters(r).includes(p), my: g.votes && p ? g.votes[p.id] || null : null, nv: g.votes ? Object.keys(g.votes).length : 0, nvt: g.sub === 'vote' ? voters(r).length : 0,
+        mode: g.mode || '', passing: !!g.passing, seed: g.seed, mono: g.mode === 'mono' ? g.mono : null, mural: g.mode === 'mural' ? g.mural || 0 : null, pr: g.hold ? g.pr : null, prn: g.hold ? g.prn : null, hold: g.hold && p ? g.hold[p.id] || null : null, who: g.who && ['show', 'vote', 'over'].includes(g.sub) ? g.who : null,
         tally: g.tally || null, best: g.best || [], wc, watching: p ? g.watch[p.id] || null : null,
         vk: p ? (p.vk || (p.vk = crypto.randomBytes(9).toString('base64url'))) : null, gal: p && p.id === r.host ? Object.keys(g.galSel || {}) : null };
     },
@@ -158,7 +197,7 @@ module.exports = H => {
       const g = r.g, a = g && g.art[pid]; if (!a) return null;
       // مين يشوف: صاحب الرسمة والأونر دايماً، والباقين بعد ما يخلص الرسم (بالعرض لين الرسمة الحالية بس)
       const v = vk && r.players.concat(r.specs || []).find(q => q.vk === vk);
-      const ok = v && (v.id === pid || v.id === r.host || ['vote', 'over'].includes(g.sub) || r.phase === 'over' || (g.sub === 'show' && g.order.indexOf(pid) > -1 && g.order.indexOf(pid) <= g.i));
+      const ok = v && (v.id === pid || v.id === r.host || (g.hold && g.hold[v.id] === pid) || ['vote', 'over'].includes(g.sub) || r.phase === 'over' || (g.sub === 'show' && g.order.indexOf(pid) > -1 && g.order.indexOf(pid) <= g.i));
       if (!ok) return null;
       const sniff = b => b[0] === 0xff ? 'image/jpeg' : b[0] === 0x89 ? 'image/png' : 'image/webp';
       if (what === 'final') { const b = a.final || a.frames[a.frames.length - 1]; return b ? { type: sniff(b), body: b } : null; }
@@ -169,6 +208,6 @@ module.exports = H => {
       }
       return null;
     },
-    GALS
+    GALS, GALX, MURAL
   };
 };

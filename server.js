@@ -68,7 +68,7 @@ function apiRoute(req, res) {
   if (req.method === 'GET' && u.pathname === '/api/lb') return json(200, { list: PTS.lb(u.searchParams.get('per'), u.searchParams.get('g')), badges: PTS.BADGES.map(b => ({ id: b[0], t: b[1], d: b[2] })) });
   if (req.method === 'GET' && u.pathname.startsWith('/api/u/')) { const k = PTS.byPid(u.pathname.slice(7)); const o = k && PTS.pub(k); return o ? json(200, o) : json(404, { err: 'ما لقينا اللاعب' }); }
   if (req.method === 'GET' && u.pathname === '/api/shop') return json(200, { items: Object.entries(PTS.SHOP).map(([id, x]) => ({ id, ...x })), badges: PTS.BADGES.map(b => ({ id: b[0], t: b[1], d: b[2] })) });
-  if (req.method !== 'POST' || !['/api/me', '/api/buy', '/api/equip', '/api/mkroom'].includes(u.pathname)) return json(404, {});
+  if (req.method !== 'POST' || !['/api/me', '/api/buy', '/api/equip', '/api/mkroom', '/api/glike', '/api/gcmt', '/api/gcdel'].includes(u.pathname)) return json(404, {});
   let b = ''; req.on('data', d => { b += d; if (b.length > 4096) req.destroy(); });
   req.on('end', () => {
     let m; try { m = JSON.parse(b); } catch { return json(400, {}); }
@@ -80,6 +80,14 @@ function apiRoute(req, res) {
     }
     const d = dCheck(m.dtok), dev = String(m.dev || '').slice(0, 40), k = d ? 'd:' + d.id : dev ? 'v:' + dev : null;
     if (!k) return json(400, { err: 'ما نعرفك' });
+    if (u.pathname.startsWith('/api/g')) { // المعرض: لايك وتعليقات (كل رسمة بالمعرض لها مفتاح جولة + رقم)
+      const G = GAMES.art.GALS, X = GAMES.art.GALX, dir = String(m.d || ''), i = +m.i, s = G[dir]; if (!s || !s.items.some(it => it.i === i)) return json(404, { err: 'الرسمة مو موجودة' });
+      const me = PTS.pidOf(k), pu = PTS.pub(k), nm = String((pu && pu.n) || m.n || 'زائر').slice(0, 24), x = X[dir] || (X[dir] = {}), it = x[i] || (x[i] = { lk: [], cm: [] });
+      if (u.pathname === '/api/glike') { const j = it.lk.indexOf(me); if (j > -1) it.lk.splice(j, 1); else if (it.lk.length < 5000) it.lk.push(me); }
+      else if (u.pathname === '/api/gcmt') { const t = String(m.x || '').replace(/\s+/g, ' ').trim().slice(0, 140); if (!t) return json(400, { err: 'اكتب شي' }); if (it.cm.filter(c => c.p === me && Date.now() - c.t < 30000).length >= 2) return json(429, { err: 'شوي شوي' }); it.cm.push({ id: crypto.randomBytes(4).toString('hex'), p: me, n: nm, x: t, t: Date.now() }); if (it.cm.length > 80) it.cm.shift(); }
+      else { const art = s.items.find(q => q.i === i); it.cm = it.cm.filter(c => !(c.id === m.id && (c.p === me || (art && art.pid === me)))); } // يحذف تعليقه، وصاحب الرسمة يحذف أي تعليق
+      STORE.put('galx:' + dir, x); return json(200, { lk: it.lk.length, liked: it.lk.includes(me), cm: it.cm.map(c => ({ id: c.id, n: c.n, x: c.x, t: c.t, mine: c.p === me })) });
+    }
     if (u.pathname === '/api/me') { const o = PTS.pub(k, true); return json(200, o || { none: true, pid: PTS.pidOf(k) }); }
     if (u.pathname === '/api/buy') { const o = PTS.buy(k, String(m.id || '')); if (o.ok) refreshLooks(k); return json(o.err ? 400 : 200, o); }
     const o = PTS.equip(k, m.id ? String(m.id) : null, String(m.kind || '')); if (o.ok) refreshLooks(k); return json(o.err ? 400 : 200, o);
@@ -92,9 +100,21 @@ function refreshLooks(k) { for (const r of rooms.values()) if (r.players.concat(
 
 const server = http.createServer((req, res) => {
   if (req.method === 'POST' && req.url.split('?')[0] === '/api/token') return tokenRoute(req, res);
+  if (req.url.startsWith('/gal-x?')) { // تعليقات ولايكات رسمة (للي يفتحها)
+    const q = new URL(req.url, 'http://x').searchParams, x = (GAMES.art.GALX[q.get('d')] || {})[+q.get('i')] || { lk: [], cm: [] }, me = q.get('me') || '';
+    res.writeHead(200, { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' }); return res.end(JSON.stringify({ lk: x.lk.length, liked: !!me && x.lk.includes(me), cm: x.cm.map(c => ({ id: c.id, n: c.n, x: c.x, t: c.t, mine: !!me && c.p === me })) }));
+  }
+  if (req.url.startsWith('/mural')) { // جدارية ترتيب: /mural-data (النسخ) و /mural/<v>.img
+    const M = GAMES.art.MURAL, u = req.url.split('?')[0];
+    if (u === '/mural-data') { res.writeHead(200, { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' }); return res.end(JSON.stringify(M)); }
+    const mm = /^\/mural\/(\d+)\.img$/.exec(u); if (!mm) { res.writeHead(404); return res.end(); }
+    const ext = STORE.fileUrl(`mural/${mm[1]}.img`); if (ext) { res.writeHead(302, { Location: ext, 'Cache-Control': 'public, max-age=86400' }); return res.end(); }
+    const b = STORE.getFileLocal(`mural/${mm[1]}.img`); if (!b) { res.writeHead(404); return res.end(); }
+    res.writeHead(200, { 'Content-Type': b[0] === 0xff ? 'image/jpeg' : b[0] === 0x89 ? 'image/png' : 'image/webp', 'Cache-Control': 'public, max-age=86400' }); return res.end(b);
+  }
   if (req.url.startsWith('/gallery-data') || req.url.startsWith('/gal/')) { // المعرض الدايم للمرسم
     const G = GAMES.art.GALS, u = req.url.split('?')[0];
-    if (u === '/gallery-data') { const q = new URL(req.url, 'http://x').searchParams.get('pid'); const out = Object.keys(G).sort().reverse().map(d => ({ d, ...G[d] })).filter(x => !q || x.items.some(it => it.pid === q)).slice(0, 120); res.writeHead(200, { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' }); return res.end(JSON.stringify(out)); }
+    if (u === '/gallery-data') { const q = new URL(req.url, 'http://x').searchParams.get('pid'); const X = GAMES.art.GALX; const out = Object.keys(G).sort().reverse().map(d => ({ d, ...G[d], items: G[d].items.map(it => { const x = X[d] && X[d][it.i]; return x ? { ...it, lk: x.lk.length, nc: x.cm.length } : it; }) })).filter(x => !q || x.items.some(it => it.pid === q)).slice(0, 120); res.writeHead(200, { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' }); return res.end(JSON.stringify(out)); }
     const [, , d, f] = u.split('/'); if (!/^[\w-]+$/.test(d || '') || !/^\d+\.(img|tl)$/.test(f || '')) { res.writeHead(404); return res.end(); }
     const ext = STORE.fileUrl(`gal/${d}/${f}`); if (ext) { res.writeHead(302, { Location: ext, 'Cache-Control': 'public, max-age=86400' }); return res.end(); }
     const b = STORE.getFileLocal(`gal/${d}/${f}`); if (!b) { res.writeHead(404); return res.end(); }
@@ -248,7 +268,7 @@ const cleanAv = a => AVATARS.includes(a) ? a : '';
 const LOOKMAX = { b: 2, s: 4, h: 6, hc: 8, o: 7, c1: 12, c2: 12, bd: 2, mf: 4, ms: 4, me: 4, mt: 3 };
 const cleanLook = l => { if (!l || typeof l !== 'object') return null; const o = {}; for (const k in LOOKMAX) { const v = +l[k]; o[k] = Number.isInteger(v) && v >= 0 && v < LOOKMAX[k] ? v : 0; } return o; };
 const randLook = () => { const l = Object.fromEntries(Object.entries(LOOKMAX).map(([k, n]) => [k, Math.random() * n | 0])); l.h = 1 + (Math.random() * 5 | 0); l.hc = Math.random() * 6 | 0; return l; };
-const optsView = (r, p) => ({ stack: !!r.opts.stack, powers: !!r.opts.powers, turn: r.opts.turn || 15, lock: !!r.opts.lock, hasPass: !!r.opts.pass, pass: r.host === p.id ? (r.opts.pass || '') : null, target: r.opts.target || 5, imps: r.opts.imps || 1, doctor: !!r.opts.doctor, map: r.opts.map || 'ship', nwords: r.opts.words ? r.opts.words.length : 0, wordsText: r.host === p.id ? (r.opts.wordsText || '') : '', mcount: r.opts.mcount || 0, dayT: r.opts.dayT || 90, reveal: r.opts.reveal !== false, mroles: Object.assign({ doc: 1, det: 1, sniper: 1, god: 1, jester: 1, mayor: 1 }, r.opts.mroles), blives: r.opts.blives || 3, bdiff: r.opts.bdiff || 'mid', frounds: r.opts.frounds || 7, psteps: r.opts.psteps || 0, pdraw: r.opts.pdraw || 90, aitems: r.opts.aitems || 8, drounds: r.opts.drounds || 4, fcount: r.opts.fcount || 10, fmode: r.opts.fmode || 'flags', fdiff: r.opts.fdiff || 'easy', mrounds: r.opts.mrounds || 5, mpack: r.opts.mpack || 'all', ctime: r.opts.ctime || 'none', clevel: r.opts.clevel || 'mid', ccolor: r.opts.ccolor || 'rand' , jrounds: r.opts.jrounds || 7, jtime: r.opts.jtime || 30, jn: r.opts.jn || 3, krounds: r.opts.krounds || 3, ktime: r.opts.ktime || 75, mlim: r.opts.mlim == null ? 25 : r.opts.mlim, bwins: r.opts.bwins || 2, fwins: r.opts.fwins || 2, trounds: r.opts.trounds || 10, ttime: r.opts.ttime || 30, rtime: r.opts.rtime || 60, brounds: r.opts.brounds || 5, btime: r.opts.btime || 90, elives: r.opts.elives || 1, etime: r.opts.etime || 15, erounds: r.opts.erounds || 8, emtime: r.opts.emtime || 45, dsets: r.opts.dsets || 3, dtime: r.opts.dtime || 60, dxbld: r.opts.dxbld || 0, dxbig: r.opts.dxbig || 0, qrounds: r.opts.qrounds || 5, qtime: r.opts.qtime || 30, ltime: r.opts.ltime || 20, bspeed: r.opts.bspeed || 5, bgoal: r.opts.bgoal || 'line', bskin: r.opts.bskin || 'diw', atheme: r.opts.atheme || '', atime: r.opts.atime || 0, ajmode: r.opts.ajmode || 'all', ajudges: r.opts.ajudges || [], acollab: !!r.opts.acollab, tour: !!r.opts.tour, blvl: r.opts.blvl || 'mid' });
+const optsView = (r, p) => ({ stack: !!r.opts.stack, powers: !!r.opts.powers, turn: r.opts.turn || 15, lock: !!r.opts.lock, hasPass: !!r.opts.pass, pass: r.host === p.id ? (r.opts.pass || '') : null, target: r.opts.target || 5, imps: r.opts.imps || 1, doctor: !!r.opts.doctor, map: r.opts.map || 'ship', nwords: r.opts.words ? r.opts.words.length : 0, wordsText: r.host === p.id ? (r.opts.wordsText || '') : '', mcount: r.opts.mcount || 0, dayT: r.opts.dayT || 90, reveal: r.opts.reveal !== false, mroles: Object.assign({ doc: 1, det: 1, sniper: 1, god: 1, jester: 1, mayor: 1 }, r.opts.mroles), blives: r.opts.blives || 3, bdiff: r.opts.bdiff || 'mid', frounds: r.opts.frounds || 7, psteps: r.opts.psteps || 0, pdraw: r.opts.pdraw || 90, aitems: r.opts.aitems || 8, drounds: r.opts.drounds || 4, fcount: r.opts.fcount || 10, fmode: r.opts.fmode || 'flags', fdiff: r.opts.fdiff || 'easy', mrounds: r.opts.mrounds || 5, mpack: r.opts.mpack || 'all', ctime: r.opts.ctime || 'none', clevel: r.opts.clevel || 'mid', ccolor: r.opts.ccolor || 'rand' , jrounds: r.opts.jrounds || 7, jtime: r.opts.jtime || 30, jn: r.opts.jn || 3, krounds: r.opts.krounds || 3, ktime: r.opts.ktime || 75, mlim: r.opts.mlim == null ? 25 : r.opts.mlim, bwins: r.opts.bwins || 2, fwins: r.opts.fwins || 2, trounds: r.opts.trounds || 10, ttime: r.opts.ttime || 30, rtime: r.opts.rtime || 60, brounds: r.opts.brounds || 5, btime: r.opts.btime || 90, elives: r.opts.elives || 1, etime: r.opts.etime || 15, erounds: r.opts.erounds || 8, emtime: r.opts.emtime || 45, dsets: r.opts.dsets || 3, dtime: r.opts.dtime || 60, dxbld: r.opts.dxbld || 0, dxbig: r.opts.dxbig || 0, qrounds: r.opts.qrounds || 5, qtime: r.opts.qtime || 30, ltime: r.opts.ltime || 20, bspeed: r.opts.bspeed || 5, bgoal: r.opts.bgoal || 'line', bskin: r.opts.bskin || 'diw', atheme: r.opts.atheme || '', atime: r.opts.atime || 0, ajmode: r.opts.ajmode || 'all', ajudges: r.opts.ajudges || [], acollab: !!r.opts.acollab, amode: r.opts.amode || '', apass: r.opts.apass || 60, tour: !!r.opts.tour, blvl: r.opts.blvl || 'mid' });
 const maxOf = r => GAMES[r.game].max;
 
 const newRoom = (code, game = 'uno') => ({ code, game, g: null, opts: {}, owed: 0, botT: null, phase: 'lobby', players: [], host: null, deck: [], discard: [], color: null, dir: 1, turn: 0, pending: null, catchable: null, log: [], winner: null, chat: [], teams: false, score: [0, 0], winTeam: null, specs: [], recorded: false, banned: new Set(), turnSeq: 0, armed: -1, timer: null, deadline: 0, created: Date.now(), teamOnly: false });
@@ -921,6 +941,8 @@ wss.on('connection', (ws, req) => {
         else if (k === 'ajmode' && r.game === 'art' && ['all', 'judges', 'mix'].includes(v)) r.opts.ajmode = v;
         else if (k === 'ajudges' && r.game === 'art' && Array.isArray(v)) r.opts.ajudges = v.map(String).filter(id => r.players.some(q => q.id === id) || r.specs.some(q => q.id === id)).slice(0, 10);
         else if (k === 'acollab' && r.game === 'art') r.opts.acollab = !!v;
+        else if (k === 'amode' && r.game === 'art' && ['', 'pass', 'blind', 'mono', 'oneline', 'memory', 'mural'].includes(v)) r.opts.amode = v;
+        else if (k === 'apass' && r.game === 'art' && [45, 60, 90, 120].includes(+v)) r.opts.apass = +v;
         else if (k === 'bskin' && r.game === 'bingo' && ["diw", "hall", "tv"].includes(v)) r.opts.bskin = v;
         else if (k === 'ltime' && r.game === 'ludo' && [10, 20, 30].includes(+v)) r.opts.ltime = +v;
         else if (k === 'qrounds' && r.game === 'qfl' && [3, 5, 7].includes(+v)) r.opts.qrounds = +v;

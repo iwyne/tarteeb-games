@@ -4,7 +4,7 @@
 // للتسريع: بعد كل تعديل نرسل لقطة صغيرة ٤٨٠×٣٦٠ للسيرفر، ولما تضغط «انتهيت» نرسل الرسمة كاملة.
 const AT = {
   W: 1600, H: 1200, on: false, layers: [], cur: 0, bg: '#ffffff', tool: 'brush', bt: { brush: 'ink', eraser: 'round', smudge: 'soft' }, color: '#1d1d1f', hist: [],
-  size: { brush: 14, eraser: 40, smudge: 40, liq: 160, shape: 8 }, op: { brush: 1, eraser: 1, smudge: .7, grad: 1, liq: .6, shape: 1 }, shp: 'rect', shpFill: 'fill', shpEq: false, pc: 1, rope: 0, guide: 'none', assist: true, gridSz: 80, stream: {}, sym: 'none', qs: true,
+  size: { brush: 14, eraser: 40, smudge: 40, liq: 160, shape: 8, fx: 70 }, op: { brush: 1, eraser: 1, smudge: .7, grad: 1, liq: .6, shape: 1, fx: .8 }, fxMode: 'blur', shp: 'rect', shpFill: 'fill', shpEq: false, pc: 1, rope: 0, guide: 'none', assist: true, gridSz: 80, stream: {}, sym: 'none', qs: true,
   view: { z: 1, r: 0, x: 0, y: 0 }, undo: [], redo: [], mem: 0, dirty: true, capT: 0, fc: 0, ui: true
 };
 const atMk = (w, h) => { const c = document.createElement('canvas'); c.width = w; c.height = h; return c; };
@@ -46,24 +46,24 @@ const AT_BR = [
   { id: 'knife', c: 'oil', n: 'سكين ألوان', tip: 'flat', sp: .02, flow: 1, szP: .2, opP: .1, min: .7, rot: 'dir', st: .35, def: 70 },
   { id: 'blend', c: 'paint', n: 'دمج ناعم', tip: 'soft', sp: .05, flow: .07, szP: .2, opP: .7, min: .6, st: .3, def: 90 },
   { id: 'hatch', c: 'sketch', n: 'تظليل خطوط', tip: 'hatch', sp: .45, flow: .55, szP: .3, opP: .6, min: .6, st: .2, def: 40 },
-  { id: 'leaf', c: 'nature', n: 'أوراق شجر', tip: 'leaf', sp: .55, flow: 1, szP: .3, opP: 0, min: .6, jit: .45, sc: .7, rot: 'rand', st: .05, def: 40 },
-  { id: 'grass', c: 'nature', n: 'عشب', tip: 'grass', sp: .3, flow: 1, szP: .3, opP: 0, min: .6, jit: .3, sc: .15, st: .05, def: 60 },
+  { id: 'leaf', c: 'nature', n: 'أوراق شجر', tip: 'leaf', sp: .55, flow: 1, szP: .3, opP: 0, min: .6, jit: .45, sc: .7, rot: 'rand', st: .05, def: 40, cj: 0.35 },
+  { id: 'grass', c: 'nature', n: 'عشب', tip: 'grass', sp: .3, flow: 1, szP: .3, opP: 0, min: .6, jit: .3, sc: .15, st: .05, def: 60, cj: 0.3 },
   { id: 'cloud', c: 'nature', n: 'غيوم', tip: 'cloud', sp: .18, flow: .5, szP: .3, opP: .5, min: .6, jit: .35, sc: .25, rot: 'rand', st: .1, def: 160 },
-  { id: 'fur', c: 'nature', n: 'فرو وشعر', tip: 'fur', sp: .12, flow: .8, szP: .3, opP: .4, min: .6, jit: .2, rot: 'rand', st: .2, def: 50 },
-  { id: 'stars', c: 'fx', n: 'نجوم', tip: 'star', sp: 1.1, flow: 1, szP: .3, opP: 0, min: .6, jit: .6, sc: 1.1, rot: 'rand', st: .05, def: 26 },
+  { id: 'fur', c: 'nature', n: 'فرو وشعر', tip: 'fur', sp: .12, flow: .8, szP: .3, opP: .4, min: .6, jit: .2, rot: 'rand', st: .2, def: 50, cj: 0.25 },
+  { id: 'stars', c: 'fx', n: 'نجوم', tip: 'star', sp: 1.1, flow: 1, szP: .3, opP: 0, min: .6, jit: .6, sc: 1.1, rot: 'rand', st: .05, def: 26, cj: 0.5 },
   { id: 'sparkle', c: 'fx', n: 'لمعة', tip: 'spark', sp: 1.3, flow: 1, szP: .3, opP: 0, min: .6, jit: .7, sc: .9, rot: 'rand', st: .05, def: 50, add: 1 },
-  { id: 'hearts', c: 'fx', n: 'قلوب', tip: 'heart', sp: 1.2, flow: 1, szP: .3, opP: 0, min: .6, jit: .5, sc: 1, rot: 'rand', st: .05, def: 30 },
+  { id: 'hearts', c: 'fx', n: 'قلوب', tip: 'heart', sp: 1.2, flow: 1, szP: .3, opP: 0, min: .6, jit: .5, sc: 1, rot: 'rand', st: .05, def: 30, cj: 0.4 },
   { id: 'dots', c: 'fx', n: 'نقاط', tip: 'hard', sp: 1.6, flow: 1, szP: .3, opP: 0, min: .6, jit: .3, st: .1, def: 14 },
   { id: 'marker2', c: 'ink', n: 'ماركر عريض', tip: 'round', sp: .03, flow: 1, szP: .1, opP: 0, min: .9, st: .35, def: 30 },
   { id: 'chisel', c: 'ink', n: 'قلم قصب', tip: 'chisel', sp: .02, flow: 1, szP: .4, opP: 0, min: .5, rot: 'fixed', ang: 0, st: .5, def: 30 },
   { id: 'pixel', c: 'fx', n: 'بكسل', tip: 'square', sp: .9, flow: 1, szP: 0, opP: 0, st: 0, def: 12 },
-  { id: 'bubbles', c: 'fx', n: 'فقاعات', tip: 'ring', sp: 1.4, flow: .9, szP: .3, opP: 0, min: .6, jit: .7, sc: 1, st: .05, def: 36 },
+  { id: 'bubbles', c: 'fx', n: 'فقاعات', tip: 'ring', sp: 1.4, flow: .9, szP: .3, opP: 0, min: .6, jit: .7, sc: 1, st: .05, def: 36, cj: 0.3 },
   { id: 'glitter', c: 'fx', n: 'برق', tip: 'spark', sp: 1.5, flow: 1, szP: .2, opP: 0, min: .6, jit: .8, sc: 1.6, rot: 'rand', st: .05, def: 18, add: 1 },
-  { id: 'sponge', c: 'paint', n: 'إسفنجة', tip: 'sponge', sp: .35, flow: .7, szP: .3, opP: .4, min: .6, rot: 'rand', jit: .2, st: .1, def: 70 },
+  { id: 'sponge', c: 'paint', n: 'إسفنجة', tip: 'sponge', sp: .35, flow: .7, szP: .3, opP: .4, min: .6, rot: 'rand', jit: .2, st: .1, def: 70, cj: 0.2 },
   { id: 'smoke', c: 'nature', n: 'دخان', tip: 'cloud', sp: .12, flow: .18, szP: .3, opP: .5, min: .6, jit: .3, sc: .2, rot: 'rand', st: .3, def: 140 },
   { id: 'rain', c: 'nature', n: 'مطر', tip: 'rain', sp: .6, flow: .9, szP: .2, opP: .2, min: .7, sc: .6, st: .05, def: 70 },
   { id: 'snow', c: 'nature', n: 'ثلج', tip: 'soft', sp: 1.4, flow: 1, szP: .3, opP: 0, min: .6, jit: .8, sc: 1.4, st: .05, def: 12 },
-  { id: 'scales', c: 'nature', n: 'قشور سمك', tip: 'scale', sp: .55, flow: 1, szP: .2, opP: 0, min: .8, st: .2, def: 34 },
+  { id: 'scales', c: 'nature', n: 'قشور سمك', tip: 'scale', sp: .55, flow: 1, szP: .2, opP: 0, min: .8, st: .2, def: 34, cj: 0.2 },
   { id: 'pencilc', c: 'sketch', n: 'رصاص ناعم', grain: 1, tip: 'pencil', sp: .06, flow: .3, szP: .5, opP: .9, min: .4, rot: 'rand', st: .3, def: 8 },
   { id: 'wink', c: 'water', wet: 1, n: 'حبر مائي', tip: 'round', sp: .03, flow: .35, szP: .6, opP: .5, min: .3, st: .45, taper: 30, def: 20 }
 ];
@@ -169,6 +169,9 @@ function atCompose(t, sub, from = 0, to = AT.layers.length, bg = true, inGrp = f
       const G = AT.groups[l.grp]; if (G.vis) { const gc = AT.tmp5; atCompose(gc, sub, i, j, false, true); g.globalAlpha = G.op; g.globalCompositeOperation = 'source-over'; g.drawImage(gc, 0, 0); }
       i = j - 1; continue;
     }
+    if (l.adj) { // طبقة تعديل: تفلتر اللي تحتها بدون ما تغيّره، والممحاة عليها تحدد وين يطبّق
+      if (l.vis && atHasFilter()) { const a = AT.adjC && AT.adjC.width === AT.W && AT.adjC.height === AT.H ? AT.adjC : (AT.adjC = atMk(AT.W, AT.H)), ag = a.getContext('2d'); ag.save(); ag.globalCompositeOperation = 'copy'; ag.globalAlpha = 1; ag.filter = atAdjF(l.adj); ag.drawImage(t, 0, 0); ag.filter = 'none'; ag.globalCompositeOperation = 'destination-in'; ag.drawImage(src(l), 0, 0); ag.restore(); g.globalAlpha = l.op; g.globalCompositeOperation = 'source-over'; g.drawImage(a, 0, 0); }
+      continue; }
     if (l.clip && i > from) continue; if (!l.vis) { while (i + 1 < to && AT.layers[i + 1].clip) i++; continue; }
     const grp = []; for (let j = i + 1; j < to && AT.layers[j].clip; j++) grp.push(AT.layers[j]);
     if (!grp.length) { g.globalAlpha = l.op; g.globalCompositeOperation = l.blend; g.drawImage(src(l), 0, 0); continue; }
@@ -178,6 +181,9 @@ function atCompose(t, sub, from = 0, to = AT.layers.length, bg = true, inGrp = f
   }
   g.restore();
 }
+const AT_ADJ = [['b', 'الإضاءة', 0, 200, 100, '٪'], ['c', 'التباين', 0, 200, 100, '٪'], ['s', 'التشبّع', 0, 300, 100, '٪'], ['h', 'تدوير اللون', -180, 180, 0, '°'], ['w', 'دفء', 0, 100, 0, '٪'], ['g', 'رمادي', 0, 100, 0, '٪'], ['bl', 'تنعيم', 0, 20, 0, '']];
+const atAdjF = a => `brightness(${a.b / 100}) contrast(${a.c / 100}) saturate(${a.s / 100}) hue-rotate(${a.h}deg) sepia(${a.w / 100}) grayscale(${a.g / 100})${a.bl ? ` blur(${a.bl}px)` : ''}`;
+const atDirect = t => t === 'smudge' || t === 'liq' || t === 'fx'; // أدوات تكتب على الطبقة مباشرة
 function atRecomp() { AT.dirty = true; AT.needComp = true; }
 
 // ===== التراجع =====
@@ -193,8 +199,8 @@ function atPatch(l, x, y, w, h) {
 }
 function atPxEntry(l, before) { if (!before) return null; const after = l.g.getImageData(before.x, before.y, before.w, before.h); return { t: 'px', l, b: before, a: after, mem: before.w * before.h * 8 }; }
 // صورة للطبقات (للتراجع عن تغيير ترتيبها أو خصائصها)
-const atStruct = () => ({ layers: AT.layers.slice(), props: AT.layers.map(l => ({ op: l.op, vis: l.vis, blend: l.blend, clip: l.clip, lock: l.lock, name: l.name, mask: l.mask || null, mg: l.mg || null, mEdit: !!l.mEdit, mOn: l.mOn, grp: l.grp || null })), cur: AT.cur, bg: AT.bg, groups: JSON.parse(JSON.stringify(AT.groups || {})) });
-function atApplyStruct(s) { AT.layers = s.layers.slice(); s.props.forEach((p, i) => Object.assign(AT.layers[i], p)); AT.cur = atClamp(s.cur, 0, AT.layers.length - 1); AT.bg = s.bg; if (s.groups) AT.groups = JSON.parse(JSON.stringify(s.groups)); }
+const atStruct = () => ({ layers: AT.layers.slice(), props: AT.layers.map(l => ({ op: l.op, vis: l.vis, blend: l.blend, clip: l.clip, lock: l.lock, name: l.name, mask: l.mask || null, mg: l.mg || null, mEdit: !!l.mEdit, mOn: l.mOn, grp: l.grp || null, adj: l.adj ? Object.assign({}, l.adj) : null })), cur: AT.cur, bg: AT.bg, groups: JSON.parse(JSON.stringify(AT.groups || {})) });
+function atApplyStruct(s) { AT.layers = s.layers.slice(); s.props.forEach((p, i) => Object.assign(AT.layers[i], p, { adj: p.adj ? Object.assign({}, p.adj) : null })); AT.cur = atClamp(s.cur, 0, AT.layers.length - 1); AT.bg = s.bg; if (s.groups) AT.groups = JSON.parse(JSON.stringify(s.groups)); }
 function atStructDo(fn) { const b = atStruct(); fn(); atPush({ t: 'st', b, a: atStruct(), mem: 1000 }); atRecomp(); atLayersUI(); }
 function atUndo(redo) {
   const from = redo ? AT.redo : AT.undo, to = redo ? AT.undo : AT.redo; const e = from.pop(); if (!e) return atToast(redo ? 'ما فيه شي ترجعه' : 'ما فيه شي تتراجع عنه');
@@ -207,7 +213,7 @@ function atUndo(redo) {
 
 // ===== البناء =====
 function atBuild(host) {
-  AT.on = true; AT.ready = false; AT.groups = {}; AT.layers = []; AT.undo = []; AT.redo = []; AT.mem = 0; AT.cur = 0; AT.fc = 0; AT.done = false; AT.sel = null; AT.fl = null; AT.ref = null;
+  AT.on = true; AT.ready = false; AT.oneAt = null; AT.curs = {}; AT.groups = {}; AT.layers = []; AT.undo = []; AT.redo = []; AT.mem = 0; AT.cur = 0; AT.fc = 0; AT.done = false; AT.sel = null; AT.fl = null; AT.ref = null;
   try { const s = JSON.parse(localStorage.getItem('tart-prefs') || '{}'); if (s.bt) Object.assign(AT.bt, s.bt); if (s.color) AT.color = s.color; if (s.hist) AT.hist = s.hist; if (s.size) Object.assign(AT.size, s.size); if (s.stream) AT.stream = s.stream; if (s.pc) AT.pc = s.pc; if (s.rope != null) AT.rope = s.rope; if (s.bover) AT.bover = s.bover; if (s.custom) AT.custom = s.custom; if (s.imgPal) AT.imgPal = s.imgPal; if (s.color2) AT.color2 = s.color2; if (s.grpSel) AT.grpSel = s.grpSel; } catch {}
   const I = atIcon;
   host.innerHTML = `<div class="atstudio" id="atStudio">
@@ -241,6 +247,7 @@ function atBuild(host) {
       <button class="atib" data-a="layers" title="الطبقات">${I('layers')}</button>
       <button class="atib atdk" data-a="adjust" title="تعديلات">${I('wand')}</button>
       <button class="atib atdk" data-a="image" title="أضف صورة">${I('img')}</button>
+      <button class="atib atdk" data-a="mat" title="مكتبة الخامات: نقوش وخلفيات وإطارات وملصقات">${I('mat')}</button>
       <button class="atib atmo" data-a="more" title="أدوات أكثر">${I('dots')}</button>
     </div>
     <div class="atbub" id="atBub" hidden></div>
@@ -252,7 +259,7 @@ function atBuild(host) {
   const cv = AT.cv = document.getElementById('atCv'); AT.vg = cv.getContext('2d');
   atBindUI(); atBindInput(cv); atResize(); atUIColor(); atUITool(); atUIUndo(); atUISliders();
   if (!AT.loop) AT.loop = requestAnimationFrame(atFrame);
-  atRestore().then(ok => { if (S.g.collab) { if (!ok) atInitDoc(1600, 1200, atCollabLayers()); else atCollabFix(); send({ t: 'aneed' }); } else if (!ok) atSizeUI(); });
+  atRestore().then(ok => { if (S.g.collab) { if (!ok) atInitDoc(1600, 1200, atCollabLayers()); else atCollabFix(); send({ t: 'aneed' }); setTimeout(atMuralLoad, 600); } else if (!ok) { if (S.g.mode === 'pass' || S.g.mode === 'memory') atInitDoc(1600, 1200); else atSizeUI(); } if (S.g.mode === 'memory') setTimeout(atMemShow, 300); if (S.g.mode === 'mono') atToast('لون واحد بس! تقدر تغيّر الشفافية والفرش', 4000); if (S.g.mode === 'oneline') atToast('خط واحد بس بدون ما ترفع، ولو خربت تراجع', 4000); if (S.g.mode === 'blind') atToast('ما راح تشوف رسمتك لين تضغط انتهيت', 4000); });
 }
 // ===== الرسم الجماعي: كل لاعب له طبقة، نرسل ضرباتنا لايف ولقطة طبقتنا بعد كل تعديل =====
 const atCollab = () => !!(S && S.g && S.g.collab && !S.spec);
@@ -326,7 +333,7 @@ function atIcon(k) {
     drop: '<path d="M14 4l6 6-2 2-6-6z"/><path d="M12 6l-8 8v4h4l8-8"/>', grad: '<rect x="4" y="4" width="16" height="16" rx="3"/><path d="M4 14l10-10M8 20l12-12M14 20l6-6"/>', img: '<rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="10" r="2"/><path d="M21 16l-5-5-9 8"/>',
     eye: '<path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>', dots: '<circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/>',
     crown: '<path d="M3 8l4.5 4L12 5l4.5 7L21 8l-2 11H5z"/>',
-    plus: '<path d="M12 5v14M5 12h14"/>', shape: '<rect x="3.5" y="11" width="9" height="9" rx="1.5"/><circle cx="16" cy="8" r="4.5"/>', text: '<path d="M5 6V4h14v2M12 4v16M9 20h6"/>', play: '<path d="M7 4l13 8-13 8z"/>', down: '<path d="M12 4v12M6 10l6 6 6-6M4 20h16"/>'
+    plus: '<path d="M12 5v14M5 12h14"/>', mat: '<rect x="4" y="4" width="7" height="7" rx="1.5"/><circle cx="16.5" cy="7.5" r="3.5"/><path d="M7.5 13.5l4 6.5h-8z"/><path d="M16.5 13l1.2 2.6 2.8.3-2.1 1.9.6 2.8-2.5-1.4-2.5 1.4.6-2.8-2.1-1.9 2.8-.3z"/>', shape: '<rect x="3.5" y="11" width="9" height="9" rx="1.5"/><circle cx="16" cy="8" r="4.5"/>', text: '<path d="M5 6V4h14v2M12 4v16M9 20h6"/>', play: '<path d="M7 4l13 8-13 8z"/>', down: '<path d="M12 4v12M6 10l6 6 6-6M4 20h16"/>'
   };
   return `<svg viewBox="0 0 24 24" aria-hidden="true">${P[k] || ''}</svg>`;
 }
@@ -345,13 +352,18 @@ function atFrame() {
   AT.loop = requestAnimationFrame(atFrame);
   if (!AT.ready) { if (AT.vg) { AT.vg.setTransform(1, 0, 0, 1, 0, 0); AT.vg.fillStyle = '#2b2c33'; AT.vg.fillRect(0, 0, AT.cv.width, AT.cv.height); } return; }
   if (AT.needComp && !AT.stroke) { atCompose(AT.comp, AT.fl ? { l: AT.fl.l, cv: AT.live } : null); AT.needComp = false; AT.dirty = true; }
+  if (atMode() === 'mono' && S.g.mono && (AT.color !== S.g.mono || AT.color2 !== S.g.mono)) { AT.color = AT.color2 = S.g.mono; atUIColor(); }
   if (!AT.dirty) return; AT.dirty = false; atLiveSoon();
   const g = AT.vg, v = AT.view, d = AT.dpr;
   g.setTransform(d, 0, 0, d, 0, 0); g.fillStyle = '#2b2c33'; g.fillRect(0, 0, AT.vw, AT.vh);
   g.save(); g.translate(AT.vw / 2 + v.x, AT.vh / 2 + v.y); g.rotate(v.r); g.scale(v.f ? -v.z : v.z, v.z); g.translate(-AT.W / 2, -AT.H / 2);
   { const o = 5 / v.z; g.fillStyle = 'rgba(0,0,0,.28)'; g.fillRect(o, o * 1.6, AT.W, AT.H); } g.fillStyle = '#fff'; g.fillRect(0, 0, AT.W, AT.H); // ظل خفيف بدون blur (الـ blur كل فريم يثقّل)
   g.imageSmoothingEnabled = v.z < 6; // ناعم لين تكبّر واجد (قبل كان من ٢× يطلع مبكسل) g.imageSmoothingQuality = 'high';
-  g.drawImage(AT.comp, 0, 0);
+  if (!atBlind()) g.drawImage(AT.comp, 0, 0); // الرسم الأعمى: الورقة تبقى بيضا لين تخلص
+  // مؤشرات اللاعبين بالرسم الجماعي (مع أسمائهم)
+  if (AT.curs) { const now = Date.now(); for (const id in AT.curs) { const c = AT.curs[id]; if (now - c.t > 4000) { delete AT.curs[id]; continue; } const a = Math.min(1, (4000 - (now - c.t)) / 800);
+    g.save(); g.globalAlpha = a; g.translate(c.x, c.y); g.scale(1 / v.z * (v.f ? -1 : 1), 1 / v.z); g.rotate(-v.r); g.fillStyle = c.c || '#3d7bff'; g.strokeStyle = '#fff'; g.lineWidth = 2; g.beginPath(); g.moveTo(0, 0); g.lineTo(0, 17); g.lineTo(5, 13); g.lineTo(11, 15); g.closePath(); g.fill(); g.stroke();
+    g.font = '700 12px system-ui,sans-serif'; const w = g.measureText(c.n).width + 12; g.fillStyle = 'rgba(20,20,28,.85)'; g.beginPath(); g.roundRect(10, 16, w, 20, 8); g.fill(); g.fillStyle = '#fff'; g.textBaseline = 'middle'; g.textAlign = 'left'; g.direction = 'rtl'; g.fillText(c.n, 16, 26); g.restore(); } if (Object.keys(AT.curs).length) setTimeout(() => { AT.dirty = true; }, 200); }
   // التحويل: الصورة الطايرة
   if (AT.fl) { const f = AT.fl; g.save(); g.translate(f.x, f.y); g.rotate(f.r); g.scale(f.s * (f.fx ? -1 : 1), f.s * (f.fy ? -1 : 1)); g.globalAlpha = f.l.op; g.drawImage(f.cv, -f.cv.width / 2, -f.cv.height / 2); g.restore(); }
   // التحديد (خط متقطع يمشي)
@@ -359,6 +371,9 @@ function atFrame() {
   if (AT.lasso && AT.lasso.pts.length > 1) { g.save(); g.lineWidth = 1.5 / v.z; g.setLineDash([5 / v.z, 4 / v.z]); g.strokeStyle = '#3d7bff'; g.beginPath(); AT.lasso.pts.forEach(([x, y], i) => i ? g.lineTo(x, y) : g.moveTo(x, y)); if (AT.lasso.rect) { const [a, b] = AT.lasso.pts, c = AT.lasso.pts[AT.lasso.pts.length - 1]; g.beginPath(); g.rect(a[0], a[1], c[0] - a[0], c[1] - a[1]); } g.stroke(); g.restore(); }
   // الشبكة والمنظور
   if (AT.guide === 'grid') { g.save(); g.strokeStyle = 'rgba(61,123,255,.28)'; g.lineWidth = 1 / v.z; g.beginPath(); for (let x = AT.gridSz; x < AT.W; x += AT.gridSz) { g.moveTo(x, 0); g.lineTo(x, AT.H); } for (let y = AT.gridSz; y < AT.H; y += AT.gridSz) { g.moveTo(0, y); g.lineTo(AT.W, y); } g.stroke(); g.restore(); }
+  if (AT.guide === 'ruler' || AT.guide === 'circle') { const [A, B] = AT.vp || atVpDef(); g.save(); g.lineWidth = 6 / v.z; g.strokeStyle = 'rgba(61,123,255,.22)'; g.beginPath();
+    if (AT.guide === 'ruler') { const dx = B[0] - A[0], dy = B[1] - A[1], L = Math.hypot(dx, dy) || 1; g.moveTo(A[0] - dx / L * 6000, A[1] - dy / L * 6000); g.lineTo(A[0] + dx / L * 6000, A[1] + dy / L * 6000); } else g.arc(A[0], A[1], Math.hypot(B[0] - A[0], B[1] - A[1]), 0, 7);
+    g.stroke(); g.lineWidth = 1.5 / v.z; g.strokeStyle = 'rgba(61,123,255,.85)'; g.stroke(); [A, B].forEach(([x, y]) => { g.fillStyle = '#3d7bff'; g.beginPath(); g.arc(x, y, 9 / v.z, 0, 7); g.fill(); g.strokeStyle = '#fff'; g.lineWidth = 2 / v.z; g.stroke(); }); g.restore(); }
   if (AT.guide === 'persp1' || AT.guide === 'persp2') {
     const vps = (AT.vp || atVpDef()).slice(0, AT.guide === 'persp1' ? 1 : 2); g.save(); g.lineWidth = 1 / v.z; g.strokeStyle = 'rgba(61,123,255,.3)'; g.beginPath();
     vps.forEach(([vx, vy]) => { for (let i = 0; i < 36; i++) { const a = i / 36 * Math.PI * 2; g.moveTo(vx, vy); g.lineTo(vx + Math.cos(a) * 6000, vy + Math.sin(a) * 6000); } });
@@ -378,7 +393,7 @@ function atFrame() {
   // عدسة القطّارة (ضغط مطوّل)
   if (AT.loupe) { const [x, y] = AT.loupe.s, ly = y - 90; g.save(); g.lineWidth = 16; g.strokeStyle = AT.loupe.c; g.beginPath(); g.arc(x, ly, 40, 0, Math.PI); g.stroke(); g.strokeStyle = AT.color; g.beginPath(); g.arc(x, ly, 40, Math.PI, Math.PI * 2); g.stroke(); g.lineWidth = 2; g.strokeStyle = '#fff'; g.beginPath(); g.arc(x, ly, 49, 0, 7); g.stroke(); g.beginPath(); g.arc(x, ly, 31, 0, 7); g.stroke(); g.restore(); }
   // دائرة حجم الفرشاة (بالماوس)
-  if (AT.hover && !AT.stroke && ['brush', 'eraser', 'smudge', 'liq'].includes(AT.tool) && !AT.pickMode) { const r = AT.size[AT.tool] * v.z / 2; if (r > 2) { g.strokeStyle = 'rgba(0,0,0,.5)'; g.lineWidth = 1; g.beginPath(); g.arc(AT.hover[0], AT.hover[1], r, 0, 7); g.stroke(); g.strokeStyle = 'rgba(255,255,255,.7)'; g.beginPath(); g.arc(AT.hover[0], AT.hover[1], r + 1, 0, 7); g.stroke(); } }
+  if (AT.hover && !AT.stroke && ['brush', 'eraser', 'smudge', 'liq', 'fx'].includes(AT.tool) && !AT.pickMode) { const r = AT.size[AT.tool] * v.z / 2; if (r > 2) { g.strokeStyle = 'rgba(0,0,0,.5)'; g.lineWidth = 1; g.beginPath(); g.arc(AT.hover[0], AT.hover[1], r, 0, 7); g.stroke(); g.strokeStyle = 'rgba(255,255,255,.7)'; g.beginPath(); g.arc(AT.hover[0], AT.hover[1], r + 1, 0, 7); g.stroke(); } }
 }
 
 // ===== الرسم (محرك الختم) =====
@@ -390,7 +405,13 @@ function atSymPts(x, y) {
   if (s === 'radial') for (let i = 1; i < 8; i++) { const a = i / 8 * Math.PI * 2, c = Math.cos(a), sn = Math.sin(a), dx = x - cx, dy = y - cy; o.push([cx + dx * c - dy * sn, cy + dx * sn + dy * c, a, 1]); }
   return o;
 }
+const AT_CJ = new Map();
+function atCJ(col, amt) { // نسخة قريبة من اللون (تغيّر لون الفرشاة وهي ترسم)، ٨ نسخ لكل لون عشان الكاش
+  const k = col + '|' + amt + '|' + ((Math.random() * 8) | 0); let c = AT_CJ.get(k); if (c) return c; if (AT_CJ.size > 400) AT_CJ.clear();
+  const [r, g, b] = atHex(col), [h, sv, v] = atRgb2Hsv(r, g, b); c = atHsv2Hex((h + (Math.random() - .5) * 60 * amt + 360) % 360, atClamp(sv + (Math.random() - .5) * .5 * amt, 0, 1), atClamp(v + (Math.random() - .5) * .5 * amt, 0, 1)); AT_CJ.set(k, c); return c;
+}
 function atStamp(g, b, x, y, p, dir, col, sz, box) {
+  if (b.cj && col.length === 7) col = atCJ(col, b.cj);
   const prs = b.szP ? 1 - b.szP + b.szP * ((b.min || 0) + (1 - (b.min || 0)) * p) : 1;
   let s = sz * prs * (b.jit ? 1 + (Math.random() - .5) * 2 * b.jit : 1); if (s < .4) s = .4;
   const a = b.flow * (b.opP ? 1 - b.opP + b.opP * p : 1);
@@ -410,6 +431,16 @@ function atStamp(g, b, x, y, p, dir, col, sz, box) {
     if (box) { const r = s * (b.sc ? 1 + b.sc * 2 : 1) / 2 + 2; box[0] = Math.min(box[0], px - r); box[1] = Math.min(box[1], py - r); box[2] = Math.max(box[2], px + r); box[3] = Math.max(box[3], py + r); }
   }
 }
+// فرشاة الفلاتر: ترسم نسخة مفلترة من الطبقة (تنعيم، إضاءة، تشبّع...) بس مكان ما تمرّ
+const AT_FX = { blur: ['تنعيم', 'blur(5px)'], light: ['إضاءة', 'brightness(1.3)'], dark: ['تغميق', 'brightness(.72)'], sat: ['ألوان أقوى', 'saturate(1.8)'], gray: ['رمادي', 'grayscale(1)'], hue: ['تغيير اللون', 'hue-rotate(45deg)'], warm: ['دافي', 'sepia(.45) saturate(1.3)'], contrast: ['حدة', 'contrast(1.4)'] };
+function atFxStamp(l, x, y, p, sz, box) {
+  const s = Math.max(4, Math.min(400, sz)) | 0, pc = AT.fxc || (AT.fxc = atMk(400, 400)), pg = pc.getContext('2d');
+  for (const [px, py] of atSymPts(x, y)) {
+    pg.save(); pg.globalCompositeOperation = 'copy'; pg.globalAlpha = 1; pg.drawImage(AT.fxSrc, px - s / 2, py - s / 2, s, s, 0, 0, s, s); pg.globalCompositeOperation = 'destination-in'; pg.drawImage(atTip('soft'), 0, 0, s, s); pg.restore();
+    const lg = l.g; lg.save(); lg.globalAlpha = AT.op.fx * (.3 + .7 * p) * .5; lg.globalCompositeOperation = l.lock ? 'source-atop' : 'source-over'; lg.drawImage(pc, 0, 0, s, s, px - s / 2, py - s / 2, s, s); lg.restore();
+    box[0] = Math.min(box[0], px - s); box[1] = Math.min(box[1], py - s); box[2] = Math.max(box[2], px + s); box[3] = Math.max(box[3], py + s);
+  }
+}
 // التلطيخ: ناخذ قطعة من مكان الختم اللي قبل ونحطها بالمكان الجديد (بشكل رأس الفرشاة)
 function atSmudgeStamp(l, b, x0, y0, x, y, p, sz, box) {
   const s = Math.max(4, Math.min(260, sz * (1 - .5 * (b.szP || 0) + .5 * (b.szP || 0) * p))) | 0, pc = AT.smc || (AT.smc = atMk(260, 260)), pg = pc.getContext('2d');
@@ -422,15 +453,17 @@ function atSmudgeStamp(l, b, x0, y0, x, y, p, sz, box) {
 }
 function atStrokeStart(x, y, p) {
   const L = atL(), l = atTgt(); if (!l) return;
+  if (atMode() === 'oneline' && !AT.botBusy) { if (AT.oneAt != null && AT.undo.length >= AT.oneAt) { atToast('خط واحد بس! تراجع لو تبي تعيده'); return; } AT.oneAt = AT.undo.length + 1; }
   if (!L.vis || (L.grp && AT.groups[L.grp] && !AT.groups[L.grp].vis)) { atToast('الطبقة مخفية، شغّلها من الطبقات'); return; }
-  const tool = AT.tool, b = tool === 'grad' || tool === 'shape' ? { flow: 1 } : tool === 'liq' ? { sp: .1, flow: 1, st: .25, id: 'liq' } : atBr(AT.bt[tool] || AT.bt.brush), sz = AT.size[tool] || 20;
+  const tool = AT.tool, b = tool === 'fx' ? atBr('soft') : tool === 'grad' || tool === 'shape' ? { flow: 1 } : tool === 'liq' ? { sp: .1, flow: 1, st: .25, id: 'liq' } : atBr(AT.bt[tool] || AT.bt.brush), sz = AT.size[tool] || 20;
   const st = AT.stream[b.id] != null ? AT.stream[b.id] : b.st || 0;
   AT.stroke = { tool, b, sz, col: l.isMask ? (tool === 'eraser' ? '#000000' : '#ffffff') : AT.color, pts: [[x, y]], sm: [x, y], rp: [x, y], o: [x, y], last: [x, y], lp: p, dist: 0, rem: 0, box: [1e9, 1e9, -1e9, -1e9], st, t0: performance.now(), moved: performance.now(), shape: null, dir: 0 };
-  if (tool === 'smudge' || tool === 'liq') { AT.snap = AT.snap && AT.snap.width === AT.W && AT.snap.height === AT.H ? AT.snap : atMk(AT.W, AT.H); const sg = AT.snap.getContext('2d'); sg.globalCompositeOperation = 'copy'; sg.drawImage(l.cv, 0, 0); sg.globalCompositeOperation = 'source-over'; }
+  if (tool === 'fx') { const f = AT.fxSrc && AT.fxSrc.width === AT.W && AT.fxSrc.height === AT.H ? AT.fxSrc : (AT.fxSrc = atMk(AT.W, AT.H)), fg = f.getContext('2d'); fg.save(); fg.clearRect(0, 0, AT.W, AT.H); if (atHasFilter()) fg.filter = AT_FX[AT.fxMode][1]; fg.drawImage(l.cv, 0, 0); fg.restore(); }
+  if (atDirect(tool)) { AT.snap = AT.snap && AT.snap.width === AT.W && AT.snap.height === AT.H ? AT.snap : atMk(AT.W, AT.H); const sg = AT.snap.getContext('2d'); sg.globalCompositeOperation = 'copy'; sg.drawImage(l.cv, 0, 0); sg.globalCompositeOperation = 'source-over'; }
   else {
     const sb = AT.sb.getContext('2d'); sb.setTransform(1, 0, 0, 1, 0, 0); sb.globalCompositeOperation = 'source-over'; sb.clearRect(0, 0, AT.W, AT.H);
     // كاش اللي تحت واللي فوق عشان الرسم يكون سريع
-    const i = AT.cur, simple = !L.clip && !L.mask && !L.grp && !(AT.layers[i + 1] && AT.layers[i + 1].clip);
+    const i = AT.cur, simple = !L.clip && !L.mask && !L.grp && !(AT.layers[i + 1] && AT.layers[i + 1].clip) && !AT.layers.some((x, j) => j > i && x.adj && x.vis);
     AT.stroke.simple = simple;
     if (simple) { atCompose(AT.below, null, 0, i, true); atCompose(AT.above, null, i + 1, AT.layers.length, false); }
     const lv = AT.live.getContext('2d'); lv.globalCompositeOperation = 'copy'; lv.globalAlpha = 1; lv.drawImage(l.cv, 0, 0); lv.globalCompositeOperation = 'source-over';
@@ -442,6 +475,11 @@ function atStrokeTo(rx, ry, p, first) {
   const S = AT.stroke; if (!S || S.shape) return;
   if (S.tool === 'grad' || S.tool === 'shape') { S.pend = [rx, ry]; if (!S.raf) S.raf = requestAnimationFrame(() => { S.raf = 0; if (AT.stroke !== S || !S.pend) return; const [a, b] = S.pend; S.pend = null; S.tool === 'grad' ? atGradTo(a, b) : atShapeTo(a, b); }); return; } // مرة وحدة كل فريم
   // مساعدة الرسم: المنظور والشبكة يثبتون اتجاه الخط
+  // المساطر: لو بديت الخط قريب من المسطرة (خط أو دائرة) يمشي عليها بالضبط
+  if (AT.guide === 'ruler' || AT.guide === 'circle') { const [A, B] = AT.vp || atVpDef();
+    if (first) { const d = AT.guide === 'ruler' ? atSegDist(rx, ry, A, B, true) : Math.abs(Math.hypot(rx - A[0], ry - A[1]) - Math.hypot(B[0] - A[0], B[1] - A[1])); S.onRuler = d * AT.view.z < 44; }
+    if (S.onRuler) { if (AT.guide === 'ruler') { const dx = B[0] - A[0], dy = B[1] - A[1], L2 = dx * dx + dy * dy || 1, t = ((rx - A[0]) * dx + (ry - A[1]) * dy) / L2; rx = A[0] + dx * t; ry = A[1] + dy * t; }
+      else { const R = Math.hypot(B[0] - A[0], B[1] - A[1]), a = Math.atan2(ry - A[1], rx - A[0]); rx = A[0] + Math.cos(a) * R; ry = A[1] + Math.sin(a) * R; } if (first) { S.sm = [rx, ry]; S.last = [rx, ry]; S.o = [rx, ry]; S.pts = [[rx, ry]]; } } }
   if (!first && AT.assist && (AT.guide === 'persp1' || AT.guide === 'persp2' || AT.guide === 'grid')) {
     if (!S.lock) { const dx = rx - S.o[0], dy = ry - S.o[1]; if (Math.hypot(dx, dy) * AT.view.z < 14) return; S.lock = atAssistDir(S.o, dx, dy); }
     const [ox, oy] = S.o, [ux, uy] = S.lock, t = (rx - ox) * ux + (ry - oy) * uy; rx = ox + ux * t; ry = oy + uy * t;
@@ -471,23 +509,25 @@ function atStrokeSeg(x, y, p, first, more) {
   if (first) atOneStamp(x, y, p * (b.taper && S.tool !== 'eraser' ? .06 : 1), x, y); // أول الخط رفيع مو نقطة
   else while (t <= d) {
     const f = t / d, px = lx + dx * f, py = ly + dy * f, pp = S.lp + (p - S.lp) * f;
-    const tp = b.taper && S.tool !== 'eraser' ? Math.min(1, (n0 + t) / b.taper) : 1;
-    atOneStamp(px, py, pp * tp, S.lx || lx, S.ly || ly); S.lx = px; S.ly = py; t += step;
+    const tp = b.taper && S.tool !== 'eraser' ? Math.min(1, (n0 + t) / b.taper) : 1; S.fk = b.fade && S.tool === 'brush' ? Math.max(.03, 1 - (n0 + t) / b.fade) : 1; // البداية الرفيعة، والتلاشي (الخط يرق لين يختفي)
+    if (S.fk <= .03) { t += step; continue; }
+    atOneStamp(px, py, pp * tp * (S.fk < 1 ? .5 + S.fk * .5 : 1), S.lx || lx, S.ly || ly); S.lx = px; S.ly = py; t += step;
   }
   S.rem = t - d; S.dist += d; S.last = [x, y]; S.lp = p;
   const sg = S.seg, B = S.box; B[0] = Math.min(B[0], sg[0]); B[1] = Math.min(B[1], sg[1]); B[2] = Math.max(B[2], sg[2]); B[3] = Math.max(B[3], sg[3]);
   if (more) return; // نقاط المنحنى اللي بالنص: نحدّث الشاشة مرة وحدة بآخرها
   S.seg = null;
-  if (sg[2] >= sg[0]) { if (S.tool !== 'smudge' && S.tool !== 'liq') atLiveUpdate(sg); else atRegionComp(sg); }
+  if (sg[2] >= sg[0]) { if (!atDirect(S.tool)) atLiveUpdate(sg); else atRegionComp(sg); }
   AT.dirty = true;
 }
 function atOneStamp(x, y, p, px, py) {
   const S = AT.stroke, b = S.b;
   const bx = S.seg || S.box;
   if (S.tool === 'smudge') return atSmudgeStamp(atTgt(), b, px, py, x, y, p, S.sz, bx);
+  if (S.tool === 'fx') return atFxStamp(atTgt(), x, y, p, S.sz, bx);
   if (S.tool === 'liq') return atLiqDab(atTgt(), px, py, x, y, p, S.sz, bx);
   const g = AT.sb.getContext('2d'); g.globalCompositeOperation = 'source-over';
-  atStamp(g, b, x, y, p, S.dir, S.tool === 'eraser' ? '#000000' : S.col, S.sz, bx);
+  atStamp(g, b, x, y, p, S.dir, S.tool === 'eraser' ? '#000000' : S.col, S.sz * (S.fk || 1), bx);
 }
 // نحدّث النسخة الحيّة (الطبقة + الضربة) بالمنطقة اللي تغيّرت بس
 function atLiveUpdate(bb) {
@@ -541,7 +581,7 @@ function atStrokeEnd() {
   const l = atTgt(), b = S.box; AT.stroke = null; if (atCollab() && ['brush', 'eraser'].includes(S.tool)) atCollabSend('e');
   if (b[2] < b[0]) { atRecomp(); return; }
   const x = b[0] - 2, y = b[1] - 2, w = b[2] - b[0] + 4, h = b[3] - b[1] + 4;
-  if (S.tool === 'smudge' || S.tool === 'liq') {
+  if (atDirect(S.tool)) {
     const p = { x: Math.max(0, Math.floor(x)), y: Math.max(0, Math.floor(y)) }; p.w = Math.min(AT.W - p.x, Math.ceil(w)); p.h = Math.min(AT.H - p.y, Math.ceil(h));
     if (AT.sel) { // برا التحديد يرجع مثل ما كان
       const t = AT.tmp2.getContext('2d'); t.save(); t.clearRect(0, 0, AT.W, AT.H); t.drawImage(l.cv, 0, 0); t.globalCompositeOperation = 'destination-in'; t.drawImage(AT.sel.mask, 0, 0); t.restore();
@@ -599,10 +639,11 @@ function atAssistDir(o, dx, dy) {
   let best = c[0], bd = -1; c.forEach(v => { const d = Math.abs(v[0] * u[0] + v[1] * u[1]); if (d > bd) { bd = d; best = v; } });
   return best;
 }
-const atVpDef = () => (AT.vp = AT.guide === 'persp1' ? [[AT.W / 2, AT.H * .42]] : [[-AT.W * .15, AT.H * .42], [AT.W * 1.15, AT.H * .42]]);
+const atSegDist = (x, y, A, B, inf) => { const dx = B[0] - A[0], dy = B[1] - A[1], L2 = dx * dx + dy * dy || 1; let t = ((x - A[0]) * dx + (y - A[1]) * dy) / L2; if (!inf) t = atClamp(t, 0, 1); return Math.hypot(x - A[0] - dx * t, y - A[1] - dy * t); };
+const atVpDef = () => (AT.vp = AT.guide === 'ruler' ? [[AT.W * .2, AT.H * .5], [AT.W * .8, AT.H * .5]] : AT.guide === 'circle' ? [[AT.W / 2, AT.H / 2], [AT.W / 2 + Math.min(AT.W, AT.H) * .3, AT.H / 2]] : AT.guide === 'persp1' ? [[AT.W / 2, AT.H * .42]] : [[-AT.W * .15, AT.H * .42], [AT.W * 1.15, AT.H * .42]]);
 // الشكل السريع (QuickShape): توقف ثانية آخر الخط ويتعدل لخط أو دائرة أو مستطيل
 function atQuickShape() {
-  const S = AT.stroke; if (!S || S.shape || S.tool === 'smudge' || S.tool === 'liq' || S.tool === 'grad' || S.tool === 'shape' || S.lock || !AT.qs || S.pts.length < 6) return;
+  const S = AT.stroke; if (!S || S.shape || atDirect(S.tool) || S.tool === 'grad' || S.tool === 'shape' || S.lock || !AT.qs || S.pts.length < 6) return;
   const P = S.pts, a = P[0], z = P[P.length - 1], L = Math.hypot(z[0] - a[0], z[1] - a[1]);
   let len = 0, minX = 1e9, minY = 1e9, maxX = -1e9, maxY = -1e9; for (let i = 1; i < P.length; i++) len += Math.hypot(P[i][0] - P[i - 1][0], P[i][1] - P[i - 1][1]);
   P.forEach(([x, y]) => { minX = Math.min(minX, x); maxX = Math.max(maxX, x); minY = Math.min(minY, y); maxY = Math.max(maxY, y); });
@@ -738,6 +779,7 @@ function atSelBar() {
     const wt = document.getElementById('atWT'); if (wt) wt.oninput = e => { AT.wandTol = +e.target.value; };
     return;
   }
+  if (AT.tool === 'fx') { bar.hidden = false; bar.innerHTML = `${Object.entries(AT_FX).map(([k, [n]]) => `<button data-fxm="${k}" class="${AT.fxMode === k ? 'on' : ''}">${n}</button>`).join('')}<button data-fxm="done" class="ok">تم</button>`; return; }
   if (AT.tool === 'liq') { const m = AT.liqMode || 'push'; bar.hidden = false; bar.innerHTML = `${[['push', 'دفع'], ['twirl', 'لف'], ['pinch', 'شد للداخل'], ['expand', 'تكبير']].map(([k, n]) => `<button data-lq="${k}" class="${m === k ? 'on' : ''}">${n}</button>`).join('')}<span>الحجم والقوة من الشريط الجانبي</span><button data-lq="done" class="ok">تم</button>`; return; }
   if (AT.tool === 'vp') { bar.hidden = false; bar.innerHTML = `<span>اسحب النقاط الزرقا للمكان اللي تبيه</span><button data-vp="ok" class="ok">تم</button>`; return; }
   if (AT.tool === 'shape') { bar.hidden = false; bar.innerHTML = `${AT_SHP.map(([k, t]) => `<button data-shp="${k}" class="${AT.shp === k ? 'on' : ''}">${t}</button>`).join('')}<i class="atsep"></i>${[['fill', 'تعبئة'], ['line', 'حدود'], ['both', 'الاثنين']].map(([k, t]) => `<button data-shf="${k}" class="${AT.shpFill === k ? 'on' : ''}">${t}</button>`).join('')}<button data-shq="1" class="${AT.shpEq ? 'on' : ''}">متساوي</button>`; return; }
@@ -814,7 +856,7 @@ function atAdjust() {
     <label class="atchk"><input type="checkbox" id="atInv"> عكس الألوان</label>
     <div class="atsub">المنحنى (اسحب النقاط، اضغط تضيف نقطة)</div><canvas id="atCurve" width="240" height="160" class="atcurve"></canvas>
     <label class="atchk"><input type="checkbox" id="atGm"> خريطة تدرّج (الغامق ← اللون الثاني، الفاتح ← اللون الحالي)</label><label>قوتها <input type="range" data-k="gm" min="0" max="100" value="100"><em>١٠٠٪</em></label>
-    <button class="atbtn" id="atLiq">تسييل (Liquify)</button>
+    <button class="atbtn" id="atLiq">تسييل (Liquify)</button> <button class="atbtn" id="atFxB">فرشاة الفلاتر</button>
     <div class="atrow"><button class="atbtn" id="atAdjNo">إلغاء</button><button class="atbtn ok" id="atAdjOk">طبّق</button></div>`;
   const hasF = 'filter' in l.g && (() => { const t = atMk(2, 2).getContext('2d'); t.filter = 'blur(1px)'; return t.filter === 'blur(1px)'; })();
   let raf = 0;
@@ -834,6 +876,7 @@ function atAdjust() {
   pop.querySelectorAll('input[type=range]').forEach(r => r.oninput = () => { V[r.dataset.k] = +r.value; const k = r.dataset.k; r.nextElementSibling.textContent = atNum(r.value) + (k === 'b' || k === 'm' || k === 'px' ? '' : k === 'h' || k === 'ma' ? '°' : '٪'); if (!raf) raf = requestAnimationFrame(apply); });
   document.getElementById('atInv').onchange = e => { V.inv = e.target.checked; if (!raf) raf = requestAnimationFrame(apply); };
   document.getElementById('atGm').onchange = e => { V.gmOn = e.target.checked; if (!raf) raf = requestAnimationFrame(apply); };
+  document.getElementById('atFxB').onclick = () => { document.getElementById('atAdjNo').click(); atSetTool('fx'); atToast('لوّن مكان ما تبي الفلتر: تنعيم، إضاءة، ألوان...'); };
   document.getElementById('atLiq').onclick = () => { document.getElementById('atAdjNo').click(); atSetTool('liq'); atToast('اسحب على الرسمة: دفع، لف، شد، تكبير'); };
   // محرر المنحنى
   const cc = document.getElementById('atCurve'), cg = cc.getContext('2d'); let drag = -1;
@@ -876,7 +919,7 @@ function atAdjTone(l, V) {
 // ===== الإدخال (قلم، لمس، ماوس) =====
 function atCancelStroke() {
   const S = AT.stroke; if (!S) return; AT.stroke = null; clearTimeout(AT.qsT); AT.ropeLn = null;
-  if (S.tool === 'smudge' || S.tool === 'liq') { const g = atTgt().g; g.save(); g.globalCompositeOperation = 'copy'; g.drawImage(AT.snap, 0, 0); g.restore(); }
+  if (atDirect(S.tool)) { const g = atTgt().g; g.save(); g.globalCompositeOperation = 'copy'; g.drawImage(AT.snap, 0, 0); g.restore(); }
   atRecomp();
 }
 function atSample(x, y) { x = atClamp(x | 0, 0, AT.W - 1); y = atClamp(y | 0, 0, AT.H - 1); const d = AT.comp.getContext('2d').getImageData(x, y, 1, 1).data; return '#' + [d[0], d[1], d[2]].map(v => v.toString(16).padStart(2, '0')).join(''); }
@@ -903,18 +946,19 @@ function atBindInput(cv) {
     if (AT.pickMode || e.altKey) { AT.color = atSample(dx, dy); atUIColor(); atToast('أخذت اللون', 600); AT.pickMode = false; atUIDrop(); return; }
     if (AT.tool === 'vp') { const vps = AT.vp || atVpDef(); let k = -1, bd = 30; vps.forEach(([vx, vy], i) => { const [sx, sy] = atToScr(vx, vy), d = Math.hypot(sx - x, sy - y); if (d < bd) { bd = d; k = i; } }); if (k >= 0) AT.vpDrag = k; return; }
     if (AT.botBusy) return atToast('الرسام الآلي يرسم الحين، وقّفه من القائمة');
-    if (AT.tool === 'fill') return atFill(dx, dy);
+    if (AT.tool === 'fill') { if (atMode() === 'oneline') return atToast('التعبئة مقفلة بهالطريقة'); return atFill(dx, dy); }
     if (AT.tool === 'text') return atTextAt(dx, dy);
     if (AT.tool === 'select') { if (AT.selMode === 'wand') return atWand(dx, dy); AT.lasso = { pts: [[dx, dy]], rect: AT.selMode === 'rect' }; if ((AT.selOp || 'new') === 'new') AT.sel = null; AT.dirty = true; return; }
     if (AT.tool === 'transform' && AT.fl) { atTfDown(x, y); return; }
-    if (['brush', 'eraser', 'smudge', 'grad', 'liq', 'shape'].includes(AT.tool)) {
+    if (['brush', 'eraser', 'smudge', 'grad', 'liq', 'shape', 'fx'].includes(AT.tool)) {
       atStrokeStart(dx, dy, prs(e));
       // ضغط مطوّل بدون حركة = قطّارة
-      clearTimeout(lpT); if (AT.tool !== 'grad' && AT.tool !== 'liq' && AT.tool !== 'shape') lpT = setTimeout(() => { const S = AT.stroke; if (!S || S.dist * AT.view.z > 6 || S.shape) return; atCancelStroke(); AT.loupe = { s: [x, y], c: atSample(dx, dy) }; AT.dirty = true; try { navigator.vibrate && navigator.vibrate(15); } catch {} }, 480);
+      clearTimeout(lpT); if (AT.tool !== 'grad' && AT.tool !== 'liq' && AT.tool !== 'shape' && AT.tool !== 'fx') lpT = setTimeout(() => { const S = AT.stroke; if (!S || S.dist * AT.view.z > 6 || S.shape) return; atCancelStroke(); AT.loupe = { s: [x, y], c: atSample(dx, dy) }; AT.dirty = true; try { navigator.vibrate && navigator.vibrate(15); } catch {} }, 480);
     }
   });
   cv.addEventListener('pointermove', e => {
     const [x, y] = pt(e); if (e.pointerType === 'mouse') { AT.hover = [x, y]; if (!AT.stroke) AT.dirty = true; }
+    if (atCollab() && Date.now() - (AT.curT || 0) > 110) { AT.curT = Date.now(); const [cx, cy] = atToDoc(x, y); if (cx > -50 && cy > -50 && cx < AT.W + 50 && cy < AT.H + 50) send({ t: 'acur', x: cx, y: cy, c: AT.color }); }
     const p = P.get(e.pointerId); if (!p) return; p.x = x; p.y = y;
     if (gest) {
       if (gest.pan) { AT.view.x = gest.v0.x + x - gest.x; AT.view.y = gest.v0.y + y - gest.y; AT.dirty = true; return; }
@@ -995,10 +1039,14 @@ async function atInsertImage(file) {
   let im; try { im = await createImageBitmap(file); } catch { return atToast('ما قدرت أفتح الصورة'); }
   if (AT.fl) atFloatCommit();
   const k0 = Math.min(1, 3000 / Math.max(im.width, im.height)), w = Math.max(1, Math.round(im.width * k0)), h = Math.max(1, Math.round(im.height * k0)), cv = atMk(w, h); cv.getContext('2d').drawImage(im, 0, 0, w, h); im.close && im.close();
-  atStructDo(() => { AT.layers.splice(AT.cur + 1, 0, atLayer('صورة')); AT.cur++; });
+  atInsertCanvas(cv, 'صورة', .9);
+}
+function atInsertCanvas(cv, name, fit) { // يحط الصورة كطبقة جديدة عايمة تقدر تحركها وتكبرها
+  if (AT.layers.length >= AT.maxL) return atToast('وصلت حد الطبقات'); if (AT.fl) atFloatCommit(); const w = cv.width, h = cv.height;
+  atStructDo(() => { AT.layers.splice(AT.cur + 1, 0, atLayer(name)); AT.cur++; });
   const l = atL(), lv = AT.live.getContext('2d'); lv.clearRect(0, 0, AT.W, AT.H);
-  AT.fl = { l, cv, x: AT.W / 2, y: AT.H / 2, r: 0, s: Math.min(1, AT.W * .9 / w, AT.H * .9 / h), fx: false, fy: false, before: l.g.getImageData(0, 0, AT.W, AT.H), isNew: true };
-  AT.prevTool = AT.tool === 'transform' ? 'brush' : AT.tool; AT.tool = 'transform'; atUITool(); atSelBar(); atRecomp(); atToast('حرّك الصورة وكبّرها، وبعدين «تم»');
+  AT.fl = { l, cv, x: AT.W / 2, y: AT.H / 2, r: 0, s: Math.min(1, AT.W * fit / w, AT.H * fit / h), fx: false, fy: false, before: l.g.getImageData(0, 0, AT.W, AT.H), isNew: true };
+  AT.prevTool = AT.tool === 'transform' ? 'brush' : AT.tool; AT.tool = 'transform'; atUITool(); atSelBar(); atRecomp(); atToast(name === 'صورة' ? 'حرّك الصورة وكبّرها، وبعدين «تم»' : 'حرّكها وكبّرها، وبعدين «تم»');
 }
 function atPickFile(cb) { const i = document.createElement('input'); i.type = 'file'; i.accept = 'image/*'; i.onchange = () => i.files[0] && cb(i.files[0]); i.click(); }
 function atRefOpen(file) {
@@ -1070,7 +1118,8 @@ function atBindUI() {
     }
     const a = b.dataset.a;
     if (a === 'undo') atUndo(); else if (a === 'redo') atUndo(true);
-    else if (a === 'layers' || a === 'color' || a === 'menu') atOpenPop(a, b); else if (a === 'more') atOpenPop('xtools', b);
+    else if (a === 'color' && atMode() === 'mono') atToast('لون واحد بس بهالجولة');
+    else if (a === 'layers' || a === 'color' || a === 'menu') atOpenPop(a, b); else if (a === 'more') atOpenPop('xtools', b); else if (a === 'mat') atOpenPop('mat', b);
     else if (a === 'adjust') { atClosePop(); atAdjust(); }
     else if (a === 'select') { atClosePop(); atSetTool('select'); }
     else if (a === 'transform') { atClosePop(); if (AT.fl) atFloatCommit(); else atFloatStart(); }
@@ -1079,6 +1128,7 @@ function atBindUI() {
     if (b.dataset.g) { const k = b.dataset.g; if (k === 'lin' || k === 'rad') AT.gradMode = k; else if (k === 'tr' || k === 'c2') AT.gradTo = k; else if (k === 'set2') { AT.color2 = AT.color; atToast('صار اللون الثاني'); } atSelBar(); }
     if (b.dataset.vp) { atSetTool('brush'); }
     if (b.dataset.shp) { AT.shp = b.dataset.shp; atSelBar(); } if (b.dataset.shf) { AT.shpFill = b.dataset.shf; atSelBar(); } if (b.dataset.shq) { AT.shpEq = !AT.shpEq; atSelBar(); }
+    if (b.dataset.fxm) { if (b.dataset.fxm === 'done') atSetTool('brush'); else { AT.fxMode = b.dataset.fxm; atSelBar(); } }
     if (b.dataset.lq) { if (b.dataset.lq === 'done') atSetTool('brush'); else { AT.liqMode = b.dataset.lq; atSelBar(); } }
     if (b.dataset.f) { const f = AT.fl; if (!f) return; const k = b.dataset.f; if (k === 'fx') f.fx = !f.fx; else if (k === 'fy') f.fy = !f.fy; else if (k === 'r90') f.r += Math.PI / 2; else if (k === 'fit') { f.r = 0; f.x = AT.W / 2; f.y = AT.H / 2; f.s = Math.max(AT.W / f.cv.width, AT.H / f.cv.height); } else if (k === 'cancel') atFloatCancel(); else if (k === 'ok') atFloatCommit(); AT.dirty = true; }
   });
@@ -1094,7 +1144,7 @@ function atBindUI() {
     const end = () => { el.dragging = false; document.getElementById('atBub').hidden = true; atPrefs(); };
     el.addEventListener('pointerup', end); el.addEventListener('pointercancel', end);
   });
-  document.getElementById('atFin').onclick = () => atFinish();
+  document.getElementById('atFin').onclick = () => { if (atMode() === 'pass' && S.g.pr != null && S.g.pr + 1 < S.g.prn) return atToast('الرسمة تنتقل للي بعدك لما يخلص وقت الدور'); atFinish(); };
 }
 function atSelAct(k) {
   if (k === 'free' || k === 'rect' || k === 'wand') { AT.selMode = k; atSelBar(); return; }
@@ -1111,12 +1161,85 @@ function atSelAct(k) {
 function atOpenPop(k, btn) {
   const pop = document.getElementById('atPop'); if (AT.popK === k && !pop.hidden) return atClosePop();
   atClosePop(); AT.popK = k; pop.hidden = false; pop.className = 'atpop at' + k; document.body.classList.add('atpopen'); if (btn) btn.classList.add('pop');
-  if (k === 'brushes') atBrushUI(pop); else if (k === 'layers') atLayersUI(); else if (k === 'color') atColorUI(pop); else if (k === 'menu') atMenuUI(pop); else if (k === 'xtools') atMoreUI(pop); else if (k === 'abot') atBotUI(pop);
+  if (k === 'brushes') atBrushUI(pop); else if (k === 'layers') atLayersUI(); else if (k === 'color') atColorUI(pop); else if (k === 'menu') atMenuUI(pop); else if (k === 'xtools') atMoreUI(pop); else if (k === 'abot') atBotUI(pop); else if (k === 'mat') atMatUI(pop);
 }
 // الجوال: الأدوات اللي ما تكفيها الشريط
 function atMoreUI(pop) {
   const I = atIcon, it = (k, t, ic) => `<button data-${k.startsWith('t:') ? 't' : 'a'}="${k.slice(2)}"><span>${I(ic)}</span>${t}</button>`;
-  pop.innerHTML = `<div class="athd"><b>أدوات أكثر</b></div><div class="atmoreg">${it('a:redo', 'إعادة', 'redo')}${it('t:grad', 'تدرّج', 'grad')}${it('a:select', 'تحديد', 'sel')}${it('a:transform', 'تحويل', 'move')}${it('a:adjust', 'تعديلات', 'wand')}${it('a:image', 'صورة', 'img')}</div>`;
+  pop.innerHTML = `<div class="athd"><b>أدوات أكثر</b></div><div class="atmoreg">${it('a:redo', 'إعادة', 'redo')}${it('t:grad', 'تدرّج', 'grad')}${it('a:select', 'تحديد', 'sel')}${it('a:transform', 'تحويل', 'move')}${it('a:adjust', 'تعديلات', 'wand')}${it('a:image', 'صورة', 'img')}${it('a:mat', 'مكتبة الخامات', 'mat')}</div>`;
+}
+// ===== مكتبة الخامات: نقوش، خلفيات، إطارات، ملصقات (كلها مرسومة بالكود، تاخذ اللون الحالي) =====
+const atStar = (g, cx, cy, R, r, n) => { g.beginPath(); for (let i = 0; i < n * 2; i++) { const a = -Math.PI / 2 + i * Math.PI / n, q = i % 2 ? r : R; g.lineTo(cx + Math.cos(a) * q, cy + Math.sin(a) * q); } g.closePath(); };
+const atHeart = (g, cx, cy, s) => { g.beginPath(); g.moveTo(cx, cy + s * .35); g.bezierCurveTo(cx - s * .9, cy - s * .25, cx - s * .45, cy - s * .85, cx, cy - s * .38); g.bezierCurveTo(cx + s * .45, cy - s * .85, cx + s * .9, cy - s * .25, cx, cy + s * .35); g.closePath(); };
+const atRnd = seed => () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+const AT_MAT = {
+  pat: ['نقوش', [ // تتكرر على الطبقة كاملة
+    ['dots', 'نقاط', (g, w, h, c, k) => { g.fillStyle = c; const s = 34 * k; for (let y = 0, r = 0; y < h + s; y += s, r++) for (let x = r % 2 ? s / 2 : 0; x < w + s; x += s) { g.beginPath(); g.arc(x, y, s * .18, 0, 7); g.fill(); } }],
+    ['stripes', 'خطوط', (g, w, h, c, k) => { g.strokeStyle = c; g.lineWidth = 12 * k; const s = 40 * k; for (let x = -h; x < w + h; x += s) { g.beginPath(); g.moveTo(x, 0); g.lineTo(x + h, h); g.stroke(); } }],
+    ['checker', 'شطرنج', (g, w, h, c, k) => { g.fillStyle = c; const s = 40 * k; for (let y = 0; y < h; y += s) for (let x = (y / s) % 2 ? s : 0; x < w; x += s * 2) g.fillRect(x, y, s, s); }],
+    ['grid', 'شبكة', (g, w, h, c, k) => { g.strokeStyle = c; g.lineWidth = 2 * k; const s = 36 * k; g.beginPath(); for (let x = 0; x <= w; x += s) { g.moveTo(x, 0); g.lineTo(x, h); } for (let y = 0; y <= h; y += s) { g.moveTo(0, y); g.lineTo(w, y); } g.stroke(); }],
+    ['hatch', 'تظليل', (g, w, h, c, k) => { g.strokeStyle = c; g.lineWidth = 1.6 * k; const s = 10 * k; g.beginPath(); for (let x = -h; x < w + h; x += s) { g.moveTo(x, 0); g.lineTo(x + h, h); g.moveTo(x + h, 0); g.lineTo(x, h); } g.stroke(); }],
+    ['waves', 'أمواج', (g, w, h, c, k) => { g.strokeStyle = c; g.lineWidth = 4 * k; const s = 30 * k; for (let y = 0; y < h + s; y += s) { g.beginPath(); for (let x = 0; x <= w; x += 4) g.lineTo(x, y + Math.sin(x / (18 * k)) * 7 * k); g.stroke(); } }],
+    ['hex', 'خلايا', (g, w, h, c, k) => { g.strokeStyle = c; g.lineWidth = 2.5 * k; const r = 22 * k, dx = r * Math.sqrt(3); for (let y = 0, row = 0; y < h + r * 2; y += r * 1.5, row++) for (let x = row % 2 ? dx / 2 : 0; x < w + dx; x += dx) { g.beginPath(); for (let i = 0; i < 6; i++) { const a = Math.PI / 6 + i * Math.PI / 3; g.lineTo(x + Math.cos(a) * r, y + Math.sin(a) * r); } g.closePath(); g.stroke(); } }],
+    ['bricks', 'طوب', (g, w, h, c, k) => { g.strokeStyle = c; g.lineWidth = 3 * k; const bw = 70 * k, bh = 30 * k; for (let y = 0, r = 0; y < h; y += bh, r++) for (let x = r % 2 ? -bw / 2 : 0; x < w; x += bw) g.strokeRect(x, y, bw, bh); }],
+    ['scales', 'حراشف', (g, w, h, c, k) => { g.strokeStyle = c; g.lineWidth = 2.5 * k; const r = 20 * k; for (let y = 0, row = 0; y < h + r; y += r, row++) for (let x = row % 2 ? r : 0; x < w + r * 2; x += r * 2) { g.beginPath(); g.arc(x, y, r, 0, Math.PI); g.stroke(); } }],
+    ['starsP', 'نجوم', (g, w, h, c, k) => { g.fillStyle = c; const s = 60 * k; for (let y = 0, r = 0; y < h + s; y += s, r++) for (let x = r % 2 ? s / 2 : 0; x < w + s; x += s) { atStar(g, x, y, s * .2, s * .08, 5); g.fill(); } }],
+    ['heartsP', 'قلوب', (g, w, h, c, k) => { g.fillStyle = c; const s = 56 * k; for (let y = 0, r = 0; y < h + s; y += s, r++) for (let x = r % 2 ? s / 2 : 0; x < w + s; x += s) { atHeart(g, x, y, s * .32); g.fill(); } }],
+    ['noise', 'حبيبات', (g, w, h, c, k) => { g.fillStyle = c; const R = atRnd(7), n = w * h / (60 * k * k); for (let i = 0; i < n; i++) { g.globalAlpha = .2 + R() * .6; g.fillRect(R() * w, R() * h, 2 * k, 2 * k); } g.globalAlpha = 1; }],
+  ]],
+  bg: ['خلفيات', [
+    ['sky', 'سما', (g, w, h) => { const q = g.createLinearGradient(0, 0, 0, h); q.addColorStop(0, '#4a90d9'); q.addColorStop(1, '#cfe8ff'); g.fillStyle = q; g.fillRect(0, 0, w, h); }],
+    ['sunset', 'غروب', (g, w, h) => { const q = g.createLinearGradient(0, 0, 0, h); q.addColorStop(0, '#2b1055'); q.addColorStop(.5, '#d6456b'); q.addColorStop(1, '#ffb86b'); g.fillStyle = q; g.fillRect(0, 0, w, h); }],
+    ['night', 'ليل ونجوم', (g, w, h) => { const q = g.createLinearGradient(0, 0, 0, h); q.addColorStop(0, '#070b1f'); q.addColorStop(1, '#1d2b5a'); g.fillStyle = q; g.fillRect(0, 0, w, h); const R = atRnd(3); g.fillStyle = '#fff'; for (let i = 0; i < w * h / 2500; i++) { g.globalAlpha = .3 + R() * .7; g.beginPath(); g.arc(R() * w, R() * h * .8, R() * 1.6 + .3, 0, 7); g.fill(); } g.globalAlpha = 1; }],
+    ['sea', 'بحر', (g, w, h) => { let q = g.createLinearGradient(0, 0, 0, h * .55); q.addColorStop(0, '#87c5f0'); q.addColorStop(1, '#e8f6ff'); g.fillStyle = q; g.fillRect(0, 0, w, h * .55); q = g.createLinearGradient(0, h * .55, 0, h); q.addColorStop(0, '#1f7fb5'); q.addColorStop(1, '#0b3a5c'); g.fillStyle = q; g.fillRect(0, h * .55, w, h); }],
+    ['field', 'أرض وعشب', (g, w, h) => { let q = g.createLinearGradient(0, 0, 0, h * .6); q.addColorStop(0, '#7ec3ee'); q.addColorStop(1, '#e3f4ff'); g.fillStyle = q; g.fillRect(0, 0, w, h); g.fillStyle = '#6aa84f'; g.beginPath(); g.moveTo(0, h * .62); for (let x = 0; x <= w; x += w / 40) g.lineTo(x, h * .6 + Math.sin(x / w * 7) * h * .03); g.lineTo(w, h); g.lineTo(0, h); g.fill(); q = g.createLinearGradient(0, h * .6, 0, h); q.addColorStop(0, 'rgba(255,255,255,0)'); q.addColorStop(1, 'rgba(30,70,20,.45)'); g.fillStyle = q; g.fillRect(0, h * .58, w, h); }],
+    ['desert', 'صحرا', (g, w, h) => { let q = g.createLinearGradient(0, 0, 0, h * .6); q.addColorStop(0, '#f6c27a'); q.addColorStop(1, '#fde7c4'); g.fillStyle = q; g.fillRect(0, 0, w, h); [['#e0a35c', .62], ['#c98a45', .74], ['#b07436', .86]].forEach(([c, y], i) => { g.fillStyle = c; g.beginPath(); g.moveTo(0, h); for (let x = 0; x <= w; x += w / 60) g.lineTo(x, h * y + Math.sin(x / w * (4 + i * 2) + i) * h * .04); g.lineTo(w, h); g.fill(); }); }],
+    ['paper', 'ورق', (g, w, h) => { g.fillStyle = '#f7f1e3'; g.fillRect(0, 0, w, h); const R = atRnd(11); for (let i = 0; i < w * h / 90; i++) { g.fillStyle = R() < .5 ? 'rgba(120,100,70,.05)' : 'rgba(255,255,255,.12)'; g.fillRect(R() * w, R() * h, 2, 2); } }],
+    ['bokeh', 'إضاءات', (g, w, h) => { g.fillStyle = '#141428'; g.fillRect(0, 0, w, h); const R = atRnd(5), cs = ['#ff7eb6', '#7eb6ff', '#ffd27e', '#b07eff']; for (let i = 0; i < 40; i++) { const x = R() * w, y = R() * h, r = (R() * .06 + .02) * Math.max(w, h), q = g.createRadialGradient(x, y, 0, x, y, r); q.addColorStop(0, cs[i % 4] + '88'); q.addColorStop(1, cs[i % 4] + '00'); g.fillStyle = q; g.beginPath(); g.arc(x, y, r, 0, 7); g.fill(); } }],
+    ['wash', 'ألوان مائية', (g, w, h, c) => { g.fillStyle = '#fff'; g.fillRect(0, 0, w, h); const R = atRnd(9); for (let i = 0; i < 26; i++) { const x = R() * w, y = R() * h, r = (R() * .25 + .12) * Math.max(w, h), q = g.createRadialGradient(x, y, 0, x, y, r); q.addColorStop(0, c + '30'); q.addColorStop(1, c + '00'); g.fillStyle = q; g.fillRect(0, 0, w, h); } }],
+  ]],
+  frame: ['إطارات', [
+    ['simple', 'بسيط', (g, w, h, c) => { const t = Math.min(w, h) * .035; g.strokeStyle = c; g.lineWidth = t; g.strokeRect(t * 1.2, t * 1.2, w - t * 2.4, h - t * 2.4); }],
+    ['double', 'مزدوج', (g, w, h, c) => { const t = Math.min(w, h) * .02; g.strokeStyle = c; g.lineWidth = t; g.strokeRect(t * 2, t * 2, w - t * 4, h - t * 4); g.lineWidth = t * .4; g.strokeRect(t * 4, t * 4, w - t * 8, h - t * 8); }],
+    ['round', 'زوايا دائرية', (g, w, h, c) => { const t = Math.min(w, h) * .03, r = Math.min(w, h) * .08; g.strokeStyle = c; g.lineWidth = t; g.beginPath(); g.roundRect(t, t, w - t * 2, h - t * 2, r); g.stroke(); }],
+    ['polaroid', 'بولارويد', (g, w, h) => { const t = Math.min(w, h) * .05; g.fillStyle = '#fbfaf6'; g.beginPath(); g.rect(0, 0, w, h); g.rect(t, t, w - t * 2, h - t * 4.2); g.fill('evenodd'); }],
+    ['corners', 'زوايا', (g, w, h, c) => { const t = Math.min(w, h) * .02, L = Math.min(w, h) * .14, m = t * 2; g.strokeStyle = c; g.lineWidth = t; g.lineCap = 'round'; g.beginPath(); [[m, m, 1, 1], [w - m, m, -1, 1], [m, h - m, 1, -1], [w - m, h - m, -1, -1]].forEach(([x, y, a, b]) => { g.moveTo(x + a * L, y); g.lineTo(x, y); g.lineTo(x, y + b * L); }); g.stroke(); }],
+    ['film', 'فيلم', (g, w, h) => { const t = Math.min(w, h) * .07; g.fillStyle = '#111'; g.fillRect(0, 0, w, t); g.fillRect(0, h - t, w, t); g.fillStyle = '#eee'; const s = t * .9; for (let x = s * .4; x < w; x += s) { g.fillRect(x, t * .3, s * .5, t * .4); g.fillRect(x, h - t * .7, s * .5, t * .4); } }],
+    ['vignette', 'ظل الأطراف', (g, w, h) => { const q = g.createRadialGradient(w / 2, h / 2, Math.min(w, h) * .3, w / 2, h / 2, Math.hypot(w, h) / 2); q.addColorStop(0, 'rgba(0,0,0,0)'); q.addColorStop(1, 'rgba(0,0,0,.65)'); g.fillStyle = q; g.fillRect(0, 0, w, h); }],
+    ['dotted', 'منقّط', (g, w, h, c) => { const t = Math.min(w, h) * .015, m = t * 3; g.fillStyle = c; const per = (x0, y0, x1, y1) => { const L = Math.hypot(x1 - x0, y1 - y0), n = Math.floor(L / (t * 3)); for (let i = 0; i <= n; i++) { g.beginPath(); g.arc(x0 + (x1 - x0) * i / n, y0 + (y1 - y0) * i / n, t, 0, 7); g.fill(); } }; per(m, m, w - m, m); per(w - m, m, w - m, h - m); per(w - m, h - m, m, h - m); per(m, h - m, m, m); }],
+  ]],
+  st: ['ملصقات', [ // تنحط عايمة تحرّكها وتكبّرها
+    ['star', 'نجمة', (g, w, h, c) => { atStar(g, w / 2, h / 2, w * .44, w * .19, 5); }],
+    ['heart', 'قلب', (g, w, h) => { atHeart(g, w / 2, h * .55, w * .5); }],
+    ['spark', 'لمعة', (g, w, h) => { atStar(g, w / 2, h / 2, w * .46, w * .08, 4); }],
+    ['cloud', 'غيمة', (g, w, h) => { g.beginPath(); [[.3, .58, .2], [.5, .45, .26], [.7, .58, .2], [.5, .65, .2]].forEach(([x, y, r]) => { g.moveTo(w * x + w * r, h * y); g.arc(w * x, h * y, w * r, 0, 7); }); }],
+    ['sun', 'شمس', (g, w, h) => { g.beginPath(); g.arc(w / 2, h / 2, w * .22, 0, 7); for (let i = 0; i < 12; i++) { const a = i * Math.PI / 6, x = w / 2 + Math.cos(a) * w * .3, y = h / 2 + Math.sin(a) * w * .3; g.moveTo(x + w * .05, y); g.arc(x, y, w * .05, 0, 7); } }],
+    ['moon', 'هلال', (g, w, h) => { g.beginPath(); g.arc(w / 2, h / 2, w * .4, Math.PI * .3, Math.PI * 1.7); g.arc(w * .62, h * .44, w * .3, Math.PI * 1.55, Math.PI * .4, true); g.closePath(); }],
+    ['bubble', 'فقاعة كلام', (g, w, h) => { g.beginPath(); g.ellipse(w / 2, h * .42, w * .44, h * .3, 0, 0, 7); g.moveTo(w * .3, h * .62); g.lineTo(w * .2, h * .9); g.lineTo(w * .48, h * .7); }],
+    ['arrow', 'سهم', (g, w, h) => { g.beginPath(); g.moveTo(w * .08, h * .4); g.lineTo(w * .58, h * .4); g.lineTo(w * .58, h * .2); g.lineTo(w * .94, h * .5); g.lineTo(w * .58, h * .8); g.lineTo(w * .58, h * .6); g.lineTo(w * .08, h * .6); g.closePath(); }],
+    ['bolt', 'برق', (g, w, h) => { g.beginPath(); g.moveTo(w * .6, h * .04); g.lineTo(w * .2, h * .56); g.lineTo(w * .46, h * .56); g.lineTo(w * .36, h * .96); g.lineTo(w * .8, h * .4); g.lineTo(w * .54, h * .4); g.closePath(); }],
+    ['flower', 'وردة', (g, w, h) => { g.beginPath(); for (let i = 0; i < 6; i++) { const a = i * Math.PI / 3, x = w / 2 + Math.cos(a) * w * .22, y = h / 2 + Math.sin(a) * w * .22; g.moveTo(x + w * .17, y); g.arc(x, y, w * .17, 0, 7); } }],
+    ['leaf', 'ورقة', (g, w, h) => { g.beginPath(); g.moveTo(w * .1, h * .9); g.quadraticCurveTo(w * .05, h * .1, w * .9, h * .1); g.quadraticCurveTo(w * .9, h * .9, w * .1, h * .9); }],
+    ['badge', 'شارة', (g, w, h) => { atStar(g, w / 2, h / 2, w * .46, w * .38, 14); }],
+  ]],
+};
+function atMatDraw(cat, id, w, h, k) { // يرسم الخامة على كانفس
+  const it = AT_MAT[cat][1].find(x => x[0] === id), cv = atMk(w, h), g = cv.getContext('2d'), c = AT.color.length === 7 ? AT.color : '#222222';
+  if (cat !== 'st') { it[2](g, w, h, c, k); return cv; }
+  it[2](g, w, h, c); g.fillStyle = c; g.fill('nonzero'); g.lineJoin = 'round'; g.lineWidth = w * .035; g.strokeStyle = '#fff'; g.stroke(); return cv;
+}
+function atMatUI(pop) {
+  const cat = AT.matCat || 'pat';
+  pop.innerHTML = `<div class="athd"><b>مكتبة الخامات</b><small>تاخذ اللون الحالي</small></div><div class="atrow wrap atmtab">${Object.entries(AT_MAT).map(([k, [n]]) => `<button data-mc="${k}" class="${k === cat ? 'on' : ''}">${n}</button>`).join('')}</div>
+    <div class="atmatg">${AT_MAT[cat][1].map(([id, n]) => `<button data-mt="${id}"><canvas width="84" height="64" data-mp="${id}"></canvas><span>${n}</span></button>`).join('')}</div>`;
+  pop.querySelectorAll('canvas[data-mp]').forEach(c => { const g = c.getContext('2d'); g.fillStyle = cat === 'st' || cat === 'pat' || cat === 'frame' ? '#fff' : '#000'; g.fillRect(0, 0, 84, 64); const k = cat === 'st' ? 56 : 0, cv = cat === 'st' ? atMatDraw(cat, c.dataset.mp, 56, 56) : atMatDraw(cat, c.dataset.mp, 84, 64, .35); g.drawImage(cv, k ? 14 : 0, k ? 4 : 0); });
+  pop.querySelectorAll('[data-mc]').forEach(b => b.onclick = e => { e.stopPropagation(); AT.matCat = b.dataset.mc; atMatUI(pop); });
+  pop.querySelectorAll('[data-mt]').forEach(b => b.onclick = e => { e.stopPropagation(); if (atNoCollab()) return; const id = b.dataset.mt, names = AT_MAT[cat][1].find(x => x[0] === id)[1]; atClosePop();
+    if (cat === 'st') return atInsertCanvas(atMatDraw('st', id, 600, 600), names, .35);
+    if (AT.layers.length >= AT.maxL) return atToast('وصلت حد الطبقات'); if (AT.fl) atFloatCommit();
+    const k = Math.max(AT.W, AT.H) / 1000, cv = atMatDraw(cat, id, AT.W, AT.H, k);
+    atStructDo(() => { const n = atLayer(names); n.g.drawImage(cv, 0, 0); if (cat === 'bg') { let j = 0; AT.layers.splice(j, 0, n); AT.cur = j; } else { AT.layers.splice(AT.cur + 1, 0, n); AT.cur++; } });
+    atToast(cat === 'bg' ? 'انحطت الخلفية تحت كل الطبقات' : cat === 'pat' ? 'النقش بطبقة لحاله، تقدر تقصه على اللي تحت من خيارات الطبقة' : 'انحط الإطار بطبقة لحاله'); });
 }
 // مكتبة الفرش
 function atBrushUI(pop) {
@@ -1139,7 +1262,7 @@ function atBrushUI(pop) {
   document.getElementById('atBEd').onclick = e => { e.stopPropagation(); atBrushEditor(pop, tk); };
 }
 // محرر الفرشاة: تعدّل خصائصها وتشوف النتيجة، وتحفظها كفرشاة جديدة
-const AT_BPROPS = [['min', 'أصغر حجم بالضغط', 0, 1, .01], ['sp', 'التباعد', .01, 1.5, .01], ['flow', 'قوة اللون', .02, 1, .01], ['szP', 'الضغط على الحجم', 0, 1, .01], ['opP', 'الضغط على الشفافية', 0, 1, .01], ['jit', 'تذبذب الحجم', 0, 1, .01], ['sc', 'التشتت', 0, 2, .01], ['taper', 'تدبيب البداية', 0, 150, 1], ['st', 'التنعيم', 0, .95, .01], ['glaze', 'شفافية الضربة', .05, 1, .01]];
+const AT_BPROPS = [['cj', 'تغيّر اللون وهي ترسم', 0, 1, .01], ['fade', 'التلاشي (طول الخط)', 0, 2000, 10], ['min', 'أصغر حجم بالضغط', 0, 1, .01], ['sp', 'التباعد', .01, 1.5, .01], ['flow', 'قوة اللون', .02, 1, .01], ['szP', 'الضغط على الحجم', 0, 1, .01], ['opP', 'الضغط على الشفافية', 0, 1, .01], ['jit', 'تذبذب الحجم', 0, 1, .01], ['sc', 'التشتت', 0, 2, .01], ['taper', 'تدبيب البداية', 0, 150, 1], ['st', 'التنعيم', 0, .95, .01], ['glaze', 'شفافية الضربة', .05, 1, .01]];
 function atBrushEditor(pop, tk) {
   const base = atBr(AT.bt[tk]), b = Object.assign({}, base);
   const draw = () => {
@@ -1229,9 +1352,10 @@ function atLayersUI() {
     lastG = l.grp || null;
     if (l.grp && G[l.grp] && G[l.grp].open === false) return;
     rows += `<div class="atly${i === AT.cur ? ' on' : ''}${l.clip ? ' clip' : ''}${l.grp ? ' ing' : ''}" data-i="${i}">
-      <canvas width="64" height="48" data-th="${i}" class="${l.mask && !l.mEdit && i === AT.cur ? 'sel' : ''}"></canvas>${l.mask ? `<canvas width="48" height="36" data-mk="${i}" class="atmk${l.mEdit ? ' sel' : ''}" title="القناع (اضغط عشان تعدّله)"></canvas>` : ''}<span class="atln">${esc(l.name)}<small>${l.blend !== 'source-over' ? AT_BLEND.find(b => b[0] === l.blend)[1] + ' · ' : ''}${atNum(Math.round(l.op * 100))}٪${l.lock ? ' · قفل' : ''}${l.clip ? ' · قص' : ''}${l.mask ? (l.mEdit ? ' · تعدّل القناع' : ' · قناع') : ''}</small></span>
+      <canvas width="64" height="48" data-th="${i}" class="${l.mask && !l.mEdit && i === AT.cur ? 'sel' : ''}"></canvas>${l.mask ? `<canvas width="48" height="36" data-mk="${i}" class="atmk${l.mEdit ? ' sel' : ''}" title="القناع (اضغط عشان تعدّله)"></canvas>` : ''}<span class="atln">${esc(l.name)}<small>${l.adj ? 'تعديل · ' : ''}${l.blend !== 'source-over' ? AT_BLEND.find(b => b[0] === l.blend)[1] + ' · ' : ''}${atNum(Math.round(l.op * 100))}٪${l.lock ? ' · قفل' : ''}${l.clip ? ' · قص' : ''}${l.mask ? (l.mEdit ? ' · تعدّل القناع' : ' · قناع') : ''}</small></span>
       <button class="atv${l.vis ? ' on' : ''}" data-v="${i}" title="إظهار">${atIcon('eye')}</button><button class="atmore" data-m="${i}">${atIcon('dots')}</button></div>
       ${open === l.id ? `<div class="atlo" data-i="${i}">
+        ${l.adj ? `<div class="atsub">طبقة تعديل (تغيّر اللي تحتها، امسح عليها عشان تشيل التأثير من مكان)</div>${AT_ADJ.map(([k, n, a, b, d, u]) => `<label>${n} <input type="range" min="${a}" max="${b}" value="${l.adj[k] == null ? d : l.adj[k]}" data-adj="${k}" data-ai="${i}"><output>${atNum(l.adj[k] == null ? d : l.adj[k])}${u}</output></label>`).join('')}${atHasFilter() ? '' : '<small>متصفحك ما يدعم طبقات التعديل، جرب كروم</small>'}` : ''}
         <label>الشفافية <input type="range" min="0" max="100" value="${Math.round(l.op * 100)}" data-o="${i}"></label>
         <label>الدمج <select data-bl="${i}">${AT_BLEND.map(([v, n]) => `<option value="${v}"${v === l.blend ? ' selected' : ''}>${n}</option>`).join('')}</select></label>
         <div class="atrow wrap"><button data-op="clip" class="${l.clip ? 'on' : ''}">قص على اللي تحت</button><button data-op="lock" class="${l.lock ? 'on' : ''}">قفل الشفافية</button>
@@ -1239,7 +1363,7 @@ function atLayersUI() {
           ${l.grp ? '<button data-op="gout">طلّعها من المجموعة</button>' : '<button data-op="group">جمّعها مع اللي تحت</button>'}
           <button data-op="dup">تكرار</button><button data-op="merge">دمج تحت</button><button data-op="up">فوق</button><button data-op="down">تحت</button><button data-op="clear">مسح</button><button data-op="ren">اسم</button><button data-op="del" class="bad">حذف</button></div></div>` : ''}`;
   });
-  pop.innerHTML = `<div class="athd"><b>الطبقات</b><small>${atNum(AT.layers.length)} من ${atNum(AT.maxL)}</small><button class="atib sm" id="atLAdd" title="طبقة جديدة">${atIcon('plus')}</button></div>
+  pop.innerHTML = `<div class="athd"><b>الطبقات</b><small>${atNum(AT.layers.length)} من ${atNum(AT.maxL)}</small><button class="atbtn sm" id="atLAdj" title="طبقة تعديل">تعديل</button><button class="atib sm" id="atLAdd" title="طبقة جديدة">${atIcon('plus')}</button></div>
     <div class="atls">${rows}</div><div class="atbgrow"><span>الخلفية</span><button id="atBg" style="background:${AT.bg}"></button><small>(تاخذ اللون الحالي)</small></div>`;
   pop.querySelectorAll('canvas[data-th]').forEach(c => { const g = c.getContext('2d'); g.fillStyle = '#fff'; g.fillRect(0, 0, 64, 48); g.drawImage(AT.layers[+c.dataset.th].cv, 0, 0, 64, 48); });
   pop.querySelectorAll('canvas[data-mk]').forEach(c => { const g = c.getContext('2d'); g.fillStyle = '#000'; g.fillRect(0, 0, 48, 36); g.drawImage(AT.layers[+c.dataset.mk].mask, 0, 0, 48, 36); c.onclick = e => { e.stopPropagation(); const l = AT.layers[+c.dataset.mk]; AT.cur = +c.dataset.mk; l.mEdit = !l.mEdit; atToast(l.mEdit ? 'تعدّل القناع: الأبيض يبيّن والممحاة تخفي' : 'رجعت ترسم على الطبقة'); atLayersUI(); }; });
@@ -1257,6 +1381,8 @@ function atLayersUI() {
     if (b.dataset.gop === 'ren') { const n = prompt('اسم المجموعة', AT.groups[k].name); if (n) atStructDo(() => { AT.groups[k].name = n.slice(0, 20); }); }
     else atStructDo(() => { AT.layers.forEach(l => { if (l.grp === k) l.grp = null; }); delete AT.groups[k]; AT.gopen = null; }); });
   document.getElementById('atLAdd').onclick = e => { e.stopPropagation(); if (atNoCollab()) return; if (AT.layers.length >= AT.maxL) return atToast(`أكثر شي ${atNum(AT.maxL)} طبقة بهالمقاس`); atStructDo(() => { const n = atLayer('طبقة ' + atNum(AT.layers.length + 1)); n.grp = atL() ? atL().grp : null; AT.layers.splice(AT.cur + 1, 0, n); AT.cur++; }); };
+  pop.querySelectorAll('[data-adj]').forEach(r => { let b0 = null; r.oninput = () => { const l = AT.layers[+r.dataset.ai], k = r.dataset.adj; if (!b0) b0 = atStruct(); l.adj[k] = +r.value; const u = AT_ADJ.find(x => x[0] === k)[5]; r.nextElementSibling.textContent = atNum(r.value) + u; atRecomp(); }; r.onchange = () => { if (b0) { atPush({ t: 'st', b: b0, a: atStruct(), mem: 1000 }); b0 = null; } }; });
+  document.getElementById('atLAdj').onclick = e => { e.stopPropagation(); if (atNoCollab()) return; if (AT.layers.length >= AT.maxL) return atToast(`أكثر شي ${atNum(AT.maxL)} طبقة بهالمقاس`); atStructDo(() => { const n = atLayer('تعديل ' + atNum(AT.layers.length + 1)); n.g.fillStyle = '#fff'; n.g.fillRect(0, 0, AT.W, AT.H); n.adj = { b: 100, c: 100, s: 100, h: 0, w: 0, g: 0, bl: 0 }; n.grp = atL() ? atL().grp : null; AT.layers.splice(AT.cur + 1, 0, n); AT.cur++; AT.lopen = n.id; }); };
   document.getElementById('atBg').onclick = e => { e.stopPropagation(); atStructDo(() => { AT.bg = AT.color; }); };
 }
 function atLayerOp(op) {
@@ -1289,8 +1415,8 @@ function atMenuUI(pop) {
   pop.innerHTML = `<div class="athd"><b>القائمة</b></div><div class="atmenu">
     <div class="atsub">صورة</div><div class="atrow wrap"><button data-mm="img">${atIcon('img')} أضف صورة</button><button data-mm="ref">صورة مرجع</button><button data-mm="text">${atIcon('text')} نص</button></div>
     <div class="atsub">التناظر</div><div class="atrow wrap">${[['none', 'بدون'], ['v', 'عمودي'], ['h', 'أفقي'], ['quad', '٤ جهات'], ['radial', 'دائري ٨']].map(([k, n]) => `<button data-sym="${k}" class="${AT.sym === k ? 'on' : ''}">${n}</button>`).join('')}</div>
-    <div class="atsub">دليل الرسم</div><div class="atrow wrap">${[['none', 'بدون'], ['grid', 'شبكة'], ['persp1', 'منظور نقطة'], ['persp2', 'منظور نقطتين']].map(([k, n]) => `<button data-gd="${k}" class="${G === k ? 'on' : ''}">${n}</button>`).join('')}</div>
-    ${G !== 'none' ? `<div class="atrow wrap"><button data-mm="assist" class="${AT.assist ? 'on' : ''}">مساعدة الرسم (الخط يمشي على الدليل)</button>${G === 'grid' ? `<label>حجم المربع <input type="range" id="atGs" min="20" max="300" value="${AT.gridSz}"></label>` : '<button data-mm="vp">عدّل نقاط المنظور</button>'}</div>` : ''}
+    <div class="atsub">دليل الرسم</div><div class="atrow wrap">${[['none', 'بدون'], ['ruler', 'مسطرة'], ['circle', 'مسطرة دائرة'], ['grid', 'شبكة'], ['persp1', 'منظور نقطة'], ['persp2', 'منظور نقطتين']].map(([k, n]) => `<button data-gd="${k}" class="${G === k ? 'on' : ''}">${n}</button>`).join('')}</div>
+    ${G === 'ruler' || G === 'circle' ? '<div class="atrow wrap"><button data-mm="vp">حرّك المسطرة</button><span>ابدأ الخط قريب منها ويمشي عليها</span></div>' : G !== 'none' ? `<div class="atrow wrap"><button data-mm="assist" class="${AT.assist ? 'on' : ''}">مساعدة الرسم (الخط يمشي على الدليل)</button>${G === 'grid' ? `<label>حجم المربع <input type="range" id="atGs" min="20" max="300" value="${AT.gridSz}"></label>` : '<button data-mm="vp">عدّل نقاط المنظور</button>'}</div>` : ''}
     <div class="atsub">العرض</div><div class="atrow wrap"><button data-mm="flip" class="${AT.view.f ? 'on' : ''}">اقلب العرض (مرآة)</button><button data-mm="fit">رجّع اللوحة للنص</button><button data-mm="ui">إخفاء الأدوات</button><button data-mm="stream">وضع البث</button>${S && S.ab ? '<button data-mm="abot">الرسام الآلي</button>' : ''}<button data-mm="gal">المعرض الدائم</button></div>
     <div class="atsub">التعبئة</div><label>الحساسية <input type="range" id="atTol" min="0" max="80" value="${AT.fillTol == null ? 30 : AT.fillTol}"></label><label>تدخل تحت الخط <input type="range" id="atGrow" min="0" max="6" value="${AT.fillGrow == null ? 2 : AT.fillGrow}"></label>
     <div class="atsub">التحريك والمشروع</div><div class="atrow wrap"><button data-mm="anim" class="${AT.anim && AT.anim.on ? 'on' : ''}">وضع التحريك (إطارات)</button><button data-mm="psave">احفظ المشروع</button><button data-mm="popen">افتح مشروع</button></div>
@@ -1299,7 +1425,7 @@ function atMenuUI(pop) {
     <button data-mm="quit" class="bad">اطلع من اللعبة</button>
     <small class="atkeys">اختصارات: B فرشاة · E ممحاة · S تلطيخ · G تعبئة · D تدرّج · L تحديد · V تحويل · T نص · I قطّارة · H مرآة · [ ] الحجم · Ctrl+Z تراجع · Ctrl+A تحديد الكل · Ctrl+D إلغاء التحديد · Ctrl+V لصق صورة · مسافة+سحب تحريك · 0 ملء الشاشة · Tab إخفاء الأدوات<br>باللمس: إصبعين تكبير وتدوير · نقرة بإصبعين تراجع · بثلاث إعادة · بأربع إخفاء الأدوات · ضغط مطوّل قطّارة</small></div>`;
   pop.querySelectorAll('[data-sym]').forEach(b => b.onclick = e => { e.stopPropagation(); AT.sym = b.dataset.sym; atMenuUI(pop); AT.dirty = true; });
-  pop.querySelectorAll('[data-gd]').forEach(b => b.onclick = e => { e.stopPropagation(); AT.guide = b.dataset.gd; if (AT.guide.startsWith('persp')) atVpDef(); atMenuUI(pop); AT.dirty = true; });
+  pop.querySelectorAll('[data-gd]').forEach(b => b.onclick = e => { e.stopPropagation(); AT.guide = b.dataset.gd; if (AT.guide.startsWith('persp') || AT.guide === 'ruler' || AT.guide === 'circle') atVpDef(); atMenuUI(pop); AT.dirty = true; });
   document.getElementById('atTol').oninput = e => { AT.fillTol = +e.target.value; };
   document.getElementById('atGrow').oninput = e => { AT.fillGrow = +e.target.value; };
   const gs = document.getElementById('atGs'); if (gs) gs.oninput = e => { AT.gridSz = +e.target.value; AT.dirty = true; };
@@ -1336,7 +1462,7 @@ function atPSD() {
   const chan = (data, w, h, c) => { const rows = [], lens = []; const row = new Uint8Array(w); for (let y = 0; y < h; y++) { for (let x = 0; x < w; x++) row[x] = data[(y * w + x) * 4 + c]; const p = pack(row); rows.push(p); lens.push(p.length); } return { rows, lens }; };
   const BK = { 'source-over': 'norm', multiply: 'mul ', screen: 'scrn', overlay: 'over', 'soft-light': 'sLit', 'hard-light': 'hLit', 'color-dodge': 'div ', 'color-burn': 'idiv', darken: 'dark', lighten: 'lite', difference: 'diff', lighter: 'lddg', hue: 'hue ', saturation: 'sat ', color: 'colr', luminosity: 'lum ' };
   const recs = [], chData = [];
-  AT.layers.forEach((l, li) => {
+  AT.layers.forEach((l, li) => { if (l.adj) return; // طبقات التعديل ما تنحفظ بالـ PSD (فوتوشوب يحتاج صيغة ثانية)
     const pc = l.mask && l.mOn !== false ? (() => { const t = atMk(W, H), tg = t.getContext('2d'); tg.drawImage(l.cv, 0, 0); tg.globalCompositeOperation = 'destination-in'; tg.drawImage(l.mask, 0, 0); return t; })() : l.cv, pg = pc.getContext('2d'), gop = l.grp && AT.groups[l.grp] ? AT.groups[l.grp].op * (AT.groups[l.grp].vis ? 1 : 0) : 1;
     const d = pg.getImageData(0, 0, W, H).data; let x0 = W, y0 = H, x1 = -1, y1 = -1;
     for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) if (d[(y * W + x) * 4 + 3]) { if (x < x0) x0 = x; if (x > x1) x1 = x; if (y < y0) y0 = y; if (y > y1) y1 = y; }
@@ -1352,7 +1478,7 @@ function atPSD() {
     chData.push(chans.flatMap(c => [be(1, 2), ...c.lens.map(n => be(n, 2)), new Uint8Array(c.rows.flat())]));
   });
   const flat = a => a.reduce((s, x) => s + (x.length), 0);
-  let info = [be(AT.layers.length, 2), ...recs.flat(), ...chData.flat()].map(x => x instanceof Uint8Array ? x : new Uint8Array(x)); let infoLen = flat(info); if (infoLen % 4) { info.push(new Uint8Array(4 - infoLen % 4)); infoLen = flat(info); }
+  let info = [be(recs.length, 2), ...recs.flat(), ...chData.flat()].map(x => x instanceof Uint8Array ? x : new Uint8Array(x)); let infoLen = flat(info); if (infoLen % 4) { info.push(new Uint8Array(4 - infoLen % 4)); infoLen = flat(info); }
   u8(str('8BPS')); u8(be(1, 2)); u8(new Uint8Array(6)); u8(be(3, 2)); u8(be(H, 4)); u8(be(W, 4)); u8(be(8, 2)); u8(be(3, 2));
   u8(be(0, 4)); u8(be(0, 4));
   u8(be(infoLen + 4 + 4, 4)); u8(be(infoLen, 4)); info.forEach(u8); u8(be(0, 4));
@@ -1423,7 +1549,7 @@ function atGIF() {
 // ===== حفظ المشروع وفتحه (تكمل رسمتك بعدين) =====
 async function atSaveProject() {
   const u = cv => cv.toDataURL('image/png');
-  const doc = { v: 1, W: AT.W, H: AT.H, bg: AT.bg, groups: AT.groups || {}, cur: AT.cur, layers: AT.layers.map(l => ({ name: l.name, op: l.op, vis: l.vis, blend: l.blend, clip: l.clip, lock: l.lock, grp: l.grp || null, mOn: l.mOn, png: u(l.cv), mask: l.mask ? u(l.mask) : null })) };
+  const doc = { v: 1, W: AT.W, H: AT.H, bg: AT.bg, groups: AT.groups || {}, cur: AT.cur, layers: AT.layers.map(l => ({ name: l.name, op: l.op, vis: l.vis, blend: l.blend, clip: l.clip, lock: l.lock, grp: l.grp || null, mOn: l.mOn, adj: l.adj || null, png: u(l.cv), mask: l.mask ? u(l.mask) : null })) };
   atDownload(new Blob([JSON.stringify(doc)], { type: 'application/json' }), 'tarteeb-project.tarteeb'); atToast('حفظت المشروع بجهازك');
 }
 function atOpenProject() {
@@ -1432,7 +1558,7 @@ function atOpenProject() {
   i.onchange = async () => { const f = i.files[0]; if (!f) return; if (!confirm('تفتح المشروع؟ الرسمة الحالية بتروح')) return;
     try { const doc = JSON.parse(await f.text()); AT.W = doc.W; AT.H = doc.H; AT.groups = doc.groups || {}; AT.bg = doc.bg || '#ffffff'; AT.cur = doc.cur || 0;
       const load = src => new Promise(ok => { const im = new Image(); im.onload = () => ok(im); im.onerror = () => ok(null); im.src = src; });
-      const ls = []; for (const x of doc.layers) { const l = atLayer(x.name); Object.assign(l, { op: x.op, vis: x.vis, blend: x.blend, clip: x.clip, lock: x.lock, grp: x.grp, mOn: x.mOn }); const im = await load(x.png); if (im) l.g.drawImage(im, 0, 0); if (x.mask) { atAddMask(l); l.mEdit = false; l.mg.clearRect(0, 0, AT.W, AT.H); const mi = await load(x.mask); if (mi) l.mg.drawImage(mi, 0, 0); } ls.push(l); }
+      const ls = []; for (const x of doc.layers) { const l = atLayer(x.name); Object.assign(l, { op: x.op, vis: x.vis, blend: x.blend, clip: x.clip, lock: x.lock, grp: x.grp, mOn: x.mOn, adj: x.adj || null }); const im = await load(x.png); if (im) l.g.drawImage(im, 0, 0); if (x.mask) { atAddMask(l); l.mEdit = false; l.mg.clearRect(0, 0, AT.W, AT.H); const mi = await load(x.mask); if (mi) l.mg.drawImage(mi, 0, 0); } ls.push(l); }
       atInitDoc(AT.W, AT.H, ls); AT.undo = []; AT.redo = []; AT.mem = 0; atUIUndo(); atSaveSoon(); atToast('فتحت المشروع');
     } catch (e) { console.warn(e); atToast('الملف مو مشروع مرسم'); } };
   i.click();
@@ -1468,7 +1594,7 @@ let AT_SVT = 0; function atSaveSoon() { AT.saveDirty = true; clearTimeout(AT_SVT
 async function atSaveNow() {
   if (!AT.saveDirty || !AT.ready || !S || !S.g || S.game !== 'art') return; AT.saveDirty = false;
   try {
-    const layers = await Promise.all(AT.layers.map(async l => { const b = await new Promise(ok => l.cv.toBlob(ok, 'image/png')), m = l.mask ? await new Promise(ok => l.mask.toBlob(ok, 'image/png')) : null; return { name: l.name, op: l.op, vis: l.vis, blend: l.blend, clip: l.clip, lock: l.lock, grp: l.grp || null, mOn: l.mOn, owner: l.owner || null, b, m }; }));
+    const layers = await Promise.all(AT.layers.map(async l => { const b = await new Promise(ok => l.cv.toBlob(ok, 'image/png')), m = l.mask ? await new Promise(ok => l.mask.toBlob(ok, 'image/png')) : null; return { name: l.name, op: l.op, vis: l.vis, blend: l.blend, clip: l.clip, lock: l.lock, grp: l.grp || null, mOn: l.mOn, owner: l.owner || null, adj: l.adj || null, b, m }; }));
     const db = await atIDB(), tx = db.transaction('docs', 'readwrite'); tx.objectStore('docs').put({ t: Date.now(), W: AT.W, H: AT.H, layers, bg: AT.bg, cur: AT.cur, groups: AT.groups || {} }, S.code + ':' + S.g.key);
     tx.objectStore('docs').getAllKeys().onsuccess = e => { const ks = e.target.result; if (ks.length > 3) ks.filter(k => k !== S.code + ':' + S.g.key).slice(0, ks.length - 3).forEach(k => tx.objectStore('docs').delete(k)); };
   } catch (e) { console.warn('art save', e); }
@@ -1480,7 +1606,7 @@ async function atRestore() {
     if (!v || !v.layers || !v.layers.length) return false;
     AT.W = v.W || 1600; AT.H = v.H || 1200; AT.cur = v.cur || 0;
     AT.groups = v.groups || {};
-    const ls = await Promise.all(v.layers.map(async x => { const l = atLayer(x.name); Object.assign(l, { op: x.op, vis: x.vis, blend: x.blend, clip: x.clip, lock: x.lock, grp: x.grp || null, mOn: x.mOn, owner: x.owner || null }); if (x.b) { const im = await createImageBitmap(x.b); l.g.drawImage(im, 0, 0); im.close && im.close(); } if (x.m) { atAddMask(l); l.mEdit = false; l.mg.clearRect(0, 0, AT.W, AT.H); const im = await createImageBitmap(x.m); l.mg.drawImage(im, 0, 0); } return l; }));
+    const ls = await Promise.all(v.layers.map(async x => { const l = atLayer(x.name); Object.assign(l, { op: x.op, vis: x.vis, blend: x.blend, clip: x.clip, lock: x.lock, grp: x.grp || null, mOn: x.mOn, owner: x.owner || null, adj: x.adj || null }); if (x.b) { const im = await createImageBitmap(x.b); l.g.drawImage(im, 0, 0); im.close && im.close(); } if (x.m) { atAddMask(l); l.mEdit = false; l.mg.clearRect(0, 0, AT.W, AT.H); const im = await createImageBitmap(x.m); l.mg.drawImage(im, 0, 0); } return l; }));
     AT.bg = v.bg || '#ffffff'; atInitDoc(AT.W, AT.H, ls); AT.undo = []; AT.redo = []; atUIUndo(); atToast('رجّعت رسمتك المحفوظة'); return true;
   } catch (e) { console.warn('art restore', e); return false; }
 }
@@ -1544,12 +1670,14 @@ function atShowUI(body) {
   const i = over ? ATV.view : g.i, pid = g.order[i], p = g.collab ? { name: 'الرسم الجماعي' } : S.players.find(q => q.id === pid), inGal = (g.gal || []).includes(pid), sig = 'v' + i + pid + over + host;
   if (box.dataset.sig === sig) { const t = document.getElementById('atGalT'); if (t) { t.classList.toggle('on', inGal); t.textContent = inGal ? 'بالمعرض الدائم ✓' : '+ للمعرض الدائم'; } return; } // بس زر المعرض يتحدّث، التسريع يكمل
   box.dataset.sig = sig;
-  box.innerHTML = `<div class="atvh"><h2>رسمة <span>${esc(p ? p.name : 'لاعب')}</span></h2><small>${atNum(i + 1)} من ${atNum(g.order.length)}</small></div>
-    <div class="atstage"><canvas id="atPlay" width="1200" height="900"></canvas><div class="atload" id="atLoad">نجهّز التسريع…</div></div>
+  const who = g.who && g.who[pid] && g.who[pid].length > 1 ? `<small>بدأها ${esc(g.who[pid][0])} · كمّلوها: ${g.who[pid].slice(1).map(esc).join('، ')}</small>` : '';
+  box.innerHTML = `<div class="atvh"><h2>رسمة <span>${esc(p ? p.name : 'لاعب')}</span></h2><small>${atNum(i + 1)} من ${atNum(g.order.length)}</small>${who}</div>
+    <div class="atstage"><canvas id="atPlay" width="1200" height="900"></canvas><div class="atload" id="atLoad">نجهّز التسريع…</div>${g.mode === 'memory' ? '<div class="atmref"><small>الصورة الأصلية</small><canvas id="atMRef" width="240" height="180"></canvas></div>' : ''}</div>
     <div class="atctl"><button class="atbtn" id="atRe">${atIcon('play')} أعد التسريع</button><div class="atprog" id="atProg"><i></i></div><small id="atTm"></small></div>
     <div class="atctl"><button class="atbtn" id="atImg">${atIcon('down')} الصورة</button><button class="atbtn" id="atVid">${atIcon('down')} فيديو التسريع</button>
       ${over ? '<button class="atbtn" id="atGrid">كل الرسومات</button>' : ''}${host && !S.spec ? `<button class="atbtn atgalt${inGal ? ' on' : ''}" id="atGalT">${inGal ? 'بالمعرض الدائم ✓' : '+ للمعرض الدائم'}</button>` : ''}
       ${host && !over ? `<span class="atsp"></span><button class="atbtn" id="atPrev"${i ? '' : ' disabled'}>السابقة</button>${i < g.order.length - 1 ? '<button class="atbtn ok" id="atNext">التالية</button>' : `<button class="atbtn ok" id="atEnd">${g.order.length > 1 ? 'للتصويت' : 'خلصنا'}</button>`}` : over ? `<span class="atsp"></span><button class="atbtn" id="atPrev"${i ? '' : ' disabled'}>السابقة</button><button class="atbtn" id="atNext"${i < g.order.length - 1 ? '' : ' disabled'}>التالية</button>` : '<span class="atsp"></span><small>الأونر يقلّب الرسومات</small>'}</div>`;
+  { const mr = document.getElementById('atMRef'); if (mr) mr.getContext('2d').drawImage(atMemRef(g.seed, 800, 600), 0, 0, 240, 180); }
   const go = k => over ? (ATV.view = k, atShowUI(body)) : send({ t: 'ago', i: k });
   const $$ = id => document.getElementById(id);
   if ($$('atPrev')) $$('atPrev').onclick = () => go(i - 1);
@@ -1622,6 +1750,43 @@ function net_art(m) {
   if (m.k === 'st' || m.k === 'lyr') atCollabRecv(m);
   if (m.k === 'lv') { const im = document.getElementById('atLvImg'); if (im && ATS.watch === m.from) im.src = m.d; }
   if (m.k === 'cheer') atCheerShow(m);
+  if (m.k === 'cur' && AT.ready) { (AT.curs || (AT.curs = {}))[m.from] = { x: m.x, y: m.y, n: m.n, c: m.c, t: Date.now() }; AT.dirty = true; }
+  if (m.k === 'preq' && S && S.g && !S.spec && AT.ready) atPassUp();
+  if (m.k === 'pass' && S && S.g && !S.spec) atPassRecv(m);
+}
+// ===== طرق اللعب =====
+const atMode = () => (S && S.g && S.game === 'art' && S.g.mode) || '';
+const atBlind = () => atMode() === 'blind' && !AT.done && !!document.getElementById('atStudio');
+// أكمل الرسمة: نرفع رسمتي، وبعدين نستلم رسمة اللي قبلي ونكمّلها
+async function atPassUp() { if (AT.stroke) atStrokeEnd(); if (AT.fl) atFloatCommit(); atCompose(AT.comp, null); let b = await atEnc(AT.comp, .9); if (b.size > 2.1e6) b = await atEnc(AT.comp, .75); send({ t: 'afin', d: await atB64(b), pass: 1 }); atToast('الرسمة بتنتقل للي بعدك…', 3000); }
+function atPassRecv(m) {
+  const im = new Image(); im.crossOrigin = 'anonymous';
+  im.onload = () => { const l = atLayer('رسمة ' + (m.n || '')); l.g.drawImage(im, 0, 0, AT.W, AT.H); const l2 = atLayer('إضافتي'); AT.layers = [l, l2]; AT.cur = 1; AT.groups = {}; AT.undo = []; AT.redo = []; AT.mem = 0; AT.sel = null; atUIUndo(); atRecomp(); atLayersUI(); AT.capDirty = true; atCapSoon(); atSaveSoon();
+    atToast(`جتك رسمة ${m.n || ''}، كمّلها${m.last ? ' (آخر دور)' : ''}`, 4000); try { sfx('pop'); } catch {} };
+  im.onerror = () => atToast('ما قدرنا نجيب الرسمة اللي جتك');
+  im.src = `/art/${S.code}/${S.g.key}/${encodeURIComponent(m.ch)}/final?k=${S.g.vk || ''}&t=${Date.now()}`;
+}
+// الحفظ: صورة تحفظها وترسمها (عشر ثواني)، تنولد من رقم الجولة عشان الكل يشوف نفس الصورة
+function atMemRef(seed, w, h) {
+  const R = atRnd(seed % 2147483646 + 1), c = atMk(w, h), g = c.getContext('2d'), pal = ['#e63946', '#f4a261', '#2a9d8f', '#264653', '#e9c46a', '#8e44ad', '#3d7bff', '#ff6fa3'];
+  const bgs = ['#fdf6e3', '#e8f4fd', '#fdeef4', '#eefbea', '#fff7e0']; g.fillStyle = bgs[Math.floor(R() * bgs.length)]; g.fillRect(0, 0, w, h);
+  g.fillStyle = 'rgba(0,0,0,.06)'; g.fillRect(0, h * (.62 + R() * .15), w, h);
+  const st = AT_MAT.st[1], n = 3 + Math.floor(R() * 3);
+  for (let i = 0; i < n; i++) { const it = st[Math.floor(R() * st.length)], sz = Math.min(w, h) * (.18 + R() * .2), x = sz / 2 + R() * (w - sz), y = sz / 2 + R() * (h - sz), t = atMk(Math.round(sz), Math.round(sz)), tg = t.getContext('2d');
+    it[2](tg, sz, sz); tg.fillStyle = pal[Math.floor(R() * pal.length)]; tg.fill('nonzero'); tg.lineJoin = 'round'; tg.lineWidth = sz * .04; tg.strokeStyle = '#222'; tg.stroke();
+    g.save(); g.translate(x, y); g.rotate((R() - .5) * .8); g.drawImage(t, -sz / 2, -sz / 2); g.restore(); }
+  return c;
+}
+function atMemShow() {
+  const st = document.getElementById('atStudio'); if (!st || document.getElementById('atMem')) return; const k = 'mem:' + S.g.key; if (sessionStorage.getItem(k)) return; sessionStorage.setItem(k, '1');
+  const o = document.createElement('div'); o.id = 'atMem'; o.className = 'atmem'; o.innerHTML = '<b>احفظها! بعد <span>١٠</span> ثواني تختفي وترسمها من ذاكرتك</b>'; const c = atMemRef(S.g.seed, 800, 600); o.appendChild(c); st.appendChild(o);
+  let n = 10; const tm = setInterval(() => { n--; const sp = o.querySelector('span'); if (sp) sp.textContent = atNum(n); if (n <= 0) { clearInterval(tm); o.remove(); atToast('يلا ارسمها!'); } }, 1000);
+}
+// الجدارية: الأونر يحط آخر نسخة كأساس بطبقته، وتوصل للكل مع لقطة الطبقة
+function atMuralLoad() {
+  if (atMode() !== 'mural' || !S.g.mural || !atHost() || AT.muralKey === S.g.key) return; const i = atMine(); if (i < 0) return; AT.muralKey = S.g.key;
+  const l = AT.layers[i]; if (l.g.getImageData(0, 0, AT.W, AT.H).data.some((v, k) => k % 4 === 3 && v)) return; // فيها رسم (رجع للصفحة)
+  const im = new Image(); im.onload = () => { l.g.drawImage(im, 0, 0, AT.W, AT.H); atRecomp(); atCollabSnap(); atToast('هذي الجدارية من آخر مرة، كمّلوا عليها'); }; im.src = `/mural/${S.g.mural}.img`;
 }
 // ===== المتفرج: شبكة الرسامين، ومتابعة رسام لايف (بث) مع تشجيع =====
 const ATS = { watch: null };
@@ -1659,7 +1824,7 @@ function renderArt(body) {
     }
     if (body.dataset.built !== 'art' || !document.getElementById('atStudio') || AT.key !== g.key) { body.dataset.built = 'art'; AT.key = g.key; AT.anim = null; atBuild(body); }
     const ids = S.players.filter(p => !p.bot).map(p => p.id), done = ids.filter(id => g.st[id] && g.st[id].done).length;
-    const mid = document.getElementById('atMid'); if (mid) mid.innerHTML = `${g.theme ? `<b>${esc(g.theme)}</b>` : `<b>${g.collab ? 'رسم جماعي' : 'مرسم ترتيب'}</b>`}<small>${g.dl ? `<span id="atClock">${atTimeLeft()}</span> · ` : ''}${ids.length > 1 ? `${atNum(done)} من ${atNum(ids.length)} خلصوا` : 'ارسم براحتك'}${g.wc ? ` · ${atNum(g.wc)} يتابعونك` : ''}</small>`;
+    const mid = document.getElementById('atMid'); if (mid) mid.innerHTML = `${g.theme ? `<b>${esc(g.theme)}</b>` : `<b>${g.collab ? 'رسم جماعي' : 'مرسم ترتيب'}</b>`}<small>${g.dl ? `<span id="atClock">${atTimeLeft()}</span> · ` : ''}${g.pr != null ? `الدور ${atNum(g.pr + 1)} من ${atNum(g.prn)}` : ids.length > 1 ? `${atNum(done)} من ${atNum(ids.length)} خلصوا` : 'ارسم براحتك'}${g.wc ? ` · ${atNum(g.wc)} يتابعونك` : ''}</small>`;
     if (g.st[S.me] && g.st[S.me].done && !AT.done) AT.done = true; // رجع للصفحة بعد ما خلص
     if (g.sub === 'collect' && !AT.done) atFinish(true);
     if (g.collab && AT.ready) atCollabFix();
@@ -1679,7 +1844,7 @@ const ATB = { on: false, img: null, style: 'paint', mins: 5, prog: 0, det: 2, co
 function atBotUI(pop) {
   pop.innerHTML = `<div class="athd"><b>الرسام الآلي</b></div><div class="atmenu">
     <div class="atsub">الصورة</div><div class="atrow wrap"><button data-bb="pick">${atIcon('img')} اختر صورة</button>${ATB.img ? `<img class="atbprev" src="${ATB.prev}" alt="">` : '<small>صورة شخص أو أي شي</small>'}</div>
-    <div class="atsub">الأسلوب</div><div class="atrow wrap">${[['paint', 'لوحة زيت'], ['color', 'ألوان وحبر'], ['anime', 'أنمي'], ['water', 'ألوان مائية'], ['sketch', 'رصاص'], ['pastel', 'باستيل']].map(([k, t]) => `<button data-bs="${k}" class="${ATB.style === k ? 'on' : ''}">${t}</button>`).join('')}</div>
+    <div class="atsub">الأسلوب</div><div class="atrow wrap">${[['copy', 'نسخ الصورة'], ['paint', 'لوحة زيت'], ['color', 'ألوان وحبر'], ['anime', 'أنمي'], ['water', 'ألوان مائية'], ['sketch', 'رصاص'], ['pastel', 'باستيل']].map(([k, t]) => `<button data-bs="${k}" class="${ATB.style === k ? 'on' : ''}">${t}</button>`).join('')}</div>
     <div class="atsub">التفاصيل</div><div class="atrow wrap">${[[1, 'بسيط'], [2, 'متوسط'], [3, 'دقيق']].map(([k, t]) => `<button data-bd="${k}" class="${ATB.det === k ? 'on' : ''}">${t}</button>`).join('')}<button data-bc="1" class="${ATB.cover ? 'on' : ''}">يملأ اللوحة</button></div>
     <div class="atsub">المدة</div><div class="atrow wrap">${[2, 3, 5, 10, 20, 40].map(n => `<button data-bm="${n}" class="${ATB.mins === n ? 'on' : ''}">${atNum(n)} د</button>`).join('')}</div>
     <div class="atrow wrap">${ATB.on ? `<button data-bb="pause">${ATB.paused ? 'كمّل' : 'استراحة'}</button><button data-bb="stop" class="on">وقّف</button>` : `<button data-bb="go" class="on"${ATB.img ? '' : ' disabled'}>ابدأ الرسم</button>`}</div>
@@ -1694,6 +1859,7 @@ function atBotUI(pop) {
 }
 function atBotPlan() {
   // نحلل الصورة على دقة صغيرة: ألوان قليلة (مثل الرسام يختار من لوحته)، حواف للتخطيط، ومناطق كل لون
+  if (ATB.style === 'copy') return atBotCopy();
   const W = AT.W, H = AT.H, im = ATB.img, s0 = ATB.cover ? Math.max(W / im.width, H / im.height) : Math.min(W / im.width, H / im.height) * .96, iw = im.width * s0, ih = im.height * s0, ox = (W - iw) / 2, oy = (H - ih) / 2;
   const A = Math.min(1, 300 / Math.max(iw, ih)), aw = Math.max(8, Math.round(iw * A)), ah = Math.max(8, Math.round(ih * A)), toD = (x, y) => [ox + x / A, oy + y / A], N = aw * ah;
   const ana = blur => { const c = atMk(aw, ah), g = c.getContext('2d'); if (blur && atHasFilter()) g.filter = `blur(${blur}px)`; g.drawImage(im, 0, 0, aw, ah); return g.getImageData(0, 0, aw, ah).data; };
@@ -1765,20 +1931,66 @@ function atBotPlan() {
   if (st === 'sketch') sk.filter((_, i) => i % 2 === 0).forEach(l => acts.push({ pts: l.pts, b: '6b', sz: skSz * 1.2, col: '#1c1c1c', L: 0, ph: 'ln' }));
   return acts;
 }
+// نسخ الصورة: رسم طبقات من الفرشاة الكبيرة للصغيرة، وكل طبقة ما ترسم إلا وين اللوحة لسه بعيدة عن الصورة
+// (نفس فكرة Hertzmann: ضربات منحنية تمشي مع اتجاه الحواف، ولونها من الصورة نفسها)، فالنتيجة تقرب من الأصل جداً
+function atBotCopy() {
+  const W = AT.W, H = AT.H, im = ATB.img, s0 = ATB.cover ? Math.max(W / im.width, H / im.height) : Math.min(W / im.width, H / im.height) * .96, iw = im.width * s0, ih = im.height * s0, ox = (W - iw) / 2, oy = (H - ih) / 2;
+  const DET = ATB.det || 2, A = Math.min(1, [360, 520, 720][DET - 1] / Math.max(iw, ih)), aw = Math.max(8, Math.round(iw * A)), ah = Math.max(8, Math.round(ih * A)), N = aw * ah, toD = (x, y) => [ox + x / A, oy + y / A];
+  const hex = (r, g, b) => '#' + [r, g, b].map(v => atClamp(Math.round(v), 0, 255).toString(16).padStart(2, '0')).join('');
+  const get = blur => { const c = atMk(aw, ah), g = c.getContext('2d'); if (blur && atHasFilter()) g.filter = `blur(${blur}px)`; g.drawImage(im, 0, 0, aw, ah); return g.getImageData(0, 0, aw, ah).data; };
+  // اللوحة التقريبية: نرسم عليها نفس الضربات عشان نعرف وين باقي فرق
+  const ap = atMk(aw, ah), ag = ap.getContext('2d', { willReadFrequently: true }); ag.fillStyle = AT.bg; ag.fillRect(0, 0, aw, ah); ag.lineCap = 'round'; ag.lineJoin = 'round';
+  const R0 = Math.max(aw, ah) / 22, radii = [R0, R0 / 2, R0 / 4, R0 / 8, R0 / 14].filter(r => r >= .9); if (DET === 3 && radii[radii.length - 1] > 1.1) radii.push(.9);
+  let budget = Math.round(ATB.mins * 60000 / 55); const acts = [], T = 26; // T: قد إيش لازم يكون الفرق عشان نرسم
+  radii.forEach((r, pi) => {
+    const ref = get(Math.max(.5, r * .5)), cur = ag.getImageData(0, 0, aw, ah).data, L = new Float32Array(N);
+    for (let i = 0; i < N; i++) L[i] = ref[i * 4] * .3 + ref[i * 4 + 1] * .59 + ref[i * 4 + 2] * .11;
+    const at = (x, y) => atClamp(Math.round(y), 0, ah - 1) * aw + atClamp(Math.round(x), 0, aw - 1);
+    const dif = i => Math.hypot(ref[i * 4] - cur[i * 4], ref[i * 4 + 1] - cur[i * 4 + 1], ref[i * 4 + 2] - cur[i * 4 + 2]);
+    const grad = (x, y) => { const i = at(x, y), xi = i % aw, yi = (i / aw) | 0; if (xi < 1 || yi < 1 || xi >= aw - 1 || yi >= ah - 1) return [0, 0]; return [(L[i - aw + 1] + 2 * L[i + 1] + L[i + aw + 1]) - (L[i - aw - 1] + 2 * L[i - 1] + L[i + aw - 1]), (L[i + aw - 1] + 2 * L[i + aw] + L[i + aw + 1]) - (L[i - aw - 1] + 2 * L[i - aw] + L[i - aw + 1])]; };
+    const step = Math.max(1, r), cand = [];
+    for (let y = 0; y < ah; y += step) for (let x = 0; x < aw; x += step) { // بكل مربع: متوسط الفرق، ولو كبير نبدأ ضربة من أبعد نقطة
+      let sum = 0, n = 0, bi = -1, bd = -1; const x1 = Math.min(aw, x + step), y1 = Math.min(ah, y + step);
+      for (let yy = y | 0; yy < y1; yy++) for (let xx = x | 0; xx < x1; xx++) { const i = yy * aw + xx, d = dif(i); sum += d; n++; if (d > bd) { bd = d; bi = i; } }
+      if (n && (pi === 0 ? sum / n > 4 : sum / n > T)) cand.push({ i: bi, e: sum / n }); }
+    const allow = Math.max(40, Math.floor(budget / (radii.length - pi))); cand.sort((a, b) => b.e - a.e); const pick = cand.slice(0, allow); budget -= pick.length;
+    const maxLen = pi === 0 ? 4 : pi < 3 ? 8 : 6, strokes = [];
+    for (const c of pick) { let x = c.i % aw, y = (c.i / aw) | 0; const i0 = c.i, col = [ref[i0 * 4], ref[i0 * 4 + 1], ref[i0 * 4 + 2]], pts = [[x, y]]; let ldx = 0, ldy = 0;
+      for (let k = 1; k < maxLen; k++) { const [gx, gy] = grad(x, y), gm = Math.hypot(gx, gy); if (gm < 8 && k > 1) { /* مافيه حافة: يكمل بنفس الاتجاه */ } let dx, dy; if (gm >= 8) { dx = -gy / gm; dy = gx / gm; } else if (k === 1) { const a = Math.random() * Math.PI; dx = Math.cos(a); dy = Math.sin(a); } else { dx = ldx; dy = ldy; }
+        if (ldx * dx + ldy * dy < 0) { dx = -dx; dy = -dy; } dx = .7 * dx + .3 * ldx; dy = .7 * dy + .3 * ldy; const m = Math.hypot(dx, dy) || 1; dx /= m; dy /= m;
+        const nx = x + dx * r, ny = y + dy * r; if (nx < 0 || ny < 0 || nx >= aw || ny >= ah) break; const j = at(nx, ny);
+        const dRef = Math.hypot(ref[j * 4] - col[0], ref[j * 4 + 1] - col[1], ref[j * 4 + 2] - col[2]), dCur = Math.hypot(ref[j * 4] - cur[j * 4], ref[j * 4 + 1] - cur[j * 4 + 1], ref[j * 4 + 2] - cur[j * 4 + 2]);
+        if (k > 1 && dRef > dCur) break; x = nx; y = ny; ldx = dx; ldy = dy; pts.push([x, y]); }
+      if (pts.length === 1) { const a = Math.atan2(...grad(pts[0][0], pts[0][1]).reverse()) + Math.PI / 2; pts.push([pts[0][0] + Math.cos(a) * r * .6, pts[0][1] + Math.sin(a) * r * .6]); }
+      strokes.push({ pts, col, q: (col[0] >> 5) * 64 + (col[1] >> 5) * 8 + (col[2] >> 5) }); }
+    // الترتيب: نجمع الألوان القريبة (مثل الرسام يخلص لون وبعدين ينتقل)، وكل مجموعة الأقرب فالأقرب
+    const groups = new Map(); strokes.forEach(o => { if (!groups.has(o.q)) groups.set(o.q, []); groups.get(o.q).push(o); });
+    const gl = [...groups.values()].sort((a, b) => b.length - a.length);
+    const sz = Math.max(1.5, r * 2.1 / A), br = 'round';
+    for (const g of gl) { let last = null; const left = g.slice();
+      while (left.length) { let bi = 0; if (last) { let bd = 1e18; for (let k = 0; k < left.length; k++) { const p = left[k].pts[0], d = (p[0] - last[0]) ** 2 + (p[1] - last[1]) ** 2; if (d < bd) { bd = d; bi = k; } } }
+        const o = left.splice(bi, 1)[0]; last = o.pts[o.pts.length - 1]; const ch = hex(...o.col.map(v => v + (Math.random() - .5) * 6));
+        ag.strokeStyle = hex(...o.col); ag.lineWidth = r * 2; ag.beginPath(); o.pts.forEach(([x, y], k) => k ? ag.lineTo(x, y) : ag.moveTo(x, y)); if (o.pts.length < 2) ag.lineTo(o.pts[0][0] + .1, o.pts[0][1]); ag.stroke();
+        acts.push({ pts: o.pts.map(([x, y]) => toD(x + (Math.random() - .5) * .3, y + (Math.random() - .5) * .3)), b: br, sz, col: ch, L: 0, ph: 'p' + pi, flat: 1, thin: pi >= 2, slow: pi === 0 ? .7 : 1 }); } }
+    if (pi < radii.length - 1) acts.push({ pause: 900 + Math.random() * 900 }); // يوقف يقارن بالصورة
+  });
+  if (!ATB.cover) acts.clip = [ox, oy, iw, ih]; return acts;
+}
 async function atBotRun() {
   if (ATB.on || !ATB.img || !AT.ready) return; if (atCollab()) return atToast('الرسام الآلي ما يشتغل بالرسم الجماعي');
   if (AT.layers.length + 2 > AT.maxL) return atToast('الطبقات مليانة، احذف وحدة أول');
   atToast('نجهّز الرسمة…', 2000); await new Promise(r => setTimeout(r, 30));
   let plan; try { plan = atBotPlan(); } catch (e) { console.warn(e); return atToast('ما قدرنا نحلل الصورة'); }
   const keep = { tool: AT.tool, color: AT.color, bt: AT.bt.brush, size: AT.size.brush, op: AT.op.brush, sym: AT.sym, stream: Object.assign({}, AT.stream) };
-  const two = ['color', 'anime', 'water'].includes(ATB.style); atStructDo(() => { AT.layers.push(atLayer(ATB.style === 'sketch' ? 'رسم رصاص' : 'ألوان')); if (two) AT.layers.push(atLayer('خطوط')); });
+  const two = ['color', 'anime', 'water'].includes(ATB.style); atStructDo(() => { AT.layers.push(atLayer(ATB.style === 'sketch' ? 'رسم رصاص' : ATB.style === 'copy' ? 'نسخة الصورة' : 'ألوان')); if (two) AT.layers.push(atLayer('خطوط')); });
   const li = two ? [AT.layers.length - 2, AT.layers.length - 1] : [AT.layers.length - 1];
-  ATB.on = true; ATB.prog = 0; AT.sym = 'none'; AT.sel = null; AT.botBusy = true; const u0 = AT.undo.length;
+  if (plan.clip) { const m = atMk(AT.W, AT.H), [cx, cy, cw, ch] = plan.clip; m.getContext('2d').fillRect(cx, cy, cw, ch); AT.selOv = null; plan.sel = { mask: m, box: [Math.max(0, cx - 3), Math.max(0, cy - 3), Math.min(AT.W, cx + cw + 4), Math.min(AT.H, cy + ch + 4)] }; } // نسخ الصورة: ما يطلع برا حدود الصورة
+  ATB.on = true; ATB.prog = 0; ATB.n = 0; ATB.tot = plan.filter(a => !a.pause).length; AT.sym = 'none'; AT.sel = plan.sel || null; AT.botBusy = true; const u0 = AT.undo.length;
   // الوقت: نوزّعه على طول كل الخطوط + وقفات رفع القلم وتغيير اللون، والقلم يمشي نقطة نقطة مثل اليد
   const len = a => { let s = 0; for (let k = 1; k < a.pts.length; k++) s += Math.hypot(a.pts[k][0] - a.pts[k - 1][0], a.pts[k][1] - a.pts[k - 1][1]); return s; };
   const lens = plan.map(a => a.pause ? 0 : len(a) * (a.slow || 1)), totalLen = lens.reduce((a, b) => a + b, 0), strokesN = plan.filter(a => !a.pause).length, pauses = plan.reduce((t, a) => t + (a.pause || 0), 0), changes = plan.reduce((n, a, i) => n + (i && !a.pause && a.col !== (plan[i - 1].col) ? 1 : 0), 0);
   const T = ATB.mins * 60000; let pausesLeft = pauses, strokesLeft = strokesN; const lift = Math.min(160, T * .22 / Math.max(1, strokesN)), pick = Math.min(900, T * .08 / Math.max(1, changes)), drawT = Math.max(T * .5, T - lift * strokesN - pick * changes - pauses), speed0 = totalLen / drawT; let speed = speed0; // بكسل بالمللي ثانية
-  const wait = ms => new Promise(r => setTimeout(r, ms)), frame = () => new Promise(r => requestAnimationFrame(r)), t0 = Date.now(); let done = 0, lastCol = null;
+  const wait = ms => new Promise(r => setTimeout(r, ms)), frame = () => new Promise(r => requestAnimationFrame(r)), t0 = Date.now(); let done = 0, lastCol = null, yT = 0;
   for (let i = 0; i < plan.length && ATB.on && document.getElementById('atStudio') && !AT.done; i++) {
     const s = plan[i];
     while (ATB.paused && ATB.on) await wait(300);
@@ -1786,25 +1998,27 @@ async function atBotRun() {
     { const left = T - (Date.now() - t0) - pausesLeft - lift * strokesLeft, remLen = totalLen - done; speed = Math.max(speed0, remLen / Math.max(4000, left)); }
     if (s.pause) { pausesLeft -= s.pause; if (Date.now() - t0 < T * .9) await wait(s.pause * (.7 + Math.random() * .6)); continue; } // يوقف يفكّر
     strokesLeft--;
-    if (s.col !== lastCol) { if (lastCol) await wait(pick * (.6 + Math.random() * .8)); lastCol = s.col; atAddHist(s.col); } // يختار لون
+    if (s.thin && Date.now() - t0 > T * (done / totalLen) + T * .08 && Math.random() < .5) { done += lens[i]; continue; } // الجهاز بطيء: نخفف التفاصيل عشان يخلص على الوقت
+    const rush = Date.now() - t0 > T * (done / totalLen) * .9 + 2500; // متأخرين عن الوقت: نرسم أسرع وبدون وقفات (الأجهزة البطيئة)
+    if (s.col !== lastCol) { if (lastCol && !rush) await wait(pick * (.6 + Math.random() * .8)); lastCol = s.col; atAddHist(s.col); } // يختار لون
     AT.cur = li[s.L] != null ? li[s.L] : li[0]; AT.tool = 'brush'; AT.bt.brush = s.b; AT.size.brush = Math.max(1, s.sz); AT.op.brush = 1; AT.color = s.col; AT.stream[s.b] = .35; atUIColor();
     // الضغط: يبدأ خفيف ويقوى بالنص ويخف بالآخر، مع رجفة بسيطة
-    const sl = s.slow || 1, tot = Math.max(1, s.pts.length - 1), pk = .65 + Math.random() * .3; let kk = 0; const P = () => atClamp(pk * Math.sin(Math.min(1, (kk + .3) / tot) * Math.PI) * (.92 + Math.random() * .16) + .12, .12, 1);
+    const sl = s.slow || 1, tot = Math.max(1, s.pts.length - 1), pk = .65 + Math.random() * .3; let kk = 0; const P = () => s.flat ? .9 + Math.random() * .1 : atClamp(pk * Math.sin(Math.min(1, (kk + .3) / tot) * Math.PI) * (.92 + Math.random() * .16) + .12, .12, 1);
     atStrokeStart(s.pts[0][0], s.pts[0][1], .15); if (!AT.stroke) continue;
     let k = 1, tLast = performance.now(), carry = 0;
-    while (k < s.pts.length && ATB.on) { await frame(); const now = performance.now(), dt = Math.min(80, now - tLast); tLast = now; carry += dt * speed / sl * (.75 + Math.random() * .5);
+    while (k < s.pts.length && ATB.on) { if (!rush || performance.now() - yT > 14) { await frame(); yT = performance.now(); } const now = performance.now(), dt = Math.min(80, now - tLast); tLast = now; carry += rush ? 1e9 : dt * speed / sl * (.75 + Math.random() * .5);
       kk = k; while (k < s.pts.length && carry > 0) { const [ax, ay] = s.pts[k - 1], [bx, by] = s.pts[k], d = Math.hypot(bx - ax, by - ay) || 1, n = Math.max(1, Math.ceil(d / 6));
         // نقسم الخط لنقاط صغيرة عشان القلم يمشي بالتدريج
         if (!s.sub) s.sub = 0; const take = Math.min(n - s.sub, Math.max(1, Math.floor(carry / (d / n))));
         for (let q = 1; q <= take; q++) { const f = (s.sub + q) / n; atStrokeTo(ax + (bx - ax) * f, ay + (by - ay) * f, P()); }
         s.sub += take; carry -= take * d / n; if (s.sub >= n) { s.sub = 0; k++; } }
       const el = Date.now() - t0; ATB.prog = Math.min(.99, (done + (k / s.pts.length) * lens[i]) / totalLen); }
-    atStrokeEnd(); done += lens[i];
+    atStrokeEnd(); done += lens[i]; ATB.n = (ATB.n || 0) + 1;
     if (Math.random() < .006 && s.ph !== 'sk' && AT.undo.length > 1) { await wait(500 + Math.random() * 600); atUndo(); await wait(400); i--; done -= lens[i + 1]; continue; } // أحياناً يتراجع ويعيدها مثل الإنسان
     const pb = document.querySelector('.atpop.atabot .atprog i'); if (pb) pb.style.width = Math.round(ATB.prog * 100) + '%';
-    await wait(lift * (.4 + Math.random() * 1.2)); // يرفع القلم
+    if (!rush) await wait(lift * (.4 + Math.random() * 1.2)); // يرفع القلم
   }
-  if (AT.stroke) atStrokeEnd();
+  if (AT.stroke) atStrokeEnd(); if (plan.sel && AT.sel === plan.sel) AT.sel = null;
   Object.assign(AT, { tool: keep.tool, color: keep.color, sym: keep.sym }); AT.bt.brush = keep.bt; AT.size.brush = keep.size; AT.op.brush = keep.op; AT.stream = keep.stream;
   AT.undo.length = Math.min(AT.undo.length, u0); AT.redo = []; AT.mem = AT.undo.reduce((m, x) => m + (x.mem || 0), 0); atUIUndo(); // تراجع وحدة تشيل الرسمة كلها (طبقاتها)
   const fin = ATB.on; ATB.on = false; AT.botBusy = false; atUITool(); atUIColor(); atUISliders(); atLayersUI(); atCapSoon(); atSaveSoon(); atToast(fin ? 'خلص الرسم' : 'وقّفنا الرسام');

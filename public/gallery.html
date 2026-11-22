@@ -23,11 +23,23 @@
   .it em{font-style:normal;color:#f5c542}
   .empty{color:#8b8b99;text-align:center;padding:80px 0}
   .ov{position:fixed;inset:0;background:#000d;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;z-index:9;padding:16px}
-  .ov canvas{max-width:min(96vw,1200px);max-height:78vh;background:#fff;border-radius:10px}
+  .ov canvas{max-width:min(96vw,1200px);max-height:58vh;background:#fff;border-radius:10px}
   .ov .bar{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
   .ov button{background:#2a2a35;color:#fff;border:0;border-radius:10px;padding:9px 16px;font:inherit;cursor:pointer}
   .ov button:hover{background:#3a3a48}
   .ov b{font-size:1.1rem}
+  .it .lk{color:#ff7a9a}
+  .mural{background:#1c1c24;border:1px solid #2a2a35;border-radius:16px;padding:14px;margin-bottom:30px}
+  .mural h2{margin:0 0 10px;font-size:1.05rem;display:flex;gap:10px;align-items:baseline;flex-wrap:wrap}.mural h2 small{color:#8b8b99;font-weight:400}
+  .mural img{width:100%;max-height:70vh;object-fit:contain;background:#fff;border-radius:10px;display:block}
+  .mural input{width:100%;accent-color:#9aa0ff;margin-top:10px}
+  .mural .who{color:#b9b9c7;font-size:.88rem;margin-top:6px}
+  .soc{width:min(96vw,700px);display:flex;flex-direction:column;gap:8px;max-height:24vh}
+  .soc .row{display:flex;gap:8px}.soc input{flex:1;background:#1c1c24;border:1px solid #333;border-radius:10px;color:#fff;padding:9px 12px;font:inherit}
+  .soc .cms{overflow:auto;display:flex;flex-direction:column;gap:6px}
+  .soc .cm{background:#1c1c24;border-radius:10px;padding:7px 10px;font-size:.9rem;display:flex;gap:8px;align-items:flex-start}.soc .cm b{color:#9aa0ff;white-space:nowrap}.soc .cm span{flex:1;word-break:break-word}
+  .soc .cm button{padding:2px 8px;font-size:.78rem;background:transparent;color:#8b8b99}
+  .ov button.on{background:#c2185b}
   .prog{width:min(96vw,600px);height:4px;background:#333;border-radius:2px;overflow:hidden}.prog i{display:block;height:100%;width:0;background:#9aa0ff}
 </style>
 </head>
@@ -37,23 +49,48 @@
 <script>
 const $ = s => document.querySelector(s), esc = t => String(t == null ? '' : t).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const num = n => String(n).replace(/\d/g, d => '٠١٢٣٤٥٦٧٨٩'[d]);
-let DATA = [];
+let DATA = [], ME = null, MUR = null;
+const lsg = k => { try { return JSON.parse(localStorage.getItem(k)); } catch { return null; } };
+const ID = () => ({ dev: lsg('tarteeb-dev') || '', dtok: (lsg('tarteeb-dc') || {}).tok, n: lsg('tarteeb-name') || '' });
+const post = (u, o) => fetch(u, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(Object.assign(ID(), o)) }).then(r => r.json());
+if (ID().dev || ID().dtok) post('/api/me', {}).then(o => { ME = o && o.pid; }).catch(() => {});
+fetch('/mural-data').then(r => r.json()).then(m => { MUR = m; if (DATA.length || m.v) draw(); }).catch(() => {});
 fetch('/gallery-data' + (new URLSearchParams(location.search).get('pid') ? '?pid=' + encodeURIComponent(new URLSearchParams(location.search).get('pid')) : '')).then(r => r.json()).then(d => { DATA = d; draw(); }).catch(() => { $('#m').innerHTML = '<div class="empty">ما قدرنا نحمّل المعرض</div>'; });
+function muralHTML() {
+  if (!MUR || !MUR.v || new URLSearchParams(location.search).get('pid')) return '';
+  const h = MUR.hist, last = h[h.length - 1] || { v: MUR.v, names: [] };
+  return `<section class="mural"><h2>جدارية ترتيب<small>النسخة ${num(last.v)} · ${num(h.length)} نسخة محفوظة</small></h2><img id="muImg" src="/mural/${last.v}.img" alt="">
+    ${h.length > 1 ? `<input type="range" id="muR" min="0" max="${h.length - 1}" value="${h.length - 1}">` : ''}<div class="who" id="muW">${muWho(last)}</div></section>`;
+}
+const muWho = x => `${new Date(x.t || Date.now()).toLocaleString('ar-SA-u-nu-arab', { dateStyle: 'medium', timeStyle: 'short' })}${x.names && x.names.length ? ' · رسموها: ' + x.names.map(esc).join('، ') : ''}${x.theme ? ' · ' + esc(x.theme) : ''}`;
 function draw() {
+  const mu = muralHTML();
+  if (!DATA.length && mu) { $('#m').innerHTML = mu; muBind(); return; }
   if (!DATA.length) { $('#m').innerHTML = '<div class="empty">المعرض فاضي، أول ما تخلص جولة رسم تنحفظ الرسومات هنا</div>'; return; }
-  $('#m').innerHTML = DATA.map((s, si) => `<section class="ses"><h2>${esc(s.theme || (s.collab ? 'رسم جماعي' : 'رسم حر'))}<small>${new Date(s.t).toLocaleString('ar-SA-u-nu-arab', { dateStyle: 'medium', timeStyle: 'short' })}${s.mins ? ' · ' + num(s.mins) + ' دقيقة' : ''}</small></h2>
-    <div class="grid">${s.items.map(it => `<button class="it${it.best ? ' best' : ''}" data-s="${si}" data-i="${it.i}"><img loading="lazy" src="/gal/${encodeURIComponent(s.d)}/${it.i}.img" alt=""><span><b>${esc(it.name)}</b>${it.best ? '<em>أحلى رسمة</em>' : it.votes ? `<small>${num(it.votes)} صوت</small>` : ''}</span></button>`).join('')}</div></section>`).join('');
+  $('#m').innerHTML = mu + DATA.map((s, si) => `<section class="ses"><h2>${esc(s.theme || (s.collab ? 'رسم جماعي' : 'رسم حر'))}<small>${new Date(s.t).toLocaleString('ar-SA-u-nu-arab', { dateStyle: 'medium', timeStyle: 'short' })}${s.mins ? ' · ' + num(s.mins) + ' دقيقة' : ''}</small></h2>
+    <div class="grid">${s.items.map(it => `<button class="it${it.best ? ' best' : ''}" data-s="${si}" data-i="${it.i}"><img loading="lazy" src="/gal/${encodeURIComponent(s.d)}/${it.i}.img" alt=""><span><b>${esc(it.name)}</b>${it.best ? '<em>أحلى رسمة</em>' : it.votes ? `<small>${num(it.votes)} صوت</small>` : ''}${it.lk || it.nc ? `<small class="lk">${it.lk ? '♥ ' + num(it.lk) : ''}${it.nc ? ' · ' + num(it.nc) + ' تعليق' : ''}</small>` : ''}</span></button>`).join('')}</div></section>`).join('');
+  muBind();
   document.querySelectorAll('.it').forEach(b => b.onclick = () => open(DATA[+b.dataset.s], +b.dataset.i));
 }
+function muBind() { const r = $('#muR'); if (!r) return; r.oninput = () => { const x = MUR.hist[+r.value]; $('#muImg').src = `/mural/${x.v}.img`; $('#muW').innerHTML = `النسخة ${num(x.v)} · ` + muWho(x); }; }
 let tok = 0;
 async function open(s, i) {
   const it = s.items.find(x => x.i === i), my = ++tok;
-  const o = document.createElement('div'); o.className = 'ov'; o.innerHTML = `<b>${esc(it.name)}</b><canvas width="1200" height="900"></canvas><div class="prog"><i></i></div><div class="bar"><button id="gRe">أعد التسريع</button><button id="gImg">نزّل الصورة</button><button id="gX">سكّر</button></div>`;
+  const o = document.createElement('div'); o.className = 'ov'; o.innerHTML = `<b>${esc(it.name)}</b><canvas width="1200" height="900"></canvas><div class="prog"><i></i></div><div class="bar"><button id="gLk">♥ <span>٠</span></button><button id="gRe">أعد التسريع</button><button id="gImg">نزّل الصورة</button><button id="gX">سكّر</button></div>`;
   document.body.appendChild(o);
   const cv = o.querySelector('canvas'), cx = cv.getContext('2d'), bar = o.querySelector('.prog i');
-  const close = () => { tok++; o.remove(); };
+  const close = () => { tok++; o.remove(); draw(); };
   o.onclick = e => { if (e.target === o) close(); }; o.querySelector('#gX').onclick = close;
   const base = `/gal/${encodeURIComponent(s.d)}/${i}`;
+  // اللايك والتعليقات
+  const soc = document.createElement('div'); soc.className = 'soc'; soc.innerHTML = `<div class="cms"></div><div class="row"><input maxlength="140" placeholder="اكتب تعليق…"><button>أرسل</button></div>`; o.appendChild(soc);
+  const showX = x => { if (!x || x.err) return; const lb = o.querySelector('#gLk'); lb.classList.toggle('on', !!x.liked); lb.querySelector('span').textContent = num(x.lk || 0); it.lk = x.lk; it.nc = x.cm.length;
+    soc.querySelector('.cms').innerHTML = x.cm.length ? x.cm.slice().reverse().map(c => `<div class="cm"><b>${esc(c.n)}</b><span>${esc(c.x)}</span>${c.mine || (ME && it.pid === ME) ? `<button data-del="${c.id}">حذف</button>` : ''}</div>`).join('') : '<small style="color:#8b8b99">ما فيه تعليقات، كن أول واحد</small>';
+    soc.querySelectorAll('[data-del]').forEach(b => b.onclick = () => post('/api/gcdel', { d: s.d, i, id: b.dataset.del }).then(showX)); };
+  fetch(`/gal-x?d=${encodeURIComponent(s.d)}&i=${i}&me=${encodeURIComponent(ME || '')}`).then(r => r.json()).then(showX).catch(() => {});
+  o.querySelector('#gLk').onclick = () => post('/api/glike', { d: s.d, i }).then(showX).catch(() => {});
+  const inp = soc.querySelector('input'), sendC = () => { const x = inp.value.trim(); if (!x) return; inp.value = ''; post('/api/gcmt', { d: s.d, i, x }).then(r => { if (r.err) alert(r.err); else showX(r); }).catch(() => {}); };
+  soc.querySelector('.row button').onclick = sendC; inp.onkeydown = e => { if (e.key === 'Enter') sendC(); };
   o.querySelector('#gImg').onclick = async () => { const b = await (await fetch(base + '.img')).blob(), a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = `tarteeb-drawing-${i + 1}.${b.type.includes('png') ? 'png' : b.type.includes('jpeg') ? 'jpg' : 'webp'}`; a.click(); };
   const buf = new Uint8Array(await (await fetch(base + '.tl')).arrayBuffer()), fr = []; let k = 0;
   while (k + 4 <= buf.length) { const n = (buf[k] << 24 | buf[k + 1] << 16 | buf[k + 2] << 8 | buf[k + 3]) >>> 0; k += 4; fr.push(new Blob([buf.subarray(k, k + n)])); k += n; }

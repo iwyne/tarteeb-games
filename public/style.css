@@ -4312,7 +4312,7 @@ button.ludie{padding:0;cursor:default}
 @media (max-width:700px){
  .attop{height:48px;padding:0 4px;gap:2px}.atib{width:34px;height:34px}.atib svg{width:21px;height:21px}.atmid small{display:none}.atmid b{font-size:.8rem}
  .atside{left:6px;width:40px}.atsl{height:110px}#atOp{height:80px}
- .atpop,.atpop.atbrushes,.atpop.atlayers,.atpop.atcolor{left:6px;right:6px;width:auto;top:54px;max-height:calc(100% - 64px)}
+ .atpop,.atpop.atbrushes,.atpop.atlayers,.atpop.atcolor,.atpop.atmat{left:6px;right:6px;width:auto;top:54px;max-height:calc(100% - 64px)}
  .atcats{width:86px}.atbrs canvas{width:110px}
  .atfin{padding:8px 14px}
 }
@@ -4516,3 +4516,19 @@ body:has(#atStudio:not(.atstream)) .fabs{bottom:150px}
 .atgrps button{all:unset;cursor:pointer;padding:4px 10px;border-radius:999px;background:#34353d;font-size:.75rem;font-weight:700}
 .atgrps button.on{background:#3d7bff;color:#fff}
 .atgsw{grid-template-columns:repeat(6,1fr);gap:7px;margin-bottom:8px}.atgsw button{border-radius:9px}
+/* مكتبة الخامات */
+.atpop.atmat{width:min(400px,94vw)}
+.atmtab button.on{background:#3d7bff;color:#fff}
+.atmatg{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:8px;max-height:52vh;overflow:auto}
+.atmatg button{all:unset;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px;padding:6px;border-radius:10px;background:#2b2c33;font-size:.76rem;font-weight:700}
+.atmatg button:hover{background:#363843}
+.atmatg canvas{width:100%;height:auto;border-radius:6px;display:block}
+@media (max-width:520px){.atmatg{grid-template-columns:repeat(3,1fr)}}
+/* طرق اللعب بالمرسم */
+.atmem{position:absolute;inset:0;z-index:40;background:rgba(14,14,20,.92);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:16px;text-align:center}
+.atmem b{font-size:1.1rem}.atmem b span{color:#ffd166;font-size:1.4rem}
+.atmem canvas{max-width:min(92vw,800px);max-height:70vh;border-radius:12px;box-shadow:0 8px 30px #0008}
+.atstage{position:relative}
+.atmref{position:absolute;top:10px;inset-inline-start:10px;background:#1c1c24ee;border-radius:10px;padding:6px;display:flex;flex-direction:column;gap:4px;align-items:center}
+.atmref canvas{width:160px;height:120px;border-radius:6px;background:#fff}
+.atvh small+small{display:block}
