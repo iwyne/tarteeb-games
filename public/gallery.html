@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>معرض مرسم ترتيب</title>
+<style>
+  *{box-sizing:border-box}
+  body{font-family:system-ui,-apple-system,"Segoe UI",Tahoma,sans-serif;background:#121217;color:#e9e9f0;margin:0}
+  header{display:flex;align-items:center;gap:12px;padding:18px 22px;border-bottom:1px solid #26262f;position:sticky;top:0;background:#121217ee;backdrop-filter:blur(8px);z-index:2}
+  header h1{margin:0;font-size:1.3rem}
+  header a{margin-inline-start:auto;color:#9aa0ff;text-decoration:none}
+  main{max-width:1300px;margin:0 auto;padding:20px}
+  .ses{margin-bottom:34px}
+  .ses h2{font-size:1rem;margin:0 0 10px;color:#fff;display:flex;gap:10px;align-items:baseline;flex-wrap:wrap}
+  .ses h2 small{color:#8b8b99;font-weight:400}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px}
+  .it{background:#1c1c24;border:1px solid #2a2a35;border-radius:14px;overflow:hidden;cursor:pointer;padding:0;color:inherit;text-align:inherit;font:inherit;transition:transform .15s}
+  .it:hover{transform:translateY(-3px)}
+  .it.best{border-color:#f5c542;box-shadow:0 0 0 2px #f5c54255}
+  .it img{width:100%;aspect-ratio:4/3;object-fit:contain;background:#fff;display:block}
+  .it span{display:flex;justify-content:space-between;padding:8px 10px;font-size:.9rem}
+  .it em{font-style:normal;color:#f5c542}
+  .empty{color:#8b8b99;text-align:center;padding:80px 0}
+  .ov{position:fixed;inset:0;background:#000d;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;z-index:9;padding:16px}
+  .ov canvas{max-width:min(96vw,1200px);max-height:78vh;background:#fff;border-radius:10px}
+  .ov .bar{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+  .ov button{background:#2a2a35;color:#fff;border:0;border-radius:10px;padding:9px 16px;font:inherit;cursor:pointer}
+  .ov button:hover{background:#3a3a48}
+  .ov b{font-size:1.1rem}
+  .prog{width:min(96vw,600px);height:4px;background:#333;border-radius:2px;overflow:hidden}.prog i{display:block;height:100%;width:0;background:#9aa0ff}
+</style>
+</head>
+<body>
+<header><h1>معرض مرسم ترتيب</h1><a href="/">رجوع للموقع</a></header>
+<main id="m"><div class="empty">نحمّل…</div></main>
+<script>
+const $ = s => document.querySelector(s), esc = t => String(t == null ? '' : t).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const num = n => String(n).replace(/\d/g, d => '٠١٢٣٤٥٦٧٨٩'[d]);
+let DATA = [];
+fetch('/gallery-data').then(r => r.json()).then(d => { DATA = d; draw(); }).catch(() => { $('#m').innerHTML = '<div class="empty">ما قدرنا نحمّل المعرض</div>'; });
+function draw() {
+  if (!DATA.length) { $('#m').innerHTML = '<div class="empty">المعرض فاضي، أول ما تخلص جولة رسم تنحفظ الرسومات هنا</div>'; return; }
+  $('#m').innerHTML = DATA.map((s, si) => `<section class="ses"><h2>${esc(s.theme || (s.collab ? 'رسم جماعي' : 'رسم حر'))}<small>${new Date(s.t).toLocaleString('ar-SA-u-nu-arab', { dateStyle: 'medium', timeStyle: 'short' })}${s.mins ? ' · ' + num(s.mins) + ' دقيقة' : ''}</small></h2>
+    <div class="grid">${s.items.map(it => `<button class="it${it.best ? ' best' : ''}" data-s="${si}" data-i="${it.i}"><img loading="lazy" src="/gal/${encodeURIComponent(s.d)}/${it.i}.img" alt=""><span><b>${esc(it.name)}</b>${it.best ? '<em>أحلى رسمة</em>' : it.votes ? `<small>${num(it.votes)} صوت</small>` : ''}</span></button>`).join('')}</div></section>`).join('');
+  document.querySelectorAll('.it').forEach(b => b.onclick = () => open(DATA[+b.dataset.s], +b.dataset.i));
+}
+let tok = 0;
+async function open(s, i) {
+  const it = s.items.find(x => x.i === i), my = ++tok;
+  const o = document.createElement('div'); o.className = 'ov'; o.innerHTML = `<b>${esc(it.name)}</b><canvas width="1200" height="900"></canvas><div class="prog"><i></i></div><div class="bar"><button id="gRe">أعد التسريع</button><button id="gImg">نزّل الصورة</button><button id="gX">سكّر</button></div>`;
+  document.body.appendChild(o);
+  const cv = o.querySelector('canvas'), cx = cv.getContext('2d'), bar = o.querySelector('.prog i');
+  const close = () => { tok++; o.remove(); };
+  o.onclick = e => { if (e.target === o) close(); }; o.querySelector('#gX').onclick = close;
+  const base = `/gal/${encodeURIComponent(s.d)}/${i}`;
+  o.querySelector('#gImg').onclick = async () => { const b = await (await fetch(base + '.img')).blob(), a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = `tarteeb-drawing-${i + 1}.${b.type.includes('png') ? 'png' : b.type.includes('jpeg') ? 'jpg' : 'webp'}`; a.click(); };
+  const buf = new Uint8Array(await (await fetch(base + '.tl')).arrayBuffer()), fr = []; let k = 0;
+  while (k + 4 <= buf.length) { const n = (buf[k] << 24 | buf[k + 1] << 16 | buf[k + 2] << 8 | buf[k + 3]) >>> 0; k += 4; fr.push(new Blob([buf.subarray(k, k + n)])); k += n; }
+  const fin = await (await fetch(base + '.img')).blob();
+  const fit = async b => { const im = await createImageBitmap(b); if (cv.width !== im.width) { cv.width = im.width; cv.height = im.height; } cx.fillStyle = '#fff'; cx.fillRect(0, 0, cv.width, cv.height); cx.drawImage(im, 0, 0, cv.width, cv.height); };
+  const play = async () => { const me = ++tok; const step = Math.max(30, 12000 / Math.max(1, fr.length));
+    for (let j = 0; j < fr.length; j++) { if (tok !== me) return; try { await fit(fr[j]); } catch {} bar.style.width = ((j + 1) / fr.length * 100) + '%'; await new Promise(r => setTimeout(r, step)); }
+    if (tok === me) { await fit(fin); bar.style.width = '100%'; } };
+  o.querySelector('#gRe').onclick = play;
+  if (my === tok) play();
+}
+</script>
+</body>
+</html>

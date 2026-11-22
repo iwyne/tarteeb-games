@@ -60,6 +60,14 @@ async function discordAuth(req, res, u) {
 
 const server = http.createServer((req, res) => {
   if (req.method === 'POST' && req.url.split('?')[0] === '/api/token') return tokenRoute(req, res);
+  if (req.url.startsWith('/gallery-data') || req.url.startsWith('/gal/')) { // المعرض الدايم للمرسم
+    const G = GAMES.art.GAL, u = req.url.split('?')[0];
+    try {
+      if (u === '/gallery-data') { const ds = fs.existsSync(G) ? fs.readdirSync(G).sort().reverse().slice(0, 120) : []; const out = ds.map(d => { try { return { d, ...JSON.parse(fs.readFileSync(path.join(G, d, 'meta.json'), 'utf8')) }; } catch { return null; } }).filter(Boolean); res.writeHead(200, { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' }); return res.end(JSON.stringify(out)); }
+      const [, , d, f] = u.split('/'); if (!/^[\w-]+$/.test(d || '') || !/^\d+\.(img|tl)$/.test(f || '')) throw 0;
+      const b = fs.readFileSync(path.join(G, d, f)); res.writeHead(200, { 'Content-Type': f.endsWith('.tl') ? 'application/octet-stream' : (b[0] === 0xff ? 'image/jpeg' : b[0] === 0x89 ? 'image/png' : 'image/webp'), 'Cache-Control': 'public, max-age=86400' }); return res.end(b);
+    } catch { res.writeHead(404); return res.end(); }
+  }
   if (req.url.startsWith('/art/')) { // صور مرسم ترتيب: /art/<code>/<key>/<pid>/<tl|final|last>
     const [, , code, key, pid, what] = req.url.split('?')[0].split('/'); const r = rooms.get(String(code || '').toUpperCase());
     const out = r && r.game === 'art' && r.g && r.g.key === key && GAMES.art.http(r, decodeURIComponent(pid || ''), what);
@@ -146,7 +154,7 @@ function getBody(f, st, tag, origin, ext, cb) {
   });
 }
 
-const wss = new WebSocketServer({ server, maxPayload: 1024 * 1024 }); // أكبر رسالة ١ ميغا (تسجيل الأصوات تحت ٤٠٠ كيلو)
+const wss = new WebSocketServer({ server, maxPayload: 3 * 1024 * 1024 }); // أكبر رسالة ١ ميغا (تسجيل الأصوات تحت ٤٠٠ كيلو)
 const rooms = new Map();
 let PTS = null; // نقاط السيرفر (points.js)
 let STAFF = null; // مكان التيم (staff.js) — يتجهّز تحت قبل ما نستقبل اتصالات
@@ -207,7 +215,7 @@ const cleanAv = a => AVATARS.includes(a) ? a : '';
 const LOOKMAX = { b: 2, s: 4, h: 6, hc: 8, o: 7, c1: 12, c2: 12, bd: 2, mf: 4, ms: 4, me: 4, mt: 3 };
 const cleanLook = l => { if (!l || typeof l !== 'object') return null; const o = {}; for (const k in LOOKMAX) { const v = +l[k]; o[k] = Number.isInteger(v) && v >= 0 && v < LOOKMAX[k] ? v : 0; } return o; };
 const randLook = () => { const l = Object.fromEntries(Object.entries(LOOKMAX).map(([k, n]) => [k, Math.random() * n | 0])); l.h = 1 + (Math.random() * 5 | 0); l.hc = Math.random() * 6 | 0; return l; };
-const optsView = (r, p) => ({ stack: !!r.opts.stack, powers: !!r.opts.powers, turn: r.opts.turn || 15, lock: !!r.opts.lock, hasPass: !!r.opts.pass, pass: r.host === p.id ? (r.opts.pass || '') : null, target: r.opts.target || 5, imps: r.opts.imps || 1, doctor: !!r.opts.doctor, map: r.opts.map || 'ship', nwords: r.opts.words ? r.opts.words.length : 0, wordsText: r.host === p.id ? (r.opts.wordsText || '') : '', mcount: r.opts.mcount || 0, dayT: r.opts.dayT || 90, reveal: r.opts.reveal !== false, mroles: Object.assign({ doc: 1, det: 1, sniper: 1, god: 1, jester: 1, mayor: 1 }, r.opts.mroles), blives: r.opts.blives || 3, bdiff: r.opts.bdiff || 'mid', frounds: r.opts.frounds || 7, psteps: r.opts.psteps || 0, pdraw: r.opts.pdraw || 90, aitems: r.opts.aitems || 8, drounds: r.opts.drounds || 4, fcount: r.opts.fcount || 10, fmode: r.opts.fmode || 'flags', fdiff: r.opts.fdiff || 'easy', mrounds: r.opts.mrounds || 5, mpack: r.opts.mpack || 'all', ctime: r.opts.ctime || 'none', clevel: r.opts.clevel || 'mid', ccolor: r.opts.ccolor || 'rand' , jrounds: r.opts.jrounds || 7, jtime: r.opts.jtime || 30, jn: r.opts.jn || 3, krounds: r.opts.krounds || 3, ktime: r.opts.ktime || 75, mlim: r.opts.mlim == null ? 25 : r.opts.mlim, bwins: r.opts.bwins || 2, fwins: r.opts.fwins || 2, trounds: r.opts.trounds || 10, ttime: r.opts.ttime || 30, rtime: r.opts.rtime || 60, brounds: r.opts.brounds || 5, btime: r.opts.btime || 90, elives: r.opts.elives || 1, etime: r.opts.etime || 15, erounds: r.opts.erounds || 8, emtime: r.opts.emtime || 45, dsets: r.opts.dsets || 3, dtime: r.opts.dtime || 60, dxbld: r.opts.dxbld || 0, dxbig: r.opts.dxbig || 0, qrounds: r.opts.qrounds || 5, qtime: r.opts.qtime || 30, ltime: r.opts.ltime || 20, bspeed: r.opts.bspeed || 5, bgoal: r.opts.bgoal || 'line', bskin: r.opts.bskin || 'diw', atheme: r.opts.atheme || '' });
+const optsView = (r, p) => ({ stack: !!r.opts.stack, powers: !!r.opts.powers, turn: r.opts.turn || 15, lock: !!r.opts.lock, hasPass: !!r.opts.pass, pass: r.host === p.id ? (r.opts.pass || '') : null, target: r.opts.target || 5, imps: r.opts.imps || 1, doctor: !!r.opts.doctor, map: r.opts.map || 'ship', nwords: r.opts.words ? r.opts.words.length : 0, wordsText: r.host === p.id ? (r.opts.wordsText || '') : '', mcount: r.opts.mcount || 0, dayT: r.opts.dayT || 90, reveal: r.opts.reveal !== false, mroles: Object.assign({ doc: 1, det: 1, sniper: 1, god: 1, jester: 1, mayor: 1 }, r.opts.mroles), blives: r.opts.blives || 3, bdiff: r.opts.bdiff || 'mid', frounds: r.opts.frounds || 7, psteps: r.opts.psteps || 0, pdraw: r.opts.pdraw || 90, aitems: r.opts.aitems || 8, drounds: r.opts.drounds || 4, fcount: r.opts.fcount || 10, fmode: r.opts.fmode || 'flags', fdiff: r.opts.fdiff || 'easy', mrounds: r.opts.mrounds || 5, mpack: r.opts.mpack || 'all', ctime: r.opts.ctime || 'none', clevel: r.opts.clevel || 'mid', ccolor: r.opts.ccolor || 'rand' , jrounds: r.opts.jrounds || 7, jtime: r.opts.jtime || 30, jn: r.opts.jn || 3, krounds: r.opts.krounds || 3, ktime: r.opts.ktime || 75, mlim: r.opts.mlim == null ? 25 : r.opts.mlim, bwins: r.opts.bwins || 2, fwins: r.opts.fwins || 2, trounds: r.opts.trounds || 10, ttime: r.opts.ttime || 30, rtime: r.opts.rtime || 60, brounds: r.opts.brounds || 5, btime: r.opts.btime || 90, elives: r.opts.elives || 1, etime: r.opts.etime || 15, erounds: r.opts.erounds || 8, emtime: r.opts.emtime || 45, dsets: r.opts.dsets || 3, dtime: r.opts.dtime || 60, dxbld: r.opts.dxbld || 0, dxbig: r.opts.dxbig || 0, qrounds: r.opts.qrounds || 5, qtime: r.opts.qtime || 30, ltime: r.opts.ltime || 20, bspeed: r.opts.bspeed || 5, bgoal: r.opts.bgoal || 'line', bskin: r.opts.bskin || 'diw', atheme: r.opts.atheme || '', atime: r.opts.atime || 0, ajmode: r.opts.ajmode || 'all', ajudges: r.opts.ajudges || [], acollab: !!r.opts.acollab });
 const maxOf = r => GAMES[r.game].max;
 
 const newRoom = (code, game = 'uno') => ({ code, game, g: null, opts: {}, owed: 0, botT: null, phase: 'lobby', players: [], host: null, deck: [], discard: [], color: null, dir: 1, turn: 0, pending: null, catchable: null, log: [], winner: null, chat: [], teams: false, score: [0, 0], winTeam: null, specs: [], recorded: false, banned: new Set(), turnSeq: 0, armed: -1, timer: null, deadline: 0, created: Date.now(), teamOnly: false });
@@ -442,8 +450,9 @@ function closeRoom(r) {
 // مقاعد فاضية في اللوبي: المتفرجين ينتقلون لاعبين
 function fill(r) {
   if (r.phase !== 'lobby') return;
-  while (r.players.length < maxOf(r) && r.specs.length) {
-    const s = r.specs.shift(); s.spec = false;
+  while (r.players.length < maxOf(r)) {
+    const s = r.specs.find(q => !(q.wo && r.game === 'art')); if (!s) break; // اللي اختار يتفرّج بالمرسم (حكم) يبقى متفرّج
+    r.specs = r.specs.filter(q => q !== s); s.spec = false;
     r.players.push(s); if (!r.host) r.host = s.id;
   }
 }
@@ -738,7 +747,12 @@ wss.on('connection', (ws, req) => {
       if (p.spec && r.phase === 'play' && r.votes && rate(p, 'sv', 600) && (m.id === null || r.players.some(q => q.id === m.id))) { if (m.id) r.votes.set(p.id, m.id); else r.votes.delete(p.id); broadcast(r); }
       return;
     }
-    if (p.spec && !['chat', 'emoji', 'leave'].includes(m.t) && !(r.game === 'deal' && ['dst', 'dsv'].includes(m.t))) return; // المتفرّج يشوف ويسولف بس
+    if (m.t === 'aspec' && r.game === 'art' && r.phase === 'lobby') { // المرسم: أتفرّج بس (عشان أكون حكم) أو أرجع ألعب
+      if (!p.spec && r.host !== p.id && r.players.length > 1) { r.players = r.players.filter(q => q !== p); p.spec = true; p.wo = true; r.specs.push(p); }
+      else if (p.spec && r.players.length < maxOf(r)) { r.specs = r.specs.filter(q => q !== p); p.spec = false; p.wo = false; r.players.push(p); }
+      return after(r);
+    }
+    if (p.spec && !['chat', 'emoji', 'leave'].includes(m.t) && !(r.game === 'deal' && ['dst', 'dsv'].includes(m.t)) && !(r.game === 'art' && ['avote', 'awatch', 'acheer', 'aneed'].includes(m.t))) return; // المتفرّج يشوف ويسولف بس
     if (r.game !== 'uno' && !['start', 'teams', 'shuffle', 'again', 'leave', 'kick', 'chat', 'emoji', 'setgame', 'opt', 'addbot', 'tolobby', 'look'].includes(m.t)) { if (GAMES[r.game].act(r, p, m) === 'quiet') return; return after(r); }
     switch (m.t) {
       case 'start': if (r.host === p.id && r.phase === 'lobby' && r.players.length >= GAMES[r.game].min) startGame(r); break;
@@ -799,6 +813,10 @@ wss.on('connection', (ws, req) => {
         else if (k === 'bspeed' && r.game === 'bingo' && [3, 5, 7].includes(+v)) r.opts.bspeed = +v;
         else if (k === 'bgoal' && r.game === 'bingo' && ["line", "two", "full"].includes(v)) r.opts.bgoal = v;
         else if (k === 'atheme' && r.game === 'art') r.opts.atheme = String(v || '').slice(0, 60);
+        else if (k === 'atime' && r.game === 'art' && [0, 10, 15, 20, 30, 45, 60, 90, 120].includes(+v)) r.opts.atime = +v;
+        else if (k === 'ajmode' && r.game === 'art' && ['all', 'judges', 'mix'].includes(v)) r.opts.ajmode = v;
+        else if (k === 'ajudges' && r.game === 'art' && Array.isArray(v)) r.opts.ajudges = v.map(String).filter(id => r.players.some(q => q.id === id) || r.specs.some(q => q.id === id)).slice(0, 10);
+        else if (k === 'acollab' && r.game === 'art') r.opts.acollab = !!v;
         else if (k === 'bskin' && r.game === 'bingo' && ["diw", "hall", "tv"].includes(v)) r.opts.bskin = v;
         else if (k === 'ltime' && r.game === 'ludo' && [10, 20, 30].includes(+v)) r.opts.ltime = +v;
         else if (k === 'qrounds' && r.game === 'qfl' && [3, 5, 7].includes(+v)) r.opts.qrounds = +v;

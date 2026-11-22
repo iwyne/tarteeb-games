@@ -27,7 +27,7 @@ function showPts(m) {
 const LV = { open: null };
 function lvUpdate() {
   let el = document.getElementById('spvote');
-  const show = S && S.phase === 'play' && S.vt && S.specs && S.specs.length && S.players.length > 1;
+  const show = S && S.phase === 'play' && S.vt && S.specs && S.specs.length && S.players.length > 1 && !(S.game === 'art' && S.g && S.g.collab); // الرسم الجماعي ما فيه فايز
   if (!show) { if (el) el.hidden = true; return; }
   if (!el) {
     el = document.createElement('div'); el.id = 'spvote'; el.className = 'spv'; document.body.appendChild(el);

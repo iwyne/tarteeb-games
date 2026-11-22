@@ -209,7 +209,7 @@ function renderLobby() {
   $('#start').disabled = !enough;
   $('#hint').textContent = !enough ? `نحتاج ${S.min} لاعبين على الأقل، انتظر ناس يدخلون`
     : isHost ? 'كل شي جاهز، ابدأ متى ما تبي' : 'ننتظر المضيف يبدأ اللعبة';
-  if (S.spec) $('#hint').textContent = 'الغرفة ممتلئة، أنت متفرّج وتنضم أول ما ينفضى مكان';
+  if (S.spec) $('#hint').textContent = S.game === 'art' ? 'أنت متفرّج بالمرسم، تتابع الرسامين وتصوّت لو كنت حكم' : 'الغرفة ممتلئة، أنت متفرّج وتنضم أول ما ينفضى مكان';
   renderLobbySet(isHost);
   renderTeams(isHost);
 }
