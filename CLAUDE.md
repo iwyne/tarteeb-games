@@ -241,6 +241,24 @@
 - `/auth/discord` ← ديسكورد ← `/auth/discord/cb`: ياخذ الاسم والصورة ويحط توكن موقّع ٩٠ يوم بـ localStorage `tarteeb-dc`. يحتاج `DISCORD_CLIENT_ID` و`DISCORD_CLIENT_SECRET` (أو `SESSION_SECRET`)، والرابط `https://الموقع/auth/discord/cb` مضاف بـ Developer Portal ← OAuth2 ← Redirects.
 - الكلاينت يرسل `dtok` مع create/join، والسيرفر (`markBoss` ← `dCheck`) يحط `p.uid` والاسم من ديسكورد، فالنقاط تنحسب على `d:id`. واجهة: `#dcBox` (`dcUI()` بـ app.js).
 
+## الحفظ الدائم والملف الشخصي والترتيب (نوفمبر ٢٠٢٦)
+- `store.js`: لو فيه `SUPABASE_URL` و`SUPABASE_KEY` (service_role) يحفظ بجدول `kv(k text primary key, v jsonb, t timestamptz)` (RLS مفعّل بدون policies) وبـ Storage bucket `gallery` (عام). ولا يحفظ بـ `data/kv.json` و`data/files/` (أو `STORE_DIR`). الكتابة تتجمع كل ثانيتين، وSIGTERM يرسل الباقي.
+- `points.js`: كل لاعب `u:<key>` (key = `d:<discordId>` أو `v:<dev>`)، و`pid` = sha256('tarteeb|'+key) أول ١٠ (هو اللي ينعرض، الـdev ما يطلع). الحقول: pts (للترتيب)، bal (رصيد المتجر)، wins/games، wk/wp أسبوع (يبدأ السبت)، mo/mp شهر، g[game] لكل لعبة، days (أيام ورا بعض، بونص لين ٢٥)، b الشارات، own/eq التجميل. `BADGES` و`SHOP` بنفس الملف.
+- تبديل الأسبوع/الشهر يتشيك كل ١٠ دقايق: الأول ياخذ شارة wk1/mo1 وتنرسل النتيجة لـ `DISCORD_WEBHOOK`. أسهم ▲▼ بالترتيب من لقطة أول اليوم.
+- API بـ server.js (`apiRoute`): GET `/api/lb?per=week|month|all&g=`، GET `/api/u/<pid>`، GET `/api/shop`، POST `/api/me|buy|equip` بـ {dev, dtok}، POST `/api/mkroom` {key=BOT_KEY, game} لبوت الديسكورد (غرفة فاضية ٣٠ دقيقة، أول واحد يدخل الأونر). حد ٦٠ طلب/١٠ث لكل IP.
+- اللاعب بحالة الغرفة فيه `cs: {pid, fr, nc, ld}` (إطار الاسم، لون الشات، شكل اللودو). الكلاينت: `nmTag(p)` بـ app.js، و`public/me.js` (ينحمل بـ `loadGame('_me')`) فيه الملف (تصميم أ)، الترتيب (منصة + قائمة)، المتجر، وشرح أول مرة بطاقات من `GHELP` (`localStorage tarteeb-tut`، يتسكّر لما تبدأ اللعبة). أزرار «الترتيب» و«ملفي» بالهيدر، والضغط على اسم باللوبي يفتح ملفه.
+- المعرض صار بـ store (`gal:<dir>` + ملفات `gal/<dir>/<i>.img|tl`)، و`/gal/...` يحوّل لرابط سوبابيس العام. `gallery.html?pid=` يعرض رسومات لاعب.
+- بوت الديسكورد (riry-dashboard): `commands/tarteeb.js` أمر `/العب` (autocomplete للعبة) يحتاج `TARTEEB_URL` و`TARTEEB_KEY` بـ .env، وبعدها `npm run deploy` مرة.
+
+## البطولة الإقصائية
+- خيار `tour` باللوبي للألعاب اللي `tourOk` (min ≤ ٢، مو فرق، مو بقائمة `TOUR_NO`). `tourMake` يسوي جدول (فراغات للعدد الفردي)، `tourStart` يخلي الباقين متفرجين (`p.tb`)، وبعد over بـ ٧ ثواني (أو «رجوع للوبي») `tourBack` يسجل الفايز من فرق `wins` (التعادل تنعاد). البطل: `PTS.champion` (شارة tour وإطار champ). الحالة `S.tour` ويرسمها `renderTour` بـ app.js (`#tourBox`).
+
+## مستوى البوتات
+- `blvl` easy/mid/hard للأونو (server.js botAction)، الكذابين، واللودو (games/ludo.js). الشطرنج والقنبلة لهم مستواهم من قبل (clevel/bdiff).
+
+## إعادة آخر لحظة
+- `public/replay.js` (ينحمل مع boxing/brawl/cars/redlight): يحفظ آخر ٨ ثواني من state وgnet، وزر «شوف آخر لحظة» بشاشة النهاية يعيدها بالحركة البطيئة (`rpHook`/`rpNet` بـ app.js يوقفون الرسم وقت الإعادة).
+
 ## مرسم ترتيب (`art`)
 - رسم حر بدون وقت. السيرفر `games/art.js`: `afr` لقطة ٤٨٠×٣٦٠ (أكثر شي ٢٤٠ لقطة لكل لاعب، تتخفف بالنص)، `afin` الرسمة كاملة (أقل من ١ ميغا)، `aback` رجعت أرسم، `aend` الأونر ينهي (يجمع ١٢ ثانية)، `ago{i}`/`adone` للعرض. الصور تنزل بـ HTTP `/art/<code>/<key>/<pid>/(tl|final|last)` (tl = لقطات ورا بعض بطول ٤ بايت). خيار `atheme` (موضوع اختياري نص).
 - الكلاينت `public/art.js` (بادئة `AT`/`at`، CSS `.at*`): لوحة ١٦٠٠×١٢٠٠، طبقات (لين ١٢) بأنماط دمج وقص (clip) وقفل شفافية، ٢٥ فرشاة (`AT_BR`) بمحرك ختم + مخزن ضربة، فرشاة لكل أداة (`AT.bt`)، تنعيم، الشكل السريع، تلطيخ، تعبئة، قطّارة، تحديد حر/مستطيل + تحويل، نص، تعديلات (فلاتر أو بكسل لسفاري)، تناظر، إيماءات (إصبعين تكبير/تدوير، نقرة بإصبعين تراجع، ثلاث إعادة، أربع إخفاء)، القلم يلغي رسم الأصابع.

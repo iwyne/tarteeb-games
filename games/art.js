@@ -3,10 +3,12 @@
 // لما الكل يخلص أو الأونر ينهي أو يخلص وقت المسابقة: تنعرض الرسومات وحدة وحدة مع مقطع التسريع، وبعدها تصويت.
 // الصور تنحفظ بالذاكرة وتنزل بـ HTTP: /art/<code>/<key>/<pid>/(tl|final|last)
 // الإضافات: وقت للمسابقة، حكام (يقدرون يكونون متفرجين)، رسم جماعي (كل واحد طبقته ونرسل الضربات ولقطات الطبقات)،
-// بث (المتفرج يتابع رسام ويوصله بث لايف)، تشجيع، ومعرض دايم (data/gallery أو GALLERY_DIR).
+// بث (المتفرج يتابع رسام ويوصله بث لايف)، تشجيع، ومعرض دايم (store.js: سوبابيس أو data/).
 const crypto = require('crypto'), fs = require('fs'), path = require('path');
 const MAXF = 240, FRAME_MAX = 160 * 1024, FINAL_MAX = 2400 * 1024, LIVE_MAX = 450 * 1024, LYR_MAX = 2600 * 1024, COLLECT_MS = 12000;
-const GAL = process.env.GALLERY_DIR || path.join(__dirname, '..', 'data', 'gallery');
+const ST = require('../store');
+const GALS = {}; ST.load('gal:').then(o => { for (const k in o) GALS[k.slice(4)] = o[k]; }).catch(e => console.error('gallery load', e.message));
+const PK = p => { const k = p.bot ? null : p.uid ? 'd:' + p.uid : p.dev ? 'v:' + p.dev : null; return k && crypto.createHash('sha256').update('tarteeb|' + k).digest('base64url').slice(0, 10); }; // نفس pid بـ points.js
 module.exports = H => {
   const humans = r => r.players.filter(p => !p.bot);
   const A = (g, id) => g.art[id] || (g.art[id] = { frames: [], final: null, done: false, n: 0, at: 0 });
@@ -49,16 +51,18 @@ module.exports = H => {
   // المعرض الدايم: نحفظ الرسومات والتسريع على القرص
   function saveGallery(r, upd) {
     const g = r.g; if (!g.order.length) return;
-    try {
-      const dir = g.galDir || (g.galDir = path.join(GAL, Date.now().toString(36) + '-' + r.code)); fs.mkdirSync(dir, { recursive: true });
-      const items = g.order.map((id, i) => { const a = g.art[id], p = r.players.find(q => q.id === id) || { name: 'لاعب' };
-        if (!upd) { const f = a.final || a.frames[a.frames.length - 1]; if (f) fs.writeFileSync(path.join(dir, i + '.img'), f);
-          const parts = []; a.frames.forEach(fr => { const l = Buffer.alloc(4); l.writeUInt32BE(fr.length); parts.push(l, fr); }); fs.writeFileSync(path.join(dir, i + '.tl'), Buffer.concat(parts)); }
-        return { i, name: g.collab ? 'رسمة جماعية' : p.name, votes: g.tally ? g.tally[id] || 0 : 0, best: (g.best || []).includes(id) }; });
-      fs.writeFileSync(path.join(dir, 'meta.json'), JSON.stringify({ t: Date.now(), theme: g.theme, mins: g.mins, items, collab: !!g.collab }));
-      // نخلي آخر ٣٠٠ بس
-      const all = fs.readdirSync(GAL).sort(); if (all.length > 300) all.slice(0, all.length - 300).forEach(d => fs.rmSync(path.join(GAL, d), { recursive: true, force: true }));
-    } catch (e) { console.error('gallery', e.message); }
+    const dir = g.galDir || (g.galDir = Date.now().toString(36) + '-' + r.code);
+    const items = g.order.map((id, i) => { const p = r.players.find(q => q.id === id) || { name: 'لاعب' };
+      return { i, name: g.collab ? 'رسمة جماعية' : p.name, pid: g.collab ? null : PK(p), votes: g.tally ? g.tally[id] || 0 : 0, best: (g.best || []).includes(id) }; });
+    const meta = { t: g.galT || (g.galT = Date.now()), theme: g.theme, mins: g.mins, items, collab: !!g.collab };
+    GALS[dir] = meta; ST.put('gal:' + dir, meta);
+    if (!upd) (async () => {
+      for (const [i, id] of g.order.entries()) { const a = g.art[id]; const f = a.final || a.frames[a.frames.length - 1];
+        const parts = []; a.frames.forEach(fr => { const l = Buffer.alloc(4); l.writeUInt32BE(fr.length); parts.push(l, fr); });
+        try { if (f) await ST.putFile(`gal/${dir}/${i}.img`, f, f[0] === 0xff ? 'image/jpeg' : f[0] === 0x89 ? 'image/png' : 'image/webp'); await ST.putFile(`gal/${dir}/${i}.tl`, Buffer.concat(parts)); } catch (e) { console.error('gallery', e.message); } }
+      // نخلي آخر ٣٠٠ جولة بس
+      const all = Object.keys(GALS).sort(); if (all.length > 300) for (const d of all.slice(0, all.length - 300)) { const n = GALS[d].items.length; delete GALS[d]; ST.del('gal:' + d); ST.delFiles([].concat(...Array.from({ length: n }, (_, i) => [`gal/${d}/${i}.img`, `gal/${d}/${i}.tl`]))); }
+    })();
   }
   const relay = (r, list, o) => list.forEach(q => H.sendTo(q, o));
   const watchersOf = (r, id) => everyone(r).filter(q => r.g.watch[q.id] === id);
@@ -150,6 +154,6 @@ module.exports = H => {
       }
       return null;
     },
-    GAL
+    GALS
   };
 };

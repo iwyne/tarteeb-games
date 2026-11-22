@@ -89,7 +89,11 @@ module.exports = H => {
         if (to <= 50) { const a = abs(c, to); for (const id of g.order) if (id !== p.id) g.pcs[id].forEach(q => { if (q >= 0 && q <= 50 && abs(g.seat[id], q) === a && !SAFE.includes(a)) s += 60; }); if (SAFE.includes(a)) s += 10; }
         if (to > 50) s += 15; return s + to / 10;
       };
-      const best = g.opts.slice().sort((a, b) => score(b) - score(a))[0]; move(r, p, best.i, best.k);
+      const lv = r.opts.blvl || 'mid';
+      const risk = ({ i, k }) => { // صعب: يتجنب يوقف قدام خصم يقدر ياكله (١ إلى ٦ خانات وراه)
+        const from = g.pcs[p.id][i], to = from === -1 ? 0 : from + g.dice[k]; if (to > 50) return 0; const a = abs(c, to); if (SAFE.includes(a)) return 0; let d = 0;
+        for (const id of g.order) if (id !== p.id) g.pcs[id].forEach(q => { if (q >= 0 && q <= 50) { const b = abs(g.seat[id], q), gap = (a - b + 52) % 52; if (gap >= 1 && gap <= 6) d += 25; } }); return d; };
+      const best = lv === 'easy' ? g.opts[rnd(g.opts.length)] : g.opts.slice().sort((a, b) => (score(b) - (lv === 'hard' ? risk(b) : 0)) - (score(a) - (lv === 'hard' ? risk(a) : 0)))[0]; move(r, p, best.i, best.k);
     }, ms(800 + rnd(600)));
   }
   return {

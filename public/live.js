@@ -12,14 +12,14 @@ function showPts(m) {
       ${m.items.map(([t, n]) => `<div class="ptsrow"><span>${esc(t)}</span><em>+${lvNum(n)}</em></div>`).join('')}
       <div class="ptslv"><span>المستوى ${lvNum(m.lvl)}</span><span>باقي ${lvNum(left)} للمستوى ${lvNum(m.lvl + 1)}</span></div>
       <div class="ptsbar"><i style="width:${Math.round((m.into - (m.up ? 0 : Math.min(m.add, m.into))) / m.need * 100)}%"></i></div>
-      ${chip ? `<div class="ptschip">${chip}</div>` : ''}<small class="ptstot">مجموعك ${lvNum(m.pts)}</small>`;
+      ${chip ? `<div class="ptschip">${chip}</div>` : ''}${(m.badges || []).map(b => `<div class="ptsbdg"><span class="rib rib-${esc(b.id)}">${esc(b.t)}</span><small>شارة جديدة</small></div>`).join('')}<small class="ptstot">مجموعك ${lvNum(m.pts)}${m.bal != null ? ` · رصيدك للمتجر ${lvNum(m.bal)}` : ''}</small>`;
     document.body.appendChild(c);
     const bar = c.querySelector('.ptsbar i');
     requestAnimationFrame(() => requestAnimationFrame(() => { bar.style.width = Math.round(m.into / m.need * 100) + '%'; }));
     const close = () => { c.classList.add('out'); setTimeout(() => c.remove(), 350); };
     c.querySelector('.ptsx').onclick = close;
     setTimeout(() => c.isConnected && close(), 9000);
-    try { sfx('coin'); if (m.up || m.rankUp) setTimeout(() => sfx('chime'), 400); } catch {}
+    try { sfx('coin'); if (m.up || m.rankUp || (m.badges && m.badges.length)) setTimeout(() => sfx('chime'), 400); } catch {}
   }, 1300);
 }
 

@@ -35,6 +35,8 @@
 <header class="top">
   <a class="logo" href="/"><span>ترتيب</span><small>ألعاب</small></a>
   <div class="hb">
+    <button id="lbBtn" class="btn sm" type="button" onclick="openBoard()">الترتيب</button>
+    <button id="meBtn" class="btn sm" type="button" onclick="openProfile('me')">ملفي</button>
     <button id="langBtn" class="btn sm" type="button" title="Language">EN</button>
     <button id="worldBtn" class="btn sm" type="button" title="جو الموقع">🌍</button>
     <button id="themeTop" class="btn sm themebtn" title="الثيم">🎨</button>
@@ -460,6 +462,7 @@
     </div>
     <h2 class="sect">اللاعبين <span id="pcount"></span></h2>
     <ul id="plist" class="plist"></ul>
+    <div id="tourBox" class="tourbox" hidden></div>
     <div id="specwrap" hidden>
       <h2 class="sect">المتفرجين <span id="scount"></span></h2>
       <ul id="slist" class="plist specs"></ul>

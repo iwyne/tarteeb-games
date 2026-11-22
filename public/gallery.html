@@ -38,7 +38,7 @@
 const $ = s => document.querySelector(s), esc = t => String(t == null ? '' : t).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const num = n => String(n).replace(/\d/g, d => '٠١٢٣٤٥٦٧٨٩'[d]);
 let DATA = [];
-fetch('/gallery-data').then(r => r.json()).then(d => { DATA = d; draw(); }).catch(() => { $('#m').innerHTML = '<div class="empty">ما قدرنا نحمّل المعرض</div>'; });
+fetch('/gallery-data' + (new URLSearchParams(location.search).get('pid') ? '?pid=' + encodeURIComponent(new URLSearchParams(location.search).get('pid')) : '')).then(r => r.json()).then(d => { DATA = d; draw(); }).catch(() => { $('#m').innerHTML = '<div class="empty">ما قدرنا نحمّل المعرض</div>'; });
 function draw() {
   if (!DATA.length) { $('#m').innerHTML = '<div class="empty">المعرض فاضي، أول ما تخلص جولة رسم تنحفظ الرسومات هنا</div>'; return; }
   $('#m').innerHTML = DATA.map((s, si) => `<section class="ses"><h2>${esc(s.theme || (s.collab ? 'رسم جماعي' : 'رسم حر'))}<small>${new Date(s.t).toLocaleString('ar-SA-u-nu-arab', { dateStyle: 'medium', timeStyle: 'short' })}${s.mins ? ' · ' + num(s.mins) + ' دقيقة' : ''}</small></h2>

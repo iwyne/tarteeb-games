@@ -58,16 +58,49 @@ async function discordAuth(req, res, u) {
   } catch (e) { console.error('discord auth', e.message); page("setTimeout(()=>location.href='/',2500)", 'صار خطأ بالدخول، جرّب مرة ثانية'); }
 }
 
+// ===== الملف الشخصي والترتيب والمتجر =====
+// GET /api/lb?per=week|month|all&g=game  ·  GET /api/u/<pid>  ·  POST /api/me {dev,dtok}  ·  POST /api/buy {dev,dtok,id}  ·  POST /api/equip {dev,dtok,id,kind}
+const STORE = require('./store');
+function apiRoute(req, res) {
+  const json = (c, o) => { res.writeHead(c, { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' }); res.end(JSON.stringify(o)); };
+  const u = new URL(req.url, 'http://x'), ip = String(req.headers['x-forwarded-for'] || req.socket.remoteAddress || '').split(',')[0].trim();
+  if (!apiRate(ip)) return json(429, { err: 'شوي شوي' });
+  if (req.method === 'GET' && u.pathname === '/api/lb') return json(200, { list: PTS.lb(u.searchParams.get('per'), u.searchParams.get('g')), badges: PTS.BADGES.map(b => ({ id: b[0], t: b[1], d: b[2] })) });
+  if (req.method === 'GET' && u.pathname.startsWith('/api/u/')) { const k = PTS.byPid(u.pathname.slice(7)); const o = k && PTS.pub(k); return o ? json(200, o) : json(404, { err: 'ما لقينا اللاعب' }); }
+  if (req.method === 'GET' && u.pathname === '/api/shop') return json(200, { items: Object.entries(PTS.SHOP).map(([id, x]) => ({ id, ...x })), badges: PTS.BADGES.map(b => ({ id: b[0], t: b[1], d: b[2] })) });
+  if (req.method !== 'POST' || !['/api/me', '/api/buy', '/api/equip', '/api/mkroom'].includes(u.pathname)) return json(404, {});
+  let b = ''; req.on('data', d => { b += d; if (b.length > 4096) req.destroy(); });
+  req.on('end', () => {
+    let m; try { m = JSON.parse(b); } catch { return json(400, {}); }
+    if (u.pathname === '/api/mkroom') { // بوت الديسكورد يسوي غرفة فاضية، وأول واحد يدخل يصير الأونر
+      const K = process.env.BOT_KEY; if (!K || String(m.key || '') !== K) return json(403, { err: 'مفتاح غلط' });
+      const game = GAMES[m.game] ? m.game : 'uno', r = newRoom(newCode(), game); r.pend = true; rooms.set(r.code, r);
+      setTimeout(() => { if (rooms.get(r.code) === r && !r.players.length) rooms.delete(r.code); }, 30 * 60e3);
+      return json(200, { code: r.code, game, url: reqOrigin(req) + '/?room=' + r.code });
+    }
+    const d = dCheck(m.dtok), dev = String(m.dev || '').slice(0, 40), k = d ? 'd:' + d.id : dev ? 'v:' + dev : null;
+    if (!k) return json(400, { err: 'ما نعرفك' });
+    if (u.pathname === '/api/me') { const o = PTS.pub(k, true); return json(200, o || { none: true, pid: PTS.pidOf(k) }); }
+    if (u.pathname === '/api/buy') { const o = PTS.buy(k, String(m.id || '')); if (o.ok) refreshLooks(k); return json(o.err ? 400 : 200, o); }
+    const o = PTS.equip(k, m.id ? String(m.id) : null, String(m.kind || '')); if (o.ok) refreshLooks(k); return json(o.err ? 400 : 200, o);
+  });
+}
+const apiHits = new Map();
+function apiRate(ip) { const now = Date.now(), h = apiHits.get(ip) || { t: now, n: 0 }; if (now - h.t > 10000) { h.t = now; h.n = 0; } h.n++; apiHits.set(ip, h); if (apiHits.size > 5000) apiHits.clear(); return h.n <= 60; }
+// بعد ما يغيّر تجميله: نحدّث الغرف اللي هو فيها
+function refreshLooks(k) { for (const r of rooms.values()) if (r.players.concat(r.specs).some(q => PTS.keyOf(q) === k)) broadcast(r); }
+
 const server = http.createServer((req, res) => {
   if (req.method === 'POST' && req.url.split('?')[0] === '/api/token') return tokenRoute(req, res);
   if (req.url.startsWith('/gallery-data') || req.url.startsWith('/gal/')) { // المعرض الدايم للمرسم
-    const G = GAMES.art.GAL, u = req.url.split('?')[0];
-    try {
-      if (u === '/gallery-data') { const ds = fs.existsSync(G) ? fs.readdirSync(G).sort().reverse().slice(0, 120) : []; const out = ds.map(d => { try { return { d, ...JSON.parse(fs.readFileSync(path.join(G, d, 'meta.json'), 'utf8')) }; } catch { return null; } }).filter(Boolean); res.writeHead(200, { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' }); return res.end(JSON.stringify(out)); }
-      const [, , d, f] = u.split('/'); if (!/^[\w-]+$/.test(d || '') || !/^\d+\.(img|tl)$/.test(f || '')) throw 0;
-      const b = fs.readFileSync(path.join(G, d, f)); res.writeHead(200, { 'Content-Type': f.endsWith('.tl') ? 'application/octet-stream' : (b[0] === 0xff ? 'image/jpeg' : b[0] === 0x89 ? 'image/png' : 'image/webp'), 'Cache-Control': 'public, max-age=86400' }); return res.end(b);
-    } catch { res.writeHead(404); return res.end(); }
+    const G = GAMES.art.GALS, u = req.url.split('?')[0];
+    if (u === '/gallery-data') { const q = new URL(req.url, 'http://x').searchParams.get('pid'); const out = Object.keys(G).sort().reverse().map(d => ({ d, ...G[d] })).filter(x => !q || x.items.some(it => it.pid === q)).slice(0, 120); res.writeHead(200, { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' }); return res.end(JSON.stringify(out)); }
+    const [, , d, f] = u.split('/'); if (!/^[\w-]+$/.test(d || '') || !/^\d+\.(img|tl)$/.test(f || '')) { res.writeHead(404); return res.end(); }
+    const ext = STORE.fileUrl(`gal/${d}/${f}`); if (ext) { res.writeHead(302, { Location: ext, 'Cache-Control': 'public, max-age=86400' }); return res.end(); }
+    const b = STORE.getFileLocal(`gal/${d}/${f}`); if (!b) { res.writeHead(404); return res.end(); }
+    res.writeHead(200, { 'Content-Type': f.endsWith('.tl') ? 'application/octet-stream' : (b[0] === 0xff ? 'image/jpeg' : b[0] === 0x89 ? 'image/png' : 'image/webp'), 'Cache-Control': 'public, max-age=86400' }); return res.end(b);
   }
+  if (req.url.startsWith('/api/')) return apiRoute(req, res);
   if (req.url.startsWith('/art/')) { // صور مرسم ترتيب: /art/<code>/<key>/<pid>/<tl|final|last>
     const [, , code, key, pid, what] = req.url.split('?')[0].split('/'); const r = rooms.get(String(code || '').toUpperCase());
     const out = r && r.game === 'art' && r.g && r.g.key === key && GAMES.art.http(r, decodeURIComponent(pid || ''), what);
@@ -215,7 +248,7 @@ const cleanAv = a => AVATARS.includes(a) ? a : '';
 const LOOKMAX = { b: 2, s: 4, h: 6, hc: 8, o: 7, c1: 12, c2: 12, bd: 2, mf: 4, ms: 4, me: 4, mt: 3 };
 const cleanLook = l => { if (!l || typeof l !== 'object') return null; const o = {}; for (const k in LOOKMAX) { const v = +l[k]; o[k] = Number.isInteger(v) && v >= 0 && v < LOOKMAX[k] ? v : 0; } return o; };
 const randLook = () => { const l = Object.fromEntries(Object.entries(LOOKMAX).map(([k, n]) => [k, Math.random() * n | 0])); l.h = 1 + (Math.random() * 5 | 0); l.hc = Math.random() * 6 | 0; return l; };
-const optsView = (r, p) => ({ stack: !!r.opts.stack, powers: !!r.opts.powers, turn: r.opts.turn || 15, lock: !!r.opts.lock, hasPass: !!r.opts.pass, pass: r.host === p.id ? (r.opts.pass || '') : null, target: r.opts.target || 5, imps: r.opts.imps || 1, doctor: !!r.opts.doctor, map: r.opts.map || 'ship', nwords: r.opts.words ? r.opts.words.length : 0, wordsText: r.host === p.id ? (r.opts.wordsText || '') : '', mcount: r.opts.mcount || 0, dayT: r.opts.dayT || 90, reveal: r.opts.reveal !== false, mroles: Object.assign({ doc: 1, det: 1, sniper: 1, god: 1, jester: 1, mayor: 1 }, r.opts.mroles), blives: r.opts.blives || 3, bdiff: r.opts.bdiff || 'mid', frounds: r.opts.frounds || 7, psteps: r.opts.psteps || 0, pdraw: r.opts.pdraw || 90, aitems: r.opts.aitems || 8, drounds: r.opts.drounds || 4, fcount: r.opts.fcount || 10, fmode: r.opts.fmode || 'flags', fdiff: r.opts.fdiff || 'easy', mrounds: r.opts.mrounds || 5, mpack: r.opts.mpack || 'all', ctime: r.opts.ctime || 'none', clevel: r.opts.clevel || 'mid', ccolor: r.opts.ccolor || 'rand' , jrounds: r.opts.jrounds || 7, jtime: r.opts.jtime || 30, jn: r.opts.jn || 3, krounds: r.opts.krounds || 3, ktime: r.opts.ktime || 75, mlim: r.opts.mlim == null ? 25 : r.opts.mlim, bwins: r.opts.bwins || 2, fwins: r.opts.fwins || 2, trounds: r.opts.trounds || 10, ttime: r.opts.ttime || 30, rtime: r.opts.rtime || 60, brounds: r.opts.brounds || 5, btime: r.opts.btime || 90, elives: r.opts.elives || 1, etime: r.opts.etime || 15, erounds: r.opts.erounds || 8, emtime: r.opts.emtime || 45, dsets: r.opts.dsets || 3, dtime: r.opts.dtime || 60, dxbld: r.opts.dxbld || 0, dxbig: r.opts.dxbig || 0, qrounds: r.opts.qrounds || 5, qtime: r.opts.qtime || 30, ltime: r.opts.ltime || 20, bspeed: r.opts.bspeed || 5, bgoal: r.opts.bgoal || 'line', bskin: r.opts.bskin || 'diw', atheme: r.opts.atheme || '', atime: r.opts.atime || 0, ajmode: r.opts.ajmode || 'all', ajudges: r.opts.ajudges || [], acollab: !!r.opts.acollab });
+const optsView = (r, p) => ({ stack: !!r.opts.stack, powers: !!r.opts.powers, turn: r.opts.turn || 15, lock: !!r.opts.lock, hasPass: !!r.opts.pass, pass: r.host === p.id ? (r.opts.pass || '') : null, target: r.opts.target || 5, imps: r.opts.imps || 1, doctor: !!r.opts.doctor, map: r.opts.map || 'ship', nwords: r.opts.words ? r.opts.words.length : 0, wordsText: r.host === p.id ? (r.opts.wordsText || '') : '', mcount: r.opts.mcount || 0, dayT: r.opts.dayT || 90, reveal: r.opts.reveal !== false, mroles: Object.assign({ doc: 1, det: 1, sniper: 1, god: 1, jester: 1, mayor: 1 }, r.opts.mroles), blives: r.opts.blives || 3, bdiff: r.opts.bdiff || 'mid', frounds: r.opts.frounds || 7, psteps: r.opts.psteps || 0, pdraw: r.opts.pdraw || 90, aitems: r.opts.aitems || 8, drounds: r.opts.drounds || 4, fcount: r.opts.fcount || 10, fmode: r.opts.fmode || 'flags', fdiff: r.opts.fdiff || 'easy', mrounds: r.opts.mrounds || 5, mpack: r.opts.mpack || 'all', ctime: r.opts.ctime || 'none', clevel: r.opts.clevel || 'mid', ccolor: r.opts.ccolor || 'rand' , jrounds: r.opts.jrounds || 7, jtime: r.opts.jtime || 30, jn: r.opts.jn || 3, krounds: r.opts.krounds || 3, ktime: r.opts.ktime || 75, mlim: r.opts.mlim == null ? 25 : r.opts.mlim, bwins: r.opts.bwins || 2, fwins: r.opts.fwins || 2, trounds: r.opts.trounds || 10, ttime: r.opts.ttime || 30, rtime: r.opts.rtime || 60, brounds: r.opts.brounds || 5, btime: r.opts.btime || 90, elives: r.opts.elives || 1, etime: r.opts.etime || 15, erounds: r.opts.erounds || 8, emtime: r.opts.emtime || 45, dsets: r.opts.dsets || 3, dtime: r.opts.dtime || 60, dxbld: r.opts.dxbld || 0, dxbig: r.opts.dxbig || 0, qrounds: r.opts.qrounds || 5, qtime: r.opts.qtime || 30, ltime: r.opts.ltime || 20, bspeed: r.opts.bspeed || 5, bgoal: r.opts.bgoal || 'line', bskin: r.opts.bskin || 'diw', atheme: r.opts.atheme || '', atime: r.opts.atime || 0, ajmode: r.opts.ajmode || 'all', ajudges: r.opts.ajudges || [], acollab: !!r.opts.acollab, tour: !!r.opts.tour, blvl: r.opts.blvl || 'mid' });
 const maxOf = r => GAMES[r.game].max;
 
 const newRoom = (code, game = 'uno') => ({ code, game, g: null, opts: {}, owed: 0, botT: null, phase: 'lobby', players: [], host: null, deck: [], discard: [], color: null, dir: 1, turn: 0, pending: null, catchable: null, log: [], winner: null, chat: [], teams: false, score: [0, 0], winTeam: null, specs: [], recorded: false, banned: new Set(), turnSeq: 0, armed: -1, timer: null, deadline: 0, created: Date.now(), teamOnly: false });
@@ -384,18 +417,18 @@ function view(r, p) {
   if (r.game !== 'uno') {
     return {
       t: 'state', game: r.game, min: GAMES[r.game].min, max: maxOf(r), code: r.code, phase: r.phase, me: p.id, spec: !!p.spec, specs: r.specs.map(s => ({ id: s.id, name: s.name })), vt: votesView(r, p), boss: !!p.boss,
-      players: r.players.map((q, i) => ({ id: q.id, name: q.name, n: q.hand ? q.hand.length : 0, on: q.online, h: q.id === r.host, tm: r.phase === 'lobby' ? i % 2 : q.team, w: q.wins || 0, av: q.av || '', bot: !!q.bot, lk: q.look || null })),
+      players: r.players.map((q, i) => ({ id: q.id, name: q.name, n: q.hand ? q.hand.length : 0, on: q.online, h: q.id === r.host, tm: r.phase === 'lobby' ? i % 2 : q.team, w: q.wins || 0, av: q.av || '', bot: !!q.bot, lk: q.look || null, cs: PTS.look(q) })),
       opts: optsView(r, p), teams: !!META[r.game].teams, score: r.score, winTeam: r.winTeam, hand: [], top: null, color: null, dir: 1, turn: null, deck: 0,
       left: r.phase === 'play' && r.deadline ? Math.max(0, r.deadline - Date.now()) : 0, ok: [], pending: null, catch: null,
-      log: r.log.slice(-4), winner: r.winner, g: r.phase === 'lobby' ? null : GAMES[r.game].view(r, p)
+      log: r.log.slice(-4), winner: r.winner, g: r.phase === 'lobby' ? null : GAMES[r.game].view(r, p), tour: tourView(r), tourOk: tourOk(r.game)
     };
   }
   const c = r.phase === 'lobby' ? null : cur(r);
   const mine = !!c && c.id === p.id && r.phase === 'play';
   return {
     t: 'state', game: 'uno', min: GAMES.uno.min, max: GAMES.uno.max, code: r.code, phase: r.phase, me: p.id, spec: !!p.spec, specs: r.specs.map(s => ({ id: s.id, name: s.name })), vt: votesView(r, p),
-    players: r.players.map((q, i) => ({ id: q.id, name: q.name, n: q.hand.length, on: q.online, h: q.id === r.host, tm: r.teams ? i % 2 : null, w: q.wins || 0, av: q.av || '', bot: !!q.bot, u: !!q.uno })),
-    teams: r.teams, score: r.score, winTeam: r.winTeam,
+    players: r.players.map((q, i) => ({ id: q.id, name: q.name, n: q.hand.length, on: q.online, h: q.id === r.host, tm: r.teams ? i % 2 : null, w: q.wins || 0, av: q.av || '', bot: !!q.bot, u: !!q.uno, cs: PTS.look(q) })),
+    teams: r.teams, score: r.score, winTeam: r.winTeam, tour: tourView(r), tourOk: tourOk('uno'),
     hand: p.hand, top: r.discard[r.discard.length - 1] || null, color: r.color, dir: r.dir,
     turn: c ? c.id : null, deck: r.deck.length, left: r.phase === 'play' ? Math.max(0, r.deadline - Date.now()) : 0,
     ok: mine ? p.hand.filter(x => canPlay(r, p, x)).map(x => x.id) : [],
@@ -468,7 +501,51 @@ function leaveOther(r, p) {
   const G = GAMES[r.game]; if (G.leave) G.leave(r, p);
   if (r.phase === 'play' && r.players.length < G.min) { r.phase = 'over'; r.winner = r.winner || 'انتهت اللعبة'; clearTimeout(r.timer); r.deadline = 0; }
 }
+// ===== البطولة الإقصائية =====
+// الأونر يفعّل «بطولة» باللوبي، ونسوي جدول مباريات (اثنين ضد بعض). كل مباراة: اللاعبين الباقين يصيرون متفرجين (p.tb)
+// وبعد ما تخلص يرجع الكل للوبي، الفايز يتأهل، وآخر واحد يفوز بشارة «بطل البطولة» وإطار البطل.
+const TOUR_NO = ['art', 'draw', 'phone', 'mimic', 'haunt', 'sus', 'mafia', 'codes', 'outside', 'fib', 'feud', 'hive', 'baloot', 'jackaroo'];
+const tourOk = g => GAMES[g] && GAMES[g].min <= 2 && !(META[g] && META[g].teams) && !TOUR_NO.includes(g);
+function tourMake(r) {
+  const ids = shuffle(r.players.map(q => q.id)); let n = 1; while (n < ids.length) n *= 2;
+  const seeds = ids.concat(Array(n - ids.length).fill(null)), m = [];
+  for (let i = 0; i < n / 2; i++) m.push({ a: seeds[i], b: seeds[n - 1 - i], w: null }); // الفراغات تتوزع على أول ناس
+  r.tour = { g: r.game, rounds: [m], names: Object.fromEntries(r.players.map(q => [q.id, q.name])), champ: null, cur: null };
+  tourAdvance(r);
+}
+const tourHere = (r, id) => id && r.players.some(q => q.id === id);
+function tourAdvance(r) { // يحل الفراغات والغايبين، ويجهّز المباراة الجاية
+  const T = r.tour;
+  for (;;) {
+    const R = T.rounds[T.rounds.length - 1];
+    R.forEach(x => { if (x.w) return; const ha = tourHere(r, x.a), hb = tourHere(r, x.b); if (!ha && !hb) x.w = x.a || x.b || 'none'; else if (!hb) x.w = x.a; else if (!ha) x.w = x.b; });
+    const open = R.findIndex(x => !x.w);
+    if (open >= 0) { T.cur = [T.rounds.length - 1, open]; return; }
+    const ws = R.map(x => x.w).filter(w => w && w !== 'none');
+    if (ws.length <= 1) { T.cur = null; T.champ = ws[0] || null; const c = r.players.find(q => q.id === T.champ); if (c) { PTS.champion(c); r.log.push(`🏆 ${c.name} بطل البطولة!`); cast(r, { t: 'tourchamp', name: c.name }); } return; }
+    const nx = []; for (let i = 0; i < ws.length; i += 2) nx.push({ a: ws[i], b: ws[i + 1] || null, w: null }); T.rounds.push(nx);
+  }
+}
+function tourStart(r) { // نبدأ مباراة البطولة: الباقين على الدكة
+  const T = r.tour, [ri, mi] = T.cur, M = T.rounds[ri][mi];
+  r.tourAll = r.players.slice(); r.tourBase = {};
+  const play = r.players.filter(q => q.id === M.a || q.id === M.b), bench = r.players.filter(q => !play.includes(q));
+  bench.forEach(q => { q.spec = true; q.tb = true; r.specs.push(q); });
+  r.players = play; play.forEach(q => { r.tourBase[q.id] = q.wins || 0; });
+}
+function tourBack(r) { // خلصت المباراة: نسجل الفايز ونرجّع الكل للوبي
+  const T = r.tour; if (!r.tourAll) return; clearTimeout(r.tourT); r.tourT = null;
+  if (T && T.cur && r.phase === 'over') { const M = T.rounds[T.cur[0]][T.cur[1]], pa = r.players.find(q => q.id === M.a), pb = r.players.find(q => q.id === M.b);
+    const da = pa ? (pa.wins || 0) - r.tourBase[M.a] : -1, db = pb ? (pb.wins || 0) - r.tourBase[M.b] : -1;
+    if (da > db) M.w = M.a; else if (db > da) M.w = M.b; } // تعادل: تنعاد المباراة
+  const live = new Set(r.players.concat(r.specs)); r.players = r.tourAll.filter(q => live.has(q) && (q.online || q.bot));
+  r.specs = r.specs.filter(q => !q.tb); r.players.forEach(q => { q.spec = false; q.tb = false; q.hand = []; q.uno = false; });
+  r.tourAll = null; r.phase = 'lobby'; r.winner = null; r.winTeam = null; r.log = []; r.g = null; clearTimeout(r.timer); r.deadline = 0;
+  if (T) tourAdvance(r);
+}
+function tourView(r) { const T = r.tour; if (!T) return null; const nm = id => id ? (T.names[id] || '؟') : null; return { rounds: T.rounds.map(R => R.map(x => ({ a: nm(x.a), b: nm(x.b), w: x.w === x.a ? 'a' : x.w === x.b && x.w ? 'b' : null }))), cur: T.cur, champ: nm(T.champ), live: !!r.tourAll }; }
 function startGame(r) {
+  if (r.opts.tour && tourOk(r.game) && r.phase === 'lobby') { if (!r.tour || r.tour.champ || r.tour.g !== r.game) tourMake(r); if (!r.tour.cur) return after(r); tourStart(r); }
   statStart(r); PTS.start(r); r.votes = new Map();
   if (r.game === 'uno') return start(r);
   fixTeams(r); r.log = []; r.recorded = false; GAMES[r.game].start(r);
@@ -511,6 +588,17 @@ function botAction(r) {
       if (r.pending !== null) { const c = p.hand.find(x => x.id === r.pending); return c ? botPlay(r, p, c) : pass(r, p); }
       const ok = p.hand.filter(c => canPlay(r, p, c));
       if (!ok.length) return draw(r, p);
+      const lv = r.opts.blvl || 'mid';
+      if (lv === 'easy') return botPlay(r, p, ok[rnd(ok.length)]); // سهل: أي ورقة تنفع
+      if (lv === 'hard') { // صعب: يضرب اللي بعده لو أوراقه قليلة، ويخلي الجوكر للآخر، ويلعب من اللون اللي عنده منه أكثر
+        const nx = r.players[mod(r.turn + r.dir, r.players.length)], danger = nx && nx.hand.length <= 2;
+        const cnt = {}; p.hand.forEach(x => { cnt[x.color] = (cnt[x.color] || 0) + 1; });
+        const sc = c => { let v = 0; const atk = ['draw2', 'wild4', 'skip', 'reverse'].includes(c.v);
+          if (danger && atk) v += c.v === 'wild4' ? 60 : c.v === 'draw2' ? 50 : 40;
+          if (c.color === 'wild') v -= danger ? 0 : 35; else v += (cnt[c.color] || 0) * 4;
+          if (!danger && atk && c.color !== 'wild') v += 6; if (/^\d$/.test(c.v)) v += +c.v / 3; if (c.color === 'power') v += 8; return v + Math.random(); };
+        return botPlay(r, p, ok.slice().sort((a, b) => sc(b) - sc(a))[0]);
+      }
       const pw = ok.filter(c => c.color === 'power');
       if (pw.length && Math.random() < .45) return botPlay(r, p, pw[rnd(pw.length)]);
       const nw = ok.filter(c => c.color !== 'wild' && c.color !== 'power');
@@ -523,9 +611,18 @@ function botAction(r) {
     return { d: 1500 + rnd(1800), fn() {
       if (g.turn !== p.id || g.sub !== 'play') return;
       const L = GAMES.liars, n = g.last ? g.last.cards.length : 0, prev = g.last && r.players.find(q => q.id === g.last.by);
-      const must = g.last && (!p.hand.length || (prev && !prev.hand.length));
+      const must = g.last && (!p.hand.length || (prev && !prev.hand.length)), lv = r.opts.blvl || 'mid';
+      const truth = p.hand.filter(c => c.t === g.table || c.t === 'J');
+      if (lv === 'hard' && g.last) { // صعب: يحسب كم ورقة صادقة باقية برا يده
+        const per = Math.max(6, Math.ceil(5 * r.players.filter(q => q.hand && (q.hand.length || q.id === p.id)).length / 3) + 1), left = per + 2 - truth.length - (g.seen || 0);
+        if (n > left || must) return L.act(r, p, { t: 'call' });
+        if (Math.random() < Math.max(0, (n - left / 3) * .35) + (g.pile > 8 ? .15 : 0)) return L.act(r, p, { t: 'call' });
+        if (truth.length) return L.act(r, p, { t: 'put', ids: truth.slice(0, Math.min(truth.length, 1 + rnd(2))).map(c => c.id) });
+        return L.act(r, p, { t: 'put', ids: [p.hand[rnd(p.hand.length)].id] });
+      }
+      if (lv === 'easy') { if (must || (g.last && Math.random() < .08)) return L.act(r, p, { t: 'call' }); return L.act(r, p, { t: 'put', ids: H.shuffle(p.hand.slice()).slice(0, 1 + rnd(Math.min(3, p.hand.length))).map(c => c.id) }); }
       if (must || (g.last && Math.random() < .12 + .2 * (n - 1) + (g.pile > 6 ? .12 : 0))) return L.act(r, p, { t: 'call' });
-      const truth = p.hand.filter(c => c.t === g.table || c.t === 'J'), pool = truth.length ? truth : p.hand;
+      const pool = truth.length ? truth : p.hand;
       const k = Math.min(pool.length, 1 + rnd(2));
       L.act(r, p, { t: 'put', ids: H.shuffle(pool.slice()).slice(0, k).map(c => c.id) });
     } };
@@ -616,6 +713,7 @@ function after(r) {
 function afterInner(r) {
   if (r.phase === 'lobby') { fill(r); fixTeams(r); }
   if (r.phase === 'over' && r.pts && !r.pts.done) { try { PTS.end(r); } catch (e) { console.error('points', e); } }
+  if (r.phase === 'over' && r.tourAll && !r.tourT) r.tourT = setTimeout(() => { if (rooms.get(r.code) === r && r.tourAll && r.phase === 'over') { tourBack(r); after(r); } }, 7000);
   if (r.game === 'uno' && r.phase === 'play' && r.armed !== r.turnSeq) { r.armed = r.turnSeq; armTurn(r); }
   else if (r.phase !== 'play') clearTimeout(r.timer);
   broadcast(r);
@@ -657,7 +755,7 @@ function admit(ws, r, name, extra = {}) {
 // صاحب الموقع (علي، داخل مكان التيم): يقدر يختار رقم النرد بلودو بحركة سرية
 const markBoss = (p, m) => {
   if (m.teamTok && STAFF && STAFF.check(m.teamTok) === 'علي') p.boss = true;
-  const d = dCheck(m.dtok); if (d && !p.uid) { p.uid = d.id; p.name = d.n; p.dc = true; } // داخل بحساب ديسكورد: اسمه من ديسكورد ونقاطه على حسابه
+  const d = dCheck(m.dtok); if (d && !p.uid) { p.uid = d.id; p.name = d.n; p.dc = true; p.dcA = d.a || ''; } // داخل بحساب ديسكورد: اسمه من ديسكورد ونقاطه على حسابه
 };
 function join(ws, m) {
   const r = rooms.get(String(m.code || '').toUpperCase().trim());
@@ -701,7 +799,7 @@ async function activity(ws, m) {
     if (p.ws && p.ws !== ws) { p.ws.ctx = null; try { p.ws.close(); } catch {} }
     p.ws = ws; p.online = true;
   } else {
-    p = admit(ws, r, cleanName(u.global_name || u.username), { uid: u.id, av: cleanAv(m.av) });
+    p = admit(ws, r, cleanName(u.global_name || u.username), { uid: u.id, av: cleanAv(m.av), dcA: u.avatar ? `https://cdn.discordapp.com/avatars/${u.id}/${u.avatar}.png?size=64` : '' });
     if (!p) return;
   }
   ws.ctx = { r, p };
@@ -752,7 +850,8 @@ wss.on('connection', (ws, req) => {
       else if (p.spec && r.players.length < maxOf(r)) { r.specs = r.specs.filter(q => q !== p); p.spec = false; p.wo = false; r.players.push(p); }
       return after(r);
     }
-    if (p.spec && !['chat', 'emoji', 'leave'].includes(m.t) && !(r.game === 'deal' && ['dst', 'dsv'].includes(m.t)) && !(r.game === 'art' && ['avote', 'awatch', 'acheer', 'aneed'].includes(m.t))) return; // المتفرّج يشوف ويسولف بس
+    if (p.spec && p.tb && r.host === p.id && ['again', 'tolobby'].includes(m.t)) { /* الأونر على الدكة يقدر يرجّع اللوبي */ }
+    else if (p.spec && !['chat', 'emoji', 'leave'].includes(m.t) && !(r.game === 'deal' && ['dst', 'dsv'].includes(m.t)) && !(r.game === 'art' && ['avote', 'awatch', 'acheer', 'aneed'].includes(m.t))) return; // المتفرّج يشوف ويسولف بس
     if (r.game !== 'uno' && !['start', 'teams', 'shuffle', 'again', 'leave', 'kick', 'chat', 'emoji', 'setgame', 'opt', 'addbot', 'tolobby', 'look'].includes(m.t)) { if (GAMES[r.game].act(r, p, m) === 'quiet') return; return after(r); }
     switch (m.t) {
       case 'start': if (r.host === p.id && r.phase === 'lobby' && r.players.length >= GAMES[r.game].min) startGame(r); break;
@@ -777,14 +876,17 @@ wss.on('connection', (ws, req) => {
       case 'setgame':
         if (r.host !== p.id || r.phase !== 'lobby' || !GAMES[m.game] || m.game === r.game) break;
         if (r.players.length > GAMES[m.game].max) { send(ws, { t: 'err', msg: 'عدد اللاعبين أكثر من المسموح لهذه اللعبة' }); break; }
-        r.game = m.game; r.teams = false; r.score = [0, 0]; r.g = null;
+        r.game = m.game; r.teams = false; r.score = [0, 0]; r.g = null; r.tour = null;
         r.opts = { lock: r.opts.lock, pass: r.opts.pass };
         if (!META[r.game].bots) r.players = r.players.filter(q => !q.bot);
         fixTeams(r); break;
       case 'opt': {
         if (r.host !== p.id || r.phase !== 'lobby') break;
         const k = m.k, v = m.v;
-        if (k === 'lock') r.opts.lock = !!v;
+        if (k === 'blvl' && ['easy', 'mid', 'hard'].includes(v)) r.opts.blvl = v;
+        else if (k === 'tour') { r.opts.tour = !!v && tourOk(r.game); if (!r.opts.tour || (r.tour && r.tour.champ)) r.tour = null; }
+        else if (k === 'tournew') r.tour = null;
+        else if (k === 'lock') r.opts.lock = !!v;
         else if (k === 'pass') r.opts.pass = String(v || '').replace(/\s/g, '').slice(0, 12);
         else if (k === 'stack' && r.game === 'uno') r.opts.stack = !!v;
         else if (k === 'powers' && r.game === 'uno') r.opts.powers = !!v;
@@ -869,6 +971,7 @@ wss.on('connection', (ws, req) => {
       case 'uno': uno(r, p); break;
       case 'catch': catchUno(r, p); break;
       case 'again':
+        if (r.host === p.id && r.phase === 'over' && r.tourAll) { tourBack(r); break; }
         if (r.host === p.id && r.phase === 'over') {
           r.players = r.players.filter(q => q.online);
           r.players.forEach(q => { q.hand = []; q.uno = false; });
@@ -876,6 +979,7 @@ wss.on('connection', (ws, req) => {
         }
         break;
       case 'tolobby':
+        if (r.host === p.id && r.phase === 'play' && r.tourAll) { clearTimeout(r.botT); r.botT = null; tourBack(r); break; }
         if (r.host === p.id && r.phase === 'play') {
           clearTimeout(r.timer); clearTimeout(r.botT); r.botT = null;
           if (r.g && r.g.hintT) clearTimeout(r.g.hintT);
@@ -921,3 +1025,5 @@ server.listen(PORT, () => console.log(`ترتيب شغّال على http://local
 // شبكة أمان: خطأ في لعبة وحدة ما يطيّح السيرفر كامل (ويطلّع كل الغرف)
 process.on('uncaughtException', e => { console.error('uncaught', e); if (e && (e.code === 'EADDRINUSE' || e.code === 'EACCES')) process.exit(1); });
 process.on('unhandledRejection', e => console.error('unhandled', e));
+// ريندر يرسل SIGTERM قبل ما يطفي السيرفر: نرسل آخر التعديلات للحفظ الدائم
+process.on('SIGTERM', () => { STORE.flushNow().catch(() => {}).finally(() => process.exit(0)); setTimeout(() => process.exit(0), 4000); });

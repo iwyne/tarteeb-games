@@ -14,7 +14,7 @@ const PWR = { spy: ['👀', 'تجسّس', 'شوف أوراق لاعب ٥ ثوا�
 const PTGT = ['spy', 'steal', 'swap', 'freeze', 'gift'];
 
 // ملفات كل لعبة تنحمّل بس لما تدخل غرفتها (أخف وأسرع على الجوال). السيرفر يضيف ?v= من GV عشان الكاش
-const GAME_JS = { art: ['art.js'], sus: ['sus-map.js', 'sus.js'], haunt: ['haunt-map.js', 'haunt.js', 'haunt-ext.js'], mafia: ['mafia.js'], fib: ['fib.js'], phone: ['phone.js'], auction: ['auction.js'], feud: ['feud.js'], jwb: ['jwb.js'], baloot: ['baloot.js'], cars: ['cars-map.js', 'cars.js'], rich: ['rich-board.js', 'rich.js'], boxing: ['box.js'], brawl: ['brawl-chars.js', 'brawl.js'], tartayb: ['tartayb.js'], bingo: ['bingo.js'], ludo: ['ludo.js'], qfl: ['qfl.js'], deal: ['deal.js'], chairs: ['chairs.js'], emo: ['emo.js'], elim: ['elim.js'], bwb: ['bwb.js'], redlight: ['redlight.js'], flags: ['flags.js'], mimic: ['mimic.js'], chess: ['chess.js'] };
+const GAME_JS = { _me: ['me.js'], art: ['art.js'], sus: ['sus-map.js', 'sus.js'], haunt: ['haunt-map.js', 'haunt.js', 'haunt-ext.js'], mafia: ['mafia.js'], fib: ['fib.js'], phone: ['phone.js'], auction: ['auction.js'], feud: ['feud.js'], jwb: ['jwb.js'], baloot: ['baloot.js'], cars: ['cars-map.js', 'cars.js', 'replay.js'], rich: ['rich-board.js', 'rich.js'], boxing: ['box.js', 'replay.js'], brawl: ['brawl-chars.js', 'brawl.js', 'replay.js'], tartayb: ['tartayb.js'], bingo: ['bingo.js'], ludo: ['ludo.js'], qfl: ['qfl.js'], deal: ['deal.js'], chairs: ['chairs.js'], emo: ['emo.js'], elim: ['elim.js'], bwb: ['bwb.js'], redlight: ['redlight.js', 'replay.js'], flags: ['flags.js'], mimic: ['mimic.js'], chess: ['chess.js'] };
 const GLOADED = {}; let msgQ = Promise.resolve();
 var isMob = () => matchMedia('(pointer:coarse)').matches; // تستخدمها أكثر من لعبة
 function loadGame(game) {
@@ -95,6 +95,7 @@ function on(m) {
   } else if (m.t === 'hpos' || m.t === 'hsnap' || m.t === 'hev') {
     if (typeof hauntNet === 'function') hauntNet(m);
   } else if (m.t === 'gnet') {
+    if (window.rpNet && rpNet(m)) return; // وقت الإعادة
     const f = window['net_' + m.g]; if (typeof f === 'function') f(m);
   } else if (m.t === 'peek') {
     showPeek(m);
@@ -102,10 +103,16 @@ function on(m) {
     if (m.k === 'got') toast('🫳 سرقت ورقة!'); else powerFx(m);
   } else if (m.t === 'react') {
     showReact(m.from, m.e, m.c);
+  } else if (m.t === 'tourchamp') {
+    toast(`${m.name} بطل البطولة!`); try { sfx('win'); } catch {}
   } else if (m.t === 'pts') {
     showPts(m);
   } else if (m.t === 'state') {
+    if (window.rpHook && rpHook(m)) return; // وقت إعادة آخر لحظة
     m.t0 = Date.now(); flipAdapt(m); prevS = S; S = m; renderSoon(); notifyTurn(); lvUpdate();
+    const mine = m.players.find(q => q.id === m.me); if (mine && mine.cs) { try { localStorage.setItem('tludo-skin', mine.cs.ld || 'sadu'); } catch {} } // شكل اللودو اللي شراه
+    if (m.phase !== 'lobby') { const t = document.querySelector('#meOv.metutov:not([hidden])'); if (t) { t.hidden = true; document.body.classList.remove('meopen'); } }
+    else if (!m.spec && (!prevS || prevS.game !== m.game || prevS.phase !== 'lobby') && !(store.get('tarteeb-tut') || {})[m.game]) setTimeout(() => { if (S && S.phase === 'lobby' && S.game === m.game) meApi().then(() => window.meTut(m.game)); }, 700); // شرح أول مرة
   }
 }
 // لو اللاعب ضاغط بإصبعه على زر، نأجل إعادة الرسم لين يرفع إصبعه (أقصى شي ٦٠٠ms)
@@ -198,9 +205,10 @@ function renderLobby() {
   const plist = S.teams ? [...S.players].sort((a, b) => a.tm - b.tm) : S.players;
   const canBot = amHost && !S.spec && typeof BOTGAMES !== 'undefined' && BOTGAMES.includes(S.game) && S.players.length < S.max;
   $('#plist').innerHTML = plist.map(p =>
-    `<li data-id="${p.id}" class="${p.on ? '' : 'off'}${S.teams ? ' t' + p.tm : ''}${p.id === S.me ? ' me' : ''}"><span class="pav">${esc(p.av || (p.bot ? '🤖' : [...String(p.name).trim()][0] || '؟'))}</span>${esc(p.name)}${p.bot ? ' <span class="botx">بوت</span>' : ''}${p.w ? `<span class="wins">🏆 ${p.w}</span>` : ''}${S.teams ? `<span class="tag">فريق ${['أ', 'ب'][p.tm]}</span>` : ''}${p.id === S.me ? ' <em>(أنت)</em>' : ''}${p.h ? '<span class="crown">المضيف</span>' : ''}${amHost && !p.h && p.id !== S.me ? `<button class="kick" data-id="${p.id}" title="طرد">✕</button>` : ''}</li>`
+    `<li data-id="${p.id}" class="${p.on ? '' : 'off'}${S.teams ? ' t' + p.tm : ''}${p.id === S.me ? ' me' : ''}"><span class="pav">${esc(p.av || (p.bot ? '🤖' : [...String(p.name).trim()][0] || '؟'))}</span>${nmTag(p)}${p.bot ? ' <span class="botx">بوت</span>' : ''}${p.w ? `<span class="wins">🏆 ${p.w}</span>` : ''}${S.teams ? `<span class="tag">فريق ${['أ', 'ب'][p.tm]}</span>` : ''}${p.id === S.me ? ' <em>(أنت)</em>' : ''}${p.h ? '<span class="crown">المضيف</span>' : ''}${amHost && !p.h && p.id !== S.me ? `<button class="kick" data-id="${p.id}" title="طرد">✕</button>` : ''}</li>`
   ).join('') + (canBot ? '<li class="addchip"><button type="button" id="addBot2">+ أضف بوت</button></li>' : '');
   const ab = $('#addBot2'); if (ab) ab.onclick = () => send({ t: 'addbot' });
+  $$('#plist li[data-id]').forEach(li => li.onclick = e => { if (e.target.closest('button')) return; const q = S.players.find(x => x.id === li.dataset.id); if (q && q.cs && q.cs.pid) openProfile(q.cs.pid); });
   const isHost = host && host.id === S.me, enough = S.players.length >= S.min;
   $('#specwrap').hidden = !S.specs.length;
   $('#scount').textContent = `(${S.specs.length})`;
@@ -211,6 +219,7 @@ function renderLobby() {
     : isHost ? 'كل شي جاهز، ابدأ متى ما تبي' : 'ننتظر المضيف يبدأ اللعبة';
   if (S.spec) $('#hint').textContent = S.game === 'art' ? 'أنت متفرّج بالمرسم، تتابع الرسامين وتصوّت لو كنت حكم' : 'الغرفة ممتلئة، أنت متفرّج وتنضم أول ما ينفضى مكان';
   renderLobbySet(isHost);
+  renderTour(isHost);
   renderTeams(isHost);
 }
 function renderTeams(isHost) {
@@ -520,11 +529,31 @@ function drawDockIc() { $('#emojiIc').innerHTML = rcChar(myChar, 'laugh', 34); }
 drawDockIc();
 $('#emojiBtn').onclick = () => { const W = $('#emojiBar'); W.hidden = !W.hidden; if (!W.hidden) drawWheel(false); $('#chatbox').hidden = true; };
 function badge() { const u = $('#unread'); u.hidden = !unread; u.textContent = unread; }
+// تجميل الاسم (إطار ولون من متجر النقاط) وفتح الملف والترتيب
+const NCOL = { 'nc:red': '#ff5a52', 'nc:blue': '#5b9bff', 'nc:green': '#3fd18a', 'nc:gold': '#ffc928' };
+function nmTag(p) { const f = p.cs && p.cs.fr; return f ? `<span class="nf nf-${f.slice(3)}">${esc(p.name)}</span>` : esc(p.name); }
+function meApi() { return loadGame('_me'); }
+function openProfile(pid) { meApi().then(() => window.meProfile(pid)); }
+function openBoard() { meApi().then(() => window.meBoard()); }
+// جدول البطولة باللوبي
+function renderTour(isHost) {
+  const box = $('#tourBox'); if (!box) return; const T = S.tour;
+  if (!T || !(S.opts && S.opts.tour)) { box.hidden = true; if ($('#start').dataset.tour) { $('#start').textContent = 'ابدأ اللعبة ▶'; delete $('#start').dataset.tour; } return; }
+  box.hidden = false; const N = n => String(n).replace(/\d/g, d => '٠١٢٣٤٥٦٧٨٩'[d]);
+  const rn = (i, n) => n - i === 1 ? 'النهائي' : n - i === 2 && T.rounds[0].length >= 4 ? 'نصف النهائي' : `الدور ${N(i + 1)}`;
+  const total = Math.round(Math.log2(T.rounds[0].length * 2));
+  box.innerHTML = `<div class="tourhd"><b>البطولة</b>${T.champ ? `<span class="tchamp">البطل: ${esc(T.champ)}</span>` : T.cur ? `<span>${rn(T.cur[0], total)}</span>` : ''}${isHost && T.champ ? '<button type="button" class="btn sm" id="tourNew">بطولة جديدة</button>' : ''}</div>
+    <div class="tourbr">${T.rounds.map((R, i) => `<div class="tourrd"><small>${rn(i, total)}</small>${R.map((x, j) => `<div class="tourm${T.cur && T.cur[0] === i && T.cur[1] === j ? ' cur' : ''}"><div class="${x.w === 'a' ? 'w' : x.w ? 'l' : ''}">${esc(x.a || 'فاضي')}</div><div class="${x.w === 'b' ? 'w' : x.w ? 'l' : ''}">${esc(x.b || 'فاضي')}</div></div>`).join('')}</div>`).join('')}
+      ${!T.champ ? `<div class="tourrd fin"><small>البطل</small><div class="tourm"><div>؟</div></div></div>` : ''}</div>`;
+  const nb = $('#tourNew'); if (nb) nb.onclick = () => send({ t: 'opt', k: 'tournew' });
+  $('#start').dataset.tour = 1;
+  if (T.cur && !T.champ) { const M = T.rounds[T.cur[0]][T.cur[1]]; $('#start').textContent = `ابدأ: ${M.a} ضد ${M.b} ▶`; } else $('#start').textContent = T.champ ? 'ابدأ بطولة جديدة ▶' : 'ابدأ البطولة ▶';
+}
 function drawMsgs() {
   const box = $('#msgs');
   const ids = S ? S.players.map(p => p.id) : [], CC = ['#c62828', '#7b3fc7', '#1c5fd0', '#1f8f52', '#e07a1f', '#c2185b', '#00838f', '#6b5634'];
   box.innerHTML = chatLog.map(m => { const me = S && m.from === S.me, c = CC[Math.max(0, ids.indexOf(m.from)) % CC.length];
-    return `<div class="msg${me ? ' me' : ''}"><span class="mav" style="background:${me ? '#2fbf6a' : c}">${esc([...String(m.name).trim()][0] || '؟')}</span><div class="mtx"><b style="color:${me ? '#ffc928' : c}">${esc(m.name)}</b><span class="nt">${esc(m.text)}</span></div></div>`; }).join('');
+    return `<div class="msg${me ? ' me' : ''}"><span class="mav" style="background:${me ? '#2fbf6a' : c}">${esc([...String(m.name).trim()][0] || '؟')}</span><div class="mtx"><b style="color:${(() => { const q = S && S.players.find(x => x.id === m.from); return q && q.cs && q.cs.nc ? NCOL[q.cs.nc] : me ? '#ffc928' : c; })()}">${esc(m.name)}</b><span class="nt">${esc(m.text)}</span></div></div>`; }).join('');
   const cc = $('#chatCount'); if (cc) cc.textContent = S ? `${(S.players || []).length + (S.specs || []).length} بالغرفة` : '';
   box.scrollTop = box.scrollHeight;
 }
