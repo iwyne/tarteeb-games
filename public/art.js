@@ -287,7 +287,7 @@ function atFrame() {
   const g = AT.vg, v = AT.view, d = AT.dpr;
   g.setTransform(d, 0, 0, d, 0, 0); g.fillStyle = '#2b2c33'; g.fillRect(0, 0, AT.vw, AT.vh);
   g.save(); g.translate(AT.vw / 2 + v.x, AT.vh / 2 + v.y); g.rotate(v.r); g.scale(v.f ? -v.z : v.z, v.z); g.translate(-AT.W / 2, -AT.H / 2);
-  g.shadowColor = 'rgba(0,0,0,.45)'; g.shadowBlur = 24; g.fillStyle = '#fff'; g.fillRect(0, 0, AT.W, AT.H); g.shadowBlur = 0;
+  { const o = 5 / v.z; g.fillStyle = 'rgba(0,0,0,.28)'; g.fillRect(o, o * 1.6, AT.W, AT.H); } g.fillStyle = '#fff'; g.fillRect(0, 0, AT.W, AT.H); // ظل خفيف بدون blur (الـ blur كل فريم يثقّل)
   g.imageSmoothingEnabled = v.z < 2; g.imageSmoothingQuality = 'high';
   g.drawImage(AT.comp, 0, 0);
   // التحويل: الصورة الطايرة
@@ -387,9 +387,15 @@ function atStrokeTo(rx, ry, p, first) {
   S.pts.push([rx, ry]);
   // التنعيم (StreamLine)
   const k = first ? 1 : 1 - S.st * .88; S.sm[0] += (rx - S.sm[0]) * k; S.sm[1] += (ry - S.sm[1]) * k;
-  atStrokeSeg(S.sm[0], S.sm[1], p, first);
+  // منحنى ناعم بين النقاط (بدل خطوط مستقيمة تطلع زوايا لما تحرك بسرعة): بيزيه من نص النقطتين للنص الجاي
+  const c = [S.sm[0], S.sm[1]];
+  if (first || !S.q) { S.q = [c, c]; S.qp = p; return atStrokeSeg(c[0], c[1], p, first); }
+  const [p0, p1] = S.q, m0 = [(p0[0] + p1[0]) / 2, (p0[1] + p1[1]) / 2], m1 = [(p1[0] + c[0]) / 2, (p1[1] + c[1]) / 2];
+  const len = Math.hypot(p1[0] - m0[0], p1[1] - m0[1]) + Math.hypot(m1[0] - p1[0], m1[1] - p1[1]), n = Math.max(1, Math.min(24, Math.ceil(len * AT.view.z / 3)));
+  for (let i = 1; i <= n; i++) { const t = i / n, u = 1 - t; atStrokeSeg(u * u * m0[0] + 2 * u * t * p1[0] + t * t * m1[0], u * u * m0[1] + 2 * u * t * p1[1] + t * t * m1[1], S.qp + (p - S.qp) * t, false, i < n); }
+  S.q = [p1, c]; S.qp = p;
 }
-function atStrokeSeg(x, y, p, first) {
+function atStrokeSeg(x, y, p, first, more) {
   if (atCollab() && AT.stroke && ['brush', 'eraser'].includes(AT.stroke.tool)) atCollabSend('p', [Math.round(x * 10) / 10, Math.round(y * 10) / 10, Math.round(p * 100) / 100]);
   const S = AT.stroke, b = S.b, [lx, ly] = S.last, dx = x - lx, dy = y - ly, d = Math.hypot(dx, dy);
   if (d > .01) S.dir = Math.atan2(dy, dx);
@@ -397,6 +403,7 @@ function atStrokeSeg(x, y, p, first) {
   const l = atL();
   if (first) { S.rem = step; }
   let t = S.rem; const n0 = S.dist;
+  if (!S.seg) S.seg = [1e9, 1e9, -1e9, -1e9]; // المنطقة اللي تغيّرت من آخر تحديث بس (مو الضربة كلها)
   if (first) atOneStamp(x, y, p, x, y);
   else while (t <= d) {
     const f = t / d, px = lx + dx * f, py = ly + dy * f, pp = S.lp + (p - S.lp) * f;
@@ -404,21 +411,24 @@ function atStrokeSeg(x, y, p, first) {
     atOneStamp(px, py, pp * tp, S.lx || lx, S.ly || ly); S.lx = px; S.ly = py; t += step;
   }
   S.rem = t - d; S.dist += d; S.last = [x, y]; S.lp = p;
-  if (S.tool !== 'smudge' && S.tool !== 'liq') atLiveUpdate();
-  else { atCompose(AT.comp, null); }
+  const sg = S.seg, B = S.box; B[0] = Math.min(B[0], sg[0]); B[1] = Math.min(B[1], sg[1]); B[2] = Math.max(B[2], sg[2]); B[3] = Math.max(B[3], sg[3]);
+  if (more) return; // نقاط المنحنى اللي بالنص: نحدّث الشاشة مرة وحدة بآخرها
+  S.seg = null;
+  if (sg[2] >= sg[0]) { if (S.tool !== 'smudge' && S.tool !== 'liq') atLiveUpdate(sg); else atRegionComp(sg); }
   AT.dirty = true;
 }
 function atOneStamp(x, y, p, px, py) {
   const S = AT.stroke, b = S.b;
-  if (S.tool === 'smudge') return atSmudgeStamp(atTgt(), b, px, py, x, y, p, S.sz, S.box);
-  if (S.tool === 'liq') return atLiqDab(atTgt(), px, py, x, y, p, S.sz, S.box);
+  const bx = S.seg || S.box;
+  if (S.tool === 'smudge') return atSmudgeStamp(atTgt(), b, px, py, x, y, p, S.sz, bx);
+  if (S.tool === 'liq') return atLiqDab(atTgt(), px, py, x, y, p, S.sz, bx);
   const g = AT.sb.getContext('2d'); g.globalCompositeOperation = 'source-over';
-  atStamp(g, b, x, y, p, S.dir, S.tool === 'eraser' ? '#000000' : S.col, S.sz, S.box);
+  atStamp(g, b, x, y, p, S.dir, S.tool === 'eraser' ? '#000000' : S.col, S.sz, bx);
 }
 // نحدّث النسخة الحيّة (الطبقة + الضربة) بالمنطقة اللي تغيّرت بس
-function atLiveUpdate() {
-  const S = AT.stroke, t = atTgt(), l = atL(), b = S.box; if (b[2] < b[0]) return;
-  const x = Math.max(0, b[0] | 0), y = Math.max(0, b[1] | 0), w = Math.min(AT.W, Math.ceil(b[2])) - x, h = Math.min(AT.H, Math.ceil(b[3])) - y; if (w <= 0 || h <= 0) return;
+function atLiveUpdate(bb) {
+  const S = AT.stroke, t = atTgt(), l = atL(), b = bb || S.box; if (b[2] < b[0]) return;
+  const x = Math.max(0, (b[0] - 3) | 0), y = Math.max(0, (b[1] - 3) | 0), w = Math.min(AT.W, Math.ceil(b[2] + 3)) - x, h = Math.min(AT.H, Math.ceil(b[3] + 3)) - y; if (w <= 0 || h <= 0) return;
   const lv = AT.live.getContext('2d'); lv.save(); lv.globalCompositeOperation = 'source-over'; lv.globalAlpha = 1; lv.clearRect(x, y, w, h); lv.drawImage(t.cv, x, y, w, h, x, y, w, h); lv.restore();
   atMergeSb(lv, S, t, x, y, w, h);
   if (S.simple) {
@@ -426,6 +436,15 @@ function atLiveUpdate() {
     g.globalCompositeOperation = l.blend; g.globalAlpha = l.op; g.drawImage(AT.live, x, y, w, h, x, y, w, h);
     g.globalCompositeOperation = 'source-over'; g.globalAlpha = 1; g.drawImage(AT.above, x, y, w, h, x, y, w, h); g.restore();
   } else atCompose(AT.comp, { l, cv: AT.live, mask: !!t.isMask });
+}
+// اللطخ والتسييل يغيّرون الطبقة نفسها: نعيد تركيب المنطقة المتغيرة بس لو نقدر
+function atRegionComp(b) {
+  const S = AT.stroke, l = atL(), t = atTgt();
+  if (!S || !S.simple || t.isMask) return atCompose(AT.comp, null);
+  const x = Math.max(0, (b[0] - 3) | 0), y = Math.max(0, (b[1] - 3) | 0), w = Math.min(AT.W, Math.ceil(b[2] + 3)) - x, h = Math.min(AT.H, Math.ceil(b[3] + 3)) - y; if (w <= 0 || h <= 0) return;
+  const g = AT.comp.getContext('2d'); g.save(); g.globalCompositeOperation = 'source-over'; g.globalAlpha = 1; g.clearRect(x, y, w, h); g.drawImage(AT.below, x, y, w, h, x, y, w, h);
+  g.globalCompositeOperation = l.blend; g.globalAlpha = l.op; g.drawImage(l.cv, x, y, w, h, x, y, w, h);
+  g.globalCompositeOperation = 'source-over'; g.globalAlpha = 1; g.drawImage(AT.above, x, y, w, h, x, y, w, h); g.restore();
 }
 // نجهز الضربة قبل ما تنضاف: حبيبات الورق، حواف المائي، وحدود التحديد
 function atPrep(S, x, y, w, h, fin) {
@@ -448,7 +467,11 @@ function atMergeSb(g, S, l, x, y, w, h, fin) {
 }
 function atStrokeEnd() {
   const S = AT.stroke; if (!S) return; clearTimeout(AT.qsT);
-  if (!S.shape && S.dist > 0 && S.tool !== 'grad') atStrokeSeg(S.pts[S.pts.length - 1][0], S.pts[S.pts.length - 1][1], S.lp); // آخر نقطة بدون تنعيم
+  if (!S.shape && S.dist > 0 && S.tool !== 'grad') { // نلحق آخر نقطة بمنحنى (التنعيم يخلي القلم متأخر شوي) بدل خط مستقيم
+    const L = S.pts[S.pts.length - 1]; for (let i = 0; i < 6 && Math.hypot(S.sm[0] - L[0], S.sm[1] - L[1]) * AT.view.z > 1.5; i++) { S.pts.pop(); atStrokeTo(L[0], L[1], S.lp); }
+    if (S.q) { const [p0, p1] = [S.q[1], [S.sm[0], S.sm[1]]], m0 = [(S.q[0][0] + p0[0]) / 2, (S.q[0][1] + p0[1]) / 2]; for (let i = 1; i <= 6; i++) { const t = i / 6, u = 1 - t; atStrokeSeg(u * u * m0[0] + 2 * u * t * p0[0] + t * t * p1[0], u * u * m0[1] + 2 * u * t * p0[1] + t * t * p1[1], S.lp, false, i < 6); } }
+    atStrokeSeg(L[0], L[1], S.lp);
+  }
   AT.ropeLn = null;
   const l = atTgt(), b = S.box; AT.stroke = null; if (atCollab() && ['brush', 'eraser'].includes(S.tool)) atCollabSend('e');
   if (b[2] < b[0]) { atRecomp(); return; }
@@ -1168,7 +1191,7 @@ function atMenuUI(pop) {
     e.stopPropagation(); const k = b.dataset.mm;
     if (k === 'png' || k === 'jpg') { atCompose(AT.comp, null); AT.comp.toBlob(bl => atDownload(bl, 'tarteeb-drawing.' + k), k === 'png' ? 'image/png' : 'image/jpeg', .95); }
     else if (k === 'psd') { atToast('نجهّز ملف PSD…', 3000); setTimeout(() => atDownload(atPSD(), 'tarteeb-drawing.psd'), 30); }
-    else if (k === 'mytl') { atClosePop(); AT.capDirty = true; await atCapture(); delete ATV.tl[S.me]; atToast('نجهّز الفيديو…', 2500); atVideo(S.me, S.players.find(p => p.id === S.me).name, true); }
+    else if (k === 'mytl') { atClosePop(); AT.capDirty = true; await atCapture(); delete ATV.tl[S.g.key + ':' + S.me]; atToast('نجهّز الفيديو…', 2500); atVideo(S.me, S.players.find(p => p.id === S.me).name, true); }
     else if (k === 'img') { atClosePop(); atPickFile(atInsertImage); }
     else if (k === 'anim') { atClosePop(); atAnimToggle(); }
     else if (k === 'psave') { atClosePop(); atSaveProject(); }
@@ -1353,7 +1376,8 @@ function atWaitUI() {
   const head = S.spec ? `<b>يرسمون الحين</b>${g.dl ? `<small>الوقت: <span id="atClock">${atTimeLeft()}</span></small>` : ''}<small>${atNum(done)} من ${atNum(ids.length)} خلصوا</small>` : g.sub === 'collect' ? '<b>الأونر أنهى الرسم</b><small>نجمع الرسومات…</small>' : `<b>خلّصت رسمتك</b><small>ننتظر الباقين · ${atNum(done)} من ${atNum(ids.length)} خلصوا</small>`;
   const sig = ids.map(id => id + ':' + (g.st[id] ? g.st[id].c + (g.st[id].done ? 'd' : '') : 0)).join('|') + g.sub + AT.done;
   if (w.dataset.sig === sig) return; w.dataset.sig = sig;
-  w.innerHTML = `<div class="atwbox">${head}<div class="atgrid">${ids.map(id => { const p = S.players.find(q => q.id === id), s = g.st[id]; return `<figure><div>${s && s.c ? `<img src="/art/${S.code}/${g.key}/${encodeURIComponent(id)}/last?n=${s.c}" alt="">` : '<i>لسه ما بدأ</i>'}</div><figcaption>${esc(p ? p.name : '')}${s && s.done ? ' <em>خلص</em>' : ''}${id !== S.me && !(s && s.done) ? ` <button class="atbtn sm" data-w="${id}">تابع لايف</button>` : ''}</figcaption></figure>`; }).join('')}</div>
+  const see = id => atHost() || id === S.me; // الأونر بس يشوف رسمات الكل وهم يرسمون
+  w.innerHTML = `<div class="atwbox">${head}<div class="atgrid">${ids.map(id => { const p = S.players.find(q => q.id === id), s = g.st[id]; return `<figure><div>${!see(id) ? `<i class="athid">${s && s.done ? 'خلّص رسمته' : s && s.c ? 'يرسم…' : 'لسه ما بدأ'}<small>تنعرض لما ينتهي الرسم</small></i>` : s && s.c ? `<img src="/art/${S.code}/${g.key}/${encodeURIComponent(id)}/last?k=${S.g.vk || ''}&n=${s.c}" alt="">` : '<i>لسه ما بدأ</i>'}</div><figcaption>${esc(p ? p.name : '')}${s && s.done ? ' <em>خلص</em>' : ''}${id !== S.me && !(s && s.done) && atHost() ? ` <button class="atbtn sm" data-w="${id}">تابع لايف</button>` : ''}</figcaption></figure>`; }).join('')}</div>
     ${!S.spec && g.sub === 'draw' ? '<button class="atbtn" id="atBack">رجعت أرسم</button>' : ''}${atHost() && g.sub === 'draw' ? '<button class="atbtn ok" id="atEndAll">اعرض الرسومات الحين</button>' : ''}</div>`;
   w.querySelectorAll('[data-w]').forEach(b => b.onclick = () => atWatch(b.dataset.w));
   const bk = document.getElementById('atBack'); if (bk) bk.onclick = () => { AT.done = false; send({ t: 'aback' }); w.hidden = true; w.dataset.sig = ''; };
@@ -1363,15 +1387,15 @@ function atWaitUI() {
 // ===== العرض: رسمة رسمة مع مقطع التسريع =====
 const ATV = { tl: {}, cur: null, raf: 0 };
 async function atLoadTl(pid) {
-  if (ATV.tl[pid]) return ATV.tl[pid];
-  const g = S.g, base = `/art/${S.code}/${g.key}/${encodeURIComponent(pid)}/`;
+  const g = S.g, ck = g.key + ':' + pid; if (ATV.tl[ck]) return ATV.tl[ck]; // الكاش لكل جولة (قبل كان باللاعب بس فترجع رسمات الجولة اللي قبل)
+  const base = `/art/${S.code}/${g.key}/${encodeURIComponent(pid)}/`;
   const P = (async () => {
-    const r = await fetch(base + 'tl'), buf = new Uint8Array(await r.arrayBuffer()), fr = []; let i = 0;
+    const q = '?k=' + (g.vk || ''), r = await fetch(base + 'tl' + q), buf = new Uint8Array(await r.arrayBuffer()), fr = []; let i = 0;
     while (i + 4 <= buf.length) { const n = (buf[i] << 24 | buf[i + 1] << 16 | buf[i + 2] << 8 | buf[i + 3]) >>> 0; i += 4; fr.push(new Blob([buf.subarray(i, i + n)])); i += n; }
-    const fin = await (await fetch(base + 'final')).blob();
+    const fin = await (await fetch(base + 'final' + q)).blob();
     return { fr, fin };
   })();
-  ATV.tl[pid] = P; return P;
+  ATV.tl[ck] = P; P.catch(() => { delete ATV.tl[ck]; }); return P;
 }
 function atShowUI(body) {
   const g = S.g, over = S.phase === 'over' || g.sub === 'over', host = atHost();
@@ -1380,7 +1404,7 @@ function atShowUI(body) {
   if (g.sub === 'vote') { // التصويت على أحلى رسمة
     const sig = 'vote' + g.my + g.nv + g.nvt + g.canVote + atHost(); if (box.dataset.sig === sig) return; box.dataset.sig = sig;
     const jn = g.jmode === 'judges' ? 'الحكام بس يصوّتون' : g.jmode === 'mix' ? 'صوت الحكم بثلاثة أصوات' : '';
-    box.innerHTML = `<div class="atvh"><h2>${g.canVote ? 'صوّت لأحلى رسمة' : 'التصويت شغّال'}</h2><small>${atNum(g.nv)} من ${atNum(g.nvt)} صوّتوا${jn ? ` · ${jn}` : ''}</small></div><div class="atgal atvote">${g.order.map(id => { const p = S.players.find(q => q.id === id), mine = id === S.me; return `<button data-v="${id}" class="${g.my === id ? 'on' : ''}"${mine || !g.canVote ? ' disabled' : ''}><img src="/art/${S.code}/${g.key}/${encodeURIComponent(id)}/final" alt=""><span>${esc(p ? p.name : 'لاعب')}${mine ? ' (رسمتك)' : g.my === id ? ' ✓' : ''}</span></button>`; }).join('')}</div>
+    box.innerHTML = `<div class="atvh"><h2>${g.canVote ? 'صوّت لأحلى رسمة' : 'التصويت شغّال'}</h2><small>${atNum(g.nv)} من ${atNum(g.nvt)} صوّتوا${jn ? ` · ${jn}` : ''}</small></div><div class="atgal atvote">${g.order.map(id => { const p = S.players.find(q => q.id === id), mine = id === S.me; return `<button data-v="${id}" class="${g.my === id ? 'on' : ''}"${mine || !g.canVote ? ' disabled' : ''}><img src="/art/${S.code}/${g.key}/${encodeURIComponent(id)}/final?k=${S.g.vk || ''}" alt=""><span>${esc(p ? p.name : 'لاعب')}${mine ? ' (رسمتك)' : g.my === id ? ' ✓' : ''}</span></button>`; }).join('')}</div>
       ${atHost() && !S.spec ? '<div class="atctl"><span class="atsp"></span><button class="atbtn ok" id="atVEnd">اعلن النتيجة</button></div>' : ''}`;
     box.querySelectorAll('[data-v]').forEach(b => b.onclick = () => { send({ t: 'avote', id: b.dataset.v }); try { sfx('gclick'); } catch {} });
     const ve = document.getElementById('atVEnd'); if (ve) ve.onclick = () => send({ t: 'avend' });
@@ -1389,28 +1413,32 @@ function atShowUI(body) {
   if (over && ATV.view == null && ATV.revOn) { if (document.getElementById('atRevSkip')) return; ATV.rev = null; } // الصفحة انبنت من جديد وقت الكشف: نعيده
   if (over && ATV.view == null && g.tally && g.order.length > 1 && ATV.rev !== g.key) return atReveal(body, box); // كشف المراكز
   if (over && ATV.view == null) { // الآخر: معرض كل الرسومات
-    const sig = 'grid' + g.order.join() + (g.best || []).join(); if (box.dataset.sig === sig) return; box.dataset.sig = sig;
+    const sig = 'grid' + g.order.join() + (g.best || []).join() + (g.gal || []).join(); if (box.dataset.sig === sig) return; box.dataset.sig = sig;
+    const gs = new Set(g.gal || []), gh = host && !S.spec;
     const best = g.best || [], T = g.tally || {};
-    box.innerHTML = `${best.length ? `<div class="atwin">${atIcon('crown')}<b>${esc(S.winner || '')}</b><small>أحلى رسمة بتصويتكم</small></div>` : ''}<div class="atvh"><h2>معرض الرسومات</h2><span><a class="atbtn" href="/gallery.html" target="_blank">المعرض الدائم</a> <button class="atbtn" id="atLeave">اطلع</button>${atHost() && !S.spec ? ' <button class="atbtn ok" id="atLobby">رجوع للوبي</button>' : ''}</span></div><div class="atgal">${g.order.map((id, i) => { const p = S.players.find(q => q.id === id); return `<button data-i="${i}" class="${best.includes(id) ? 'best' : ''}">${best.includes(id) ? '<i class="atcrown">أحلى رسمة</i>' : ''}<img src="/art/${S.code}/${g.key}/${encodeURIComponent(id)}/final" alt=""><span>${esc(p ? p.name : 'لاعب')}${g.tally ? ` · ${atNum(T[id] || 0)} صوت` : ''}</span></button>`; }).join('')}</div>`;
-    box.querySelectorAll('[data-i]').forEach(b => b.onclick = () => { ATV.view = +b.dataset.i; box.dataset.sig = ''; atShowUI(body); });
+    box.innerHTML = `${best.length ? `<div class="atwin">${atIcon('crown')}<b>${esc(S.winner || '')}</b><small>أحلى رسمة بتصويتكم</small></div>` : ''}<div class="atvh"><h2>معرض الرسومات</h2><span><a class="atbtn" href="/gallery.html" target="_blank">المعرض الدائم</a> <button class="atbtn" id="atLeave">اطلع</button>${atHost() && !S.spec ? ' <button class="atbtn ok" id="atLobby">رجوع للوبي</button>' : ''}</span></div><div class="atgal">${g.order.map((id, i) => { const p = S.players.find(q => q.id === id); return `<button data-i="${i}" class="${best.includes(id) ? 'best' : ''}">${best.includes(id) ? '<i class="atcrown">أحلى رسمة</i>' : ''}<img src="/art/${S.code}/${g.key}/${encodeURIComponent(id)}/final?k=${S.g.vk || ''}" alt=""><span>${esc(p ? p.name : 'لاعب')}${g.tally ? ` — ${atNum(T[id] || 0)} صوت` : ''}</span>${gh ? `<em class="atgalt${gs.has(id) ? ' on' : ''}" data-g="${id}">${gs.has(id) ? 'بالمعرض ✓' : '+ للمعرض'}</em>` : ''}</button>`; }).join('')}</div>
+      ${gh ? `<p class="atgalh">اختر الرسمات اللي تبيها تنحفظ بالمعرض الدائم (${atNum(gs.size)} مختارة). اللي ما تختارها ما تنحفظ.</p>` : ''}`;
+    box.querySelectorAll('[data-i]').forEach(b => b.onclick = e => { const t = e.target.closest('[data-g]'); if (t) { e.stopPropagation(); return send({ t: 'agal', id: t.dataset.g, on: !gs.has(t.dataset.g) }); } ATV.view = +b.dataset.i; box.dataset.sig = ''; atShowUI(body); });
     document.getElementById('atLeave').onclick = () => document.getElementById('leave2b').click();
     const lb = document.getElementById('atLobby'); if (lb) lb.onclick = () => send({ t: 'again' });
     return;
   }
   if (over && !g.order.length) { box.innerHTML = '<h2>محد رسم شي</h2>'; return; }
-  const i = over ? ATV.view : g.i, pid = g.order[i], p = g.collab ? { name: 'الرسم الجماعي' } : S.players.find(q => q.id === pid), sig = 'v' + i + pid + over + host;
-  if (box.dataset.sig === sig) return; box.dataset.sig = sig;
+  const i = over ? ATV.view : g.i, pid = g.order[i], p = g.collab ? { name: 'الرسم الجماعي' } : S.players.find(q => q.id === pid), inGal = (g.gal || []).includes(pid), sig = 'v' + i + pid + over + host;
+  if (box.dataset.sig === sig) { const t = document.getElementById('atGalT'); if (t) { t.classList.toggle('on', inGal); t.textContent = inGal ? 'بالمعرض الدائم ✓' : '+ للمعرض الدائم'; } return; } // بس زر المعرض يتحدّث، التسريع يكمل
+  box.dataset.sig = sig;
   box.innerHTML = `<div class="atvh"><h2>رسمة <span>${esc(p ? p.name : 'لاعب')}</span></h2><small>${atNum(i + 1)} من ${atNum(g.order.length)}</small></div>
     <div class="atstage"><canvas id="atPlay" width="1200" height="900"></canvas><div class="atload" id="atLoad">نجهّز التسريع…</div></div>
     <div class="atctl"><button class="atbtn" id="atRe">${atIcon('play')} أعد التسريع</button><div class="atprog" id="atProg"><i></i></div><small id="atTm"></small></div>
     <div class="atctl"><button class="atbtn" id="atImg">${atIcon('down')} الصورة</button><button class="atbtn" id="atVid">${atIcon('down')} فيديو التسريع</button>
-      ${over ? '<button class="atbtn" id="atGrid">كل الرسومات</button>' : ''}
+      ${over ? '<button class="atbtn" id="atGrid">كل الرسومات</button>' : ''}${host && !S.spec ? `<button class="atbtn atgalt${inGal ? ' on' : ''}" id="atGalT">${inGal ? 'بالمعرض الدائم ✓' : '+ للمعرض الدائم'}</button>` : ''}
       ${host && !over ? `<span class="atsp"></span><button class="atbtn" id="atPrev"${i ? '' : ' disabled'}>السابقة</button>${i < g.order.length - 1 ? '<button class="atbtn ok" id="atNext">التالية</button>' : `<button class="atbtn ok" id="atEnd">${g.order.length > 1 ? 'للتصويت' : 'خلصنا'}</button>`}` : over ? `<span class="atsp"></span><button class="atbtn" id="atPrev"${i ? '' : ' disabled'}>السابقة</button><button class="atbtn" id="atNext"${i < g.order.length - 1 ? '' : ' disabled'}>التالية</button>` : '<span class="atsp"></span><small>الأونر يقلّب الرسومات</small>'}</div>`;
   const go = k => over ? (ATV.view = k, atShowUI(body)) : send({ t: 'ago', i: k });
   const $$ = id => document.getElementById(id);
   if ($$('atPrev')) $$('atPrev').onclick = () => go(i - 1);
   if ($$('atNext')) $$('atNext').onclick = () => go(i + 1);
   if ($$('atEnd')) $$('atEnd').onclick = () => send({ t: 'adone' });
+  if ($$('atGalT')) $$('atGalT').onclick = () => send({ t: 'agal', id: pid, on: !(S.g.gal || []).includes(pid) });
   if ($$('atGrid')) $$('atGrid').onclick = () => { ATV.view = null; box.dataset.sig = ''; atShowUI(body); };
   $$('atImg').onclick = async () => { const d = await atLoadTl(pid); atDownload(d.fin, `tarteeb-drawing-${i + 1}.${d.fin.type.includes('jpeg') ? 'jpg' : d.fin.type.includes('png') ? 'png' : 'webp'}`); };
   $$('atVid').onclick = () => atVideo(pid, p ? p.name : '');
@@ -1422,7 +1450,7 @@ function atShowUI(body) {
 function atReveal(body, box) {
   const g = S.g, tok = ATV.revTok = {}; ATV.rev = g.key; ATV.revOn = true; box.dataset.sig = 'rev';
   const T = g.tally, rank = g.order.slice().sort((a, b) => (T[b] || 0) - (T[a] || 0)).slice(0, 3), names = ['الأول', 'الثاني', 'الثالث'];
-  box.innerHTML = `<div class="atrev"><h2>النتيجة</h2><div class="atpod">${rank.map((id, k) => { const p = S.players.find(q => q.id === id); return `<div class="atpd p${k + 1}" data-k="${k}"><div class="atpdi"><img src="/art/${S.code}/${g.key}/${encodeURIComponent(id)}/final" alt=""></div><b>${(g.best || []).includes(id) && k ? 'الأول' : names[k]}</b><span>${esc(p ? p.name : 'لاعب')}</span><small>${atNum(T[id] || 0)} صوت</small></div>`; }).join('')}</div><button class="atbtn" id="atRevSkip">تخطي</button></div>`;
+  box.innerHTML = `<div class="atrev"><h2>النتيجة</h2><div class="atpod">${rank.map((id, k) => { const p = S.players.find(q => q.id === id); return `<div class="atpd p${k + 1}" data-k="${k}"><div class="atpdi"><img src="/art/${S.code}/${g.key}/${encodeURIComponent(id)}/final?k=${S.g.vk || ''}" alt=""></div><b>${(g.best || []).includes(id) && k ? 'الأول' : names[k]}</b><span>${esc(p ? p.name : 'لاعب')}</span><small>${atNum(T[id] || 0)} صوت</small></div>`; }).join('')}</div><button class="atbtn" id="atRevSkip">تخطي</button></div>`;
   const steps = [...box.querySelectorAll('.atpd')].reverse(); let n = 0, tm;
   const done = () => { clearTimeout(tm); if (ATV.revTok !== tok) return; ATV.revOn = false; box.dataset.sig = ''; atShowUI(body); };
   const nx = () => { if (ATV.revTok !== tok || !document.getElementById('atRevSkip')) return; if (n < steps.length) { steps[n].classList.add('in'); try { sfx(n === steps.length - 1 ? 'win' : 'pop'); } catch {} n++; tm = setTimeout(nx, n === steps.length ? 3500 : 1800); } else done(); };
@@ -1486,7 +1514,7 @@ function atWatch(id) {
   const p = S.players.find(q => q.id === id), g = S.g;
   if (!o) { o = document.createElement('div'); o.id = 'atLv'; o.className = 'atlv'; (document.getElementById('atStudio') || document.getElementById('atSpec') || document.body).appendChild(o); }
   o.innerHTML = `<div class="atlvh"><span class="lvdot"></span><b>${esc(p ? p.name : '')}</b><small>يرسم الحين</small><button class="atbtn sm" id="atLvX">سكّر</button></div>
-    <div class="atlvb"><img id="atLvImg" src="/art/${S.code}/${g.key}/${encodeURIComponent(id)}/last?t=${Date.now()}" alt=""></div>
+    <div class="atlvb"><img id="atLvImg" src="/art/${S.code}/${g.key}/${encodeURIComponent(id)}/last?k=${S.g.vk || ''}&t=${Date.now()}" alt=""></div>
     <div class="atlvc">${['clap', 'fire', 'laugh', 'love', 'wow'].map(e => `<button data-ch="${e}">${typeof rcChar === 'function' ? rcChar('hmd', e, 34) : e}</button>`).join('')}<small>شجّعه</small></div>`;
   document.getElementById('atLvX').onclick = () => atWatch(null);
   o.querySelectorAll('[data-ch]').forEach(b => b.onclick = () => send({ t: 'acheer', id, e: b.dataset.ch }));
@@ -1509,7 +1537,6 @@ function renderArt(body) {
   const g = S.g; if (!g) return;
   if (g.sub === 'draw' || g.sub === 'collect') {
     if (S.spec) { // المتفرج: يشوف الكل وهم يرسمون، ويقدر يتابع واحد لايف
-      if (g.collab) return atSpecCollab(body);
       if (!body.querySelector('#atSpec')) body.innerHTML = '<div class="atstudio atspec" id="atSpec"><div class="atwait" id="atWait"></div></div>';
       AT.done = true; atWaitUI(); return;
     }

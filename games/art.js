@@ -31,7 +31,6 @@ module.exports = H => {
     if (!g.order.length) { H.log(r, '🎨 محد رسم شي!'); return end(r); }
     g.sub = 'show'; g.i = 0; g.mins = Math.max(1, Math.round((Date.now() - g.t0) / 60000));
     H.log(r, g.collab ? '🖼️ وقت العرض! رسمتكم الجماعية' : `🖼️ وقت العرض! ${g.order.length} رسمات`); H.push(r);
-    saveGallery(r);
   }
   function end(r) { const g = r.g; r.phase = 'over'; g.sub = 'over'; r.winner = r.winner || null; H.setTimer(r, 0, null); H.push(r); }
   // مين يصوّت: الكل، أو الحكام بس، أو الكل والحكم صوته بثلاثة
@@ -46,22 +45,30 @@ module.exports = H => {
     const mx = Math.max(0, ...Object.values(c)), ws = mx ? r.players.filter(p => c[p.id] === mx) : [];
     g.tally = c; g.best = ws.map(p => p.id);
     if (ws.length) { r.winner = ws.map(p => p.name).join(' و '); H.win(r, ws); H.log(r, `👑 أحلى رسمة: ${r.winner}`); }
-    end(r); saveGallery(r, true);
+    end(r); if (Object.keys(g.galSel || {}).length) saveGallery(r);
   }
   // المعرض الدايم: نحفظ الرسومات والتسريع على القرص
-  function saveGallery(r, upd) {
-    const g = r.g; if (!g.order.length) return;
-    const dir = g.galDir || (g.galDir = Date.now().toString(36) + '-' + r.code);
-    const items = g.order.map((id, i) => { const p = r.players.find(q => q.id === id) || { name: 'لاعب' };
-      return { i, name: g.collab ? 'رسمة جماعية' : p.name, pid: g.collab ? null : PK(p), votes: g.tally ? g.tally[id] || 0 : 0, best: (g.best || []).includes(id) }; });
-    const meta = { t: g.galT || (g.galT = Date.now()), theme: g.theme, mins: g.mins, items, collab: !!g.collab };
-    GALS[dir] = meta; ST.put('gal:' + dir, meta);
-    if (!upd) (async () => {
-      for (const [i, id] of g.order.entries()) { const a = g.art[id]; const f = a.final || a.frames[a.frames.length - 1];
-        const parts = []; a.frames.forEach(fr => { const l = Buffer.alloc(4); l.writeUInt32BE(fr.length); parts.push(l, fr); });
-        try { if (f) await ST.putFile(`gal/${dir}/${i}.img`, f, f[0] === 0xff ? 'image/jpeg' : f[0] === 0x89 ? 'image/png' : 'image/webp'); await ST.putFile(`gal/${dir}/${i}.tl`, Buffer.concat(parts)); } catch (e) { console.error('gallery', e.message); } }
+  // المعرض الدايم: الأونر يختار وش يروح له (agal). نرفع الملفات للي انختار، ونشيل اللي انلغى
+  function saveGallery(r) {
+    const g = r.g; const sel = g.order.filter(id => g.galSel && g.galSel[id]);
+    const dir = g.galDir || (g.galDir = Date.now().toString(36) + '-' + r.code); g.galUp = g.galUp || {};
+    const files = i => [`gal/${dir}/${i}.img`, `gal/${dir}/${i}.tl`];
+    if (!sel.length) { if (GALS[dir]) { delete GALS[dir]; ST.del('gal:' + dir); } }
+    else {
+      const items = sel.map(id => { const i = g.order.indexOf(id), p = r.players.find(q => q.id === id) || { name: 'لاعب' };
+        return { i, name: g.collab ? 'رسمة جماعية' : p.name, pid: g.collab ? null : PK(p), votes: g.tally ? g.tally[id] || 0 : 0, best: (g.best || []).includes(id) }; });
+      const meta = { t: g.galT || (g.galT = Date.now()), theme: g.theme, mins: g.mins, items, collab: !!g.collab };
+      GALS[dir] = meta; ST.put('gal:' + dir, meta);
+    }
+    (async () => {
+      for (const id of g.order) { const i = g.order.indexOf(id), want = sel.includes(id);
+        if (want && !g.galUp[id]) { g.galUp[id] = true; const a = g.art[id]; const f = a.final || a.frames[a.frames.length - 1];
+          const parts = []; a.frames.forEach(fr => { const l = Buffer.alloc(4); l.writeUInt32BE(fr.length); parts.push(l, fr); });
+          try { if (f) await ST.putFile(files(i)[0], f, f[0] === 0xff ? 'image/jpeg' : f[0] === 0x89 ? 'image/png' : 'image/webp'); await ST.putFile(files(i)[1], Buffer.concat(parts)); } catch (e) { g.galUp[id] = false; console.error('gallery', e.message); } }
+        else if (!want && g.galUp[id]) { g.galUp[id] = false; ST.delFiles(files(i)); }
+      }
       // نخلي آخر ٣٠٠ جولة بس
-      const all = Object.keys(GALS).sort(); if (all.length > 300) for (const d of all.slice(0, all.length - 300)) { const n = GALS[d].items.length; delete GALS[d]; ST.del('gal:' + d); ST.delFiles([].concat(...Array.from({ length: n }, (_, i) => [`gal/${d}/${i}.img`, `gal/${d}/${i}.tl`]))); }
+      const all = Object.keys(GALS).sort(); if (all.length > 300) for (const d of all.slice(0, all.length - 300)) { const n = Math.max(0, ...GALS[d].items.map(x => x.i)) + 1; delete GALS[d]; ST.del('gal:' + d); ST.delFiles([].concat(...Array.from({ length: n }, (_, i) => [`gal/${d}/${i}.img`, `gal/${d}/${i}.tl`]))); }
     })();
   }
   const relay = (r, list, o) => list.forEach(q => H.sendTo(q, o));
@@ -98,16 +105,19 @@ module.exports = H => {
       // البث والرسم الجماعي
       if (m.t === 'ast' && drawing && !p.spec) { // ضربة (بداية/نقاط/نهاية) — للجماعي
         if (!g.collab || !H.rate(p, 'ast', 20)) return 'quiet';
-        relay(r, everyone(r).filter(q => q !== p), { t: 'gnet', g: 'art', k: 'st', from: p.id, d: m.d }); return 'quiet';
+        relay(r, humans(r).filter(q => q !== p), { t: 'gnet', g: 'art', k: 'st', from: p.id, d: m.d }); return 'quiet';
       }
       if (m.t === 'alyr' && drawing && !p.spec) { // لقطة طبقتي كاملة (الجماعي) — تنحفظ للي يدخل بعدين
         if (!g.collab || !H.rate(p, 'alyr', 800) || String(m.d || '').length > LYR_MAX) return 'quiet';
         g.lyr[p.id] = { d: m.d, v: (g.lyr[p.id] ? g.lyr[p.id].v : 0) + 1, n: p.name };
-        relay(r, everyone(r).filter(q => q !== p), { t: 'gnet', g: 'art', k: 'lyr', from: p.id, d: m.d, n: p.name }); return 'quiet';
+        relay(r, humans(r).filter(q => q !== p), { t: 'gnet', g: 'art', k: 'lyr', from: p.id, d: m.d, n: p.name }); return 'quiet';
       }
-      if (m.t === 'aneed') { for (const id in g.lyr) if (id !== p.id) H.sendTo(p, { t: 'gnet', g: 'art', k: 'lyr', from: id, d: g.lyr[id].d, n: g.lyr[id].n }); return 'quiet'; }
-      if (m.t === 'awatch') { // أتابع رسام (بث)
-        const id = m.id && r.players.some(q => q.id === m.id) && m.id !== p.id ? m.id : null; if (id) g.watch[p.id] = id; else delete g.watch[p.id]; return;
+      if (m.t === 'aneed' && !p.spec) { for (const id in g.lyr) if (id !== p.id) H.sendTo(p, { t: 'gnet', g: 'art', k: 'lyr', from: id, d: g.lyr[id].d, n: g.lyr[id].n }); return 'quiet'; }
+      if (m.t === 'awatch') { // الأونر بس يتابع رسام لايف (الباقين ما يشوفون رسمات غيرهم لين يخلص الرسم)
+        const id = host && m.id && r.players.some(q => q.id === m.id) && m.id !== p.id ? m.id : null; if (id) g.watch[p.id] = id; else delete g.watch[p.id]; return;
+      }
+      if (m.t === 'agal' && host && ['show', 'vote', 'over'].includes(g.sub)) { // الأونر يختار الرسمات اللي تروح للمعرض
+        if (!g.order.includes(m.id)) return 'quiet'; g.galSel = g.galSel || {}; if (m.on) g.galSel[m.id] = true; else delete g.galSel[m.id]; saveGallery(r); return;
       }
       if (m.t === 'alv' && drawing && !p.spec) { // صورة لايف للي يتابعوني
         if (!H.rate(p, 'alv', 300) || String(m.d || '').length > LIVE_MAX) return 'quiet';
@@ -139,12 +149,17 @@ module.exports = H => {
       const wc = p ? Object.values(g.watch).filter(x => x === p.id).length : 0;
       return { sub: g.sub, key: g.key, theme: g.theme, st, order: g.order, i: g.i, t0: g.t0, mins: g.mins || 0, dl: g.dl, collab: g.collab, jmode: g.jmode, judges: g.judges,
         canVote: g.sub === 'vote' && !!p && voters(r).includes(p), my: g.votes && p ? g.votes[p.id] || null : null, nv: g.votes ? Object.keys(g.votes).length : 0, nvt: g.sub === 'vote' ? voters(r).length : 0,
-        tally: g.tally || null, best: g.best || [], wc, watching: p ? g.watch[p.id] || null : null };
+        tally: g.tally || null, best: g.best || [], wc, watching: p ? g.watch[p.id] || null : null,
+        vk: p ? (p.vk || (p.vk = crypto.randomBytes(9).toString('base64url'))) : null, gal: p && p.id === r.host ? Object.keys(g.galSel || {}) : null };
     },
     leave(r, p) { const g = r.g; if (!g) return; if (p) { delete g.watch[p.id]; for (const k in g.watch) if (g.watch[k] === p.id) delete g.watch[k]; } if (g.sub === 'draw' && allDone(r)) show(r); },
     // تنزيل الصور
-    http(r, pid, what) {
+    http(r, pid, what, vk) {
       const g = r.g, a = g && g.art[pid]; if (!a) return null;
+      // مين يشوف: صاحب الرسمة والأونر دايماً، والباقين بعد ما يخلص الرسم (بالعرض لين الرسمة الحالية بس)
+      const v = vk && r.players.concat(r.specs || []).find(q => q.vk === vk);
+      const ok = v && (v.id === pid || v.id === r.host || ['vote', 'over'].includes(g.sub) || r.phase === 'over' || (g.sub === 'show' && g.order.indexOf(pid) > -1 && g.order.indexOf(pid) <= g.i));
+      if (!ok) return null;
       const sniff = b => b[0] === 0xff ? 'image/jpeg' : b[0] === 0x89 ? 'image/png' : 'image/webp';
       if (what === 'final') { const b = a.final || a.frames[a.frames.length - 1]; return b ? { type: sniff(b), body: b } : null; }
       if (what === 'last') { const b = a.frames[a.frames.length - 1] || a.final; return b ? { type: sniff(b), body: b } : null; }

@@ -4458,3 +4458,9 @@ body.rplay #over2{display:none!important}
 .melr b{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.mepod{max-width:100%}
 @media (max-width:520px){.mepd .meav.big{width:62px;height:62px;font-size:1.8rem}.meblk{width:27vw}.metabs select{margin-inline-start:0;width:100%}}
 .gfrow{min-width:0;max-width:100%}.gfrow .gfilter{min-width:0}@media(max-width:600px){.gfrow .gfilter{flex:1 1 100%;max-width:calc(100% + 32px)}}
+/* المرسم: الرسمات المخفية عن غير الأونر، واختيار المعرض */
+.atgrid .athid{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;height:100%;font-style:normal;font-weight:800;opacity:.85}.atgrid .athid small{font-weight:500;opacity:.6;font-size:.72rem}
+.atgalt{display:inline-block;margin-top:6px;padding:3px 10px;border-radius:999px;background:#34353d;color:#fff;font-style:normal;font-weight:800;font-size:.78rem;cursor:pointer}
+.atgalt.on{background:#1fa35c}
+.atgal>button .atgalt{position:absolute;top:8px;left:8px;margin:0;box-shadow:0 2px 8px rgba(0,0,0,.4)}
+.atgalh{text-align:center;opacity:.75;margin:10px 0 0;font-size:.9rem}

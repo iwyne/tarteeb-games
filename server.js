@@ -103,7 +103,7 @@ const server = http.createServer((req, res) => {
   if (req.url.startsWith('/api/')) return apiRoute(req, res);
   if (req.url.startsWith('/art/')) { // صور مرسم ترتيب: /art/<code>/<key>/<pid>/<tl|final|last>
     const [, , code, key, pid, what] = req.url.split('?')[0].split('/'); const r = rooms.get(String(code || '').toUpperCase());
-    const out = r && r.game === 'art' && r.g && r.g.key === key && GAMES.art.http(r, decodeURIComponent(pid || ''), what);
+    const out = r && r.game === 'art' && r.g && r.g.key === key && GAMES.art.http(r, decodeURIComponent(pid || ''), what, new URL(req.url, 'http://x').searchParams.get('k'));
     if (!out) { res.writeHead(404); return res.end(); }
     res.writeHead(200, { 'Content-Type': out.type, 'Content-Length': out.body.length, 'Cache-Control': what === 'last' ? 'no-store' : 'private, max-age=600' }); return res.end(out.body);
   }

@@ -6,7 +6,8 @@ const SB = String(process.env.SUPABASE_URL || '').replace(/\/+$/, ''), KEY = pro
 const ON = !!(SB && KEY);
 const DIR = process.env.STORE_DIR || path.join(__dirname, 'data');
 const KVF = path.join(DIR, 'kv.json'), FDIR = path.join(DIR, 'files');
-const H = (x = {}) => Object.assign({ apikey: KEY, Authorization: 'Bearer ' + KEY }, x);
+// المفاتيح الجديدة (sb_secret_...) مو JWT فتنرسل بـ apikey بس، والقديمة (service_role eyJ...) بالاثنين
+const H = (x = {}) => Object.assign(KEY.startsWith('sb_') ? { apikey: KEY } : { apikey: KEY, Authorization: 'Bearer ' + KEY }, x);
 
 let KV = {}; // نسخة الملفات بالذاكرة (لما ما فيه سوبابيس)
 if (!ON) { try { KV = JSON.parse(fs.readFileSync(KVF, 'utf8')) || {}; } catch {} }
