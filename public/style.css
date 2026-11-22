@@ -4510,3 +4510,4 @@ body:has(#atStudio:not(.atstream)) .fabs{bottom:150px}
   body:has(#atStudio:not(.atstream)) .fabs{bottom:130px}
 }
 .atpop.atxtools{padding:0 10px 10px}
+@media (max-width:820px){.atrec .atrc:nth-child(n+2){display:none}.atdock .atib{width:34px}}

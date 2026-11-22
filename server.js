@@ -416,7 +416,7 @@ function votesView(r, p) {
 function view(r, p) {
   if (r.game !== 'uno') {
     return {
-      t: 'state', game: r.game, min: GAMES[r.game].min, max: maxOf(r), code: r.code, phase: r.phase, me: p.id, spec: !!p.spec, specs: r.specs.map(s => ({ id: s.id, name: s.name })), vt: votesView(r, p), boss: !!p.boss,
+      t: 'state', game: r.game, min: GAMES[r.game].min, max: maxOf(r), code: r.code, phase: r.phase, me: p.id, spec: !!p.spec, specs: r.specs.map(s => ({ id: s.id, name: s.name })), vt: votesView(r, p), boss: !!p.boss, ab: !!p.artBot,
       players: r.players.map((q, i) => ({ id: q.id, name: q.name, n: q.hand ? q.hand.length : 0, on: q.online, h: q.id === r.host, tm: r.phase === 'lobby' ? i % 2 : q.team, w: q.wins || 0, av: q.av || '', bot: !!q.bot, lk: q.look || null, cs: PTS.look(q) })),
       opts: optsView(r, p), teams: !!META[r.game].teams, score: r.score, winTeam: r.winTeam, hand: [], top: null, color: null, dir: 1, turn: null, deck: 0,
       left: r.phase === 'play' && r.deadline ? Math.max(0, r.deadline - Date.now()) : 0, ok: [], pending: null, catch: null,
@@ -754,7 +754,9 @@ function admit(ws, r, name, extra = {}) {
 
 // صاحب الموقع (علي، داخل مكان التيم): يقدر يختار رقم النرد بلودو بحركة سرية
 const markBoss = (p, m) => {
-  if (m.teamTok && STAFF && STAFF.check(m.teamTok) === 'علي') p.boss = true;
+  const who = m.teamTok && STAFF ? STAFF.check(m.teamTok) : null;
+  if (who === 'علي') p.boss = true;
+  if (who === 'علي' || who === 'بشرى') p.artBot = true; // الرسام الآلي بالمرسم
   const d = dCheck(m.dtok); if (d && !p.uid) { p.uid = d.id; p.name = d.n; p.dc = true; p.dcA = d.a || ''; } // داخل بحساب ديسكورد: اسمه من ديسكورد ونقاطه على حسابه
 };
 function join(ws, m) {
