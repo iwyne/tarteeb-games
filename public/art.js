@@ -155,35 +155,38 @@ function atBuild(host) {
   host.innerHTML = `<div class="atstudio" id="atStudio">
     <canvas id="atCv" class="atcv"></canvas>
     <div class="attop" id="atTop">
-      <div class="atgrp">
-        <button class="atib" data-a="menu" title="القائمة">${I('menu')}</button>
-        <button class="atib" data-a="adjust" title="تعديلات">${I('wand')}</button>
-        <button class="atib" data-a="select" title="تحديد">${I('sel')}</button>
-        <button class="atib" data-a="transform" title="تحويل (V)">${I('move')}</button>
-        <button class="atib" data-a="image" title="أضف صورة">${I('img')}</button>
-      </div>
+      <div class="atgrp"><button class="atib" data-a="menu" title="القائمة">${I('menu')}</button></div>
       <div class="atmid" id="atMid"></div>
-      <div class="atgrp">
-        <button class="atib" data-t="brush" title="فرشاة (B)">${I('brush')}</button>
-        <button class="atib" data-t="smudge" title="تلطيخ (S)">${I('smudge')}</button>
-        <button class="atib" data-t="eraser" title="ممحاة (E)">${I('erase')}</button>
-        <button class="atib" data-t="fill" title="تعبئة (G)">${I('fill')}</button>
-        <button class="atib" data-t="grad" title="تدرّج (D)">${I('grad')}</button>
-        <button class="atib" data-a="layers" title="الطبقات">${I('layers')}</button>
-        <button class="atcol" data-a="color" id="atColBtn" title="اللون"></button>
-      </div>
+      <div class="atgrp"><button class="atfin" id="atFin">انتهيت</button></div>
     </div>
     <div class="atside" id="atSide">
-      <div class="atsl" id="atSize" data-k="size"><i></i></div>
+      <label class="atslw"><span>الحجم</span><div class="atsl" id="atSize" data-k="size"><i></i></div></label>
       <button class="atsq" id="atDrop" title="قطّارة (اضغط وبعدين المس اللوحة)"></button>
-      <div class="atsl" id="atOp" data-k="op"><i></i></div>
-      <button class="atib sm" data-a="undo" title="تراجع">${I('undo')}</button>
-      <button class="atib sm" data-a="redo" title="إعادة">${I('redo')}</button>
+      <label class="atslw"><span>الشفافية</span><div class="atsl" id="atOp" data-k="op"><i></i></div></label>
+    </div>
+    <div class="atdock" id="atDock">
+      <button class="atib" data-a="undo" title="تراجع (Ctrl+Z)">${I('undo')}</button>
+      <button class="atib atdk" data-a="redo" title="إعادة">${I('redo')}</button>
+      <span class="atdsep"></span>
+      <button class="atib" data-t="brush" title="فرشاة (B)">${I('brush')}</button>
+      <button class="atib" data-t="smudge" title="تلطيخ (S)">${I('smudge')}</button>
+      <button class="atib" data-t="eraser" title="ممحاة (E)">${I('erase')}</button>
+      <button class="atib" data-t="fill" title="تعبئة (G)">${I('fill')}</button>
+      <button class="atib atdk" data-t="grad" title="تدرّج (D)">${I('grad')}</button>
+      <button class="atib atdk" data-a="select" title="تحديد">${I('sel')}</button>
+      <button class="atib atdk" data-a="transform" title="تحويل (V)">${I('move')}</button>
+      <span class="atdsep"></span>
+      <button class="atcol" data-a="color" id="atColBtn" title="اللون"></button>
+      <span class="atrec" id="atRec"></span>
+      <span class="atdsep atdk"></span>
+      <button class="atib" data-a="layers" title="الطبقات">${I('layers')}</button>
+      <button class="atib atdk" data-a="adjust" title="تعديلات">${I('wand')}</button>
+      <button class="atib atdk" data-a="image" title="أضف صورة">${I('img')}</button>
+      <button class="atib atmo" data-a="more" title="أدوات أكثر">${I('dots')}</button>
     </div>
     <div class="atbub" id="atBub" hidden></div>
     <div class="atpop" id="atPop" hidden></div>
     <div class="atselbar" id="atSelBar" hidden></div>
-    <div class="atdone"><button class="atfin" id="atFin">انتهيت</button></div>
     <div class="attoast" id="atToast"></div>
     <div class="atwait" id="atWait" hidden></div>
   </div>`;
@@ -937,22 +940,23 @@ function atSetTool(t) {
   AT.tool = t; AT.pickMode = false; atUITool(); atUISliders(); atSelBar(); AT.dirty = true;
   if (t === 'fill') atToast('المس المكان اللي تبي تعبّيه');
 }
-function atUITool() { const c = AT.cv; if (c) c.style.cursor = AT.tool === 'transform' ? 'move' : AT.tool === 'vp' ? 'grab' : 'crosshair'; document.querySelectorAll('#atTop [data-t]').forEach(b => b.classList.toggle('on', b.dataset.t === AT.tool)); document.querySelectorAll('#atTop [data-a="select"]').forEach(b => b.classList.toggle('on', AT.tool === 'select')); document.querySelectorAll('#atTop [data-a="transform"]').forEach(b => b.classList.toggle('on', AT.tool === 'transform')); }
-function atUIColor() { const b = document.getElementById('atColBtn'); if (b) b.style.background = AT.color; }
+function atUITool() { const c = AT.cv; if (c) c.style.cursor = AT.tool === 'transform' ? 'move' : AT.tool === 'vp' ? 'grab' : 'crosshair'; document.querySelectorAll('#atStudio [data-t]').forEach(b => b.classList.toggle('on', b.dataset.t === AT.tool)); document.querySelectorAll('#atStudio [data-a="select"]').forEach(b => b.classList.toggle('on', AT.tool === 'select')); document.querySelectorAll('#atStudio [data-a="transform"]').forEach(b => b.classList.toggle('on', AT.tool === 'transform')); }
+function atUIColor() { const b = document.getElementById('atColBtn'); if (b) b.style.background = AT.color;
+  const r = document.getElementById('atRec'); if (r) { const h = (AT.hist || []).filter(c => c !== AT.color).slice(0, 5); const sig = h.join(); if (r.dataset.sig !== sig) { r.dataset.sig = sig; r.innerHTML = h.map(c => `<button class="atrc" data-c="${c}" style="background:${c}" title="${c}"></button>`).join(''); r.querySelectorAll('[data-c]').forEach(x => x.onclick = e => { e.stopPropagation(); AT.color = x.dataset.c; atAddHist(AT.color); atUIColor(); if (['eraser', 'smudge', 'liq'].includes(AT.tool)) atSetTool('brush'); }); } } }
 function atUIDrop() { const b = document.getElementById('atDrop'); if (b) { b.classList.toggle('on', !!AT.pickMode); b.style.background = AT.color; } }
-function atUIUndo() { const u = document.querySelector('#atSide [data-a="undo"]'), r = document.querySelector('#atSide [data-a="redo"]'); if (u) u.disabled = !AT.undo.length; if (r) r.disabled = !AT.redo.length; }
+function atUIUndo() { const u = document.querySelector('#atDock [data-a="undo"]'), r = document.querySelector('#atDock [data-a="redo"]'); if (u) u.disabled = !AT.undo.length; if (r) r.disabled = !AT.redo.length; }
 function atUISliders() {
   const t = AT.tool in AT.size ? AT.tool : 'brush';
   const s = document.querySelector('#atSize i'), o = document.querySelector('#atOp i');
-  if (s) s.style.height = (Math.log(AT.size[t]) / Math.log(600) * 100) + '%'; if (o) o.style.height = (AT.op[t] * 100) + '%';
+  if (s) s.style.width = (Math.log(AT.size[t]) / Math.log(600) * 100) + '%'; if (o) o.style.width = (AT.op[t] * 100) + '%';
   atUIDrop();
 }
-function atAddHist(c) { AT.hist = [c, ...AT.hist.filter(x => x !== c)].slice(0, 12); atPrefs(); }
+function atAddHist(c) { AT.hist = [c, ...AT.hist.filter(x => x !== c)].slice(0, 12); atPrefs(); atUIColor(); }
 function atPrefs() { try { localStorage.setItem('tart-prefs', JSON.stringify({ bt: AT.bt, color: AT.color, color2: AT.color2, hist: AT.hist, size: AT.size, stream: AT.stream, pc: AT.pc, rope: AT.rope, bover: AT.bover, custom: AT.custom, imgPal: AT.imgPal })); } catch {} }
 let AT_TOAST = 0;
 function atToast(t, ms = 1400) { const e = document.getElementById('atToast'); if (!e) return; e.textContent = t; e.classList.add('on'); clearTimeout(AT_TOAST); AT_TOAST = setTimeout(() => e.classList.remove('on'), ms); }
 function atToggleUI() { AT.ui = !AT.ui; document.getElementById('atStudio').classList.toggle('noui', !AT.ui); atToast(AT.ui ? 'رجعت الأدوات' : 'وضع اللوحة كاملة (٤ أصابع أو Tab ترجعها)'); }
-function atClosePop(soft) { const p = document.getElementById('atPop'); if (!p || p.hidden) return; if (soft && (AT.popK === 'text' || AT.popK === 'adjust')) return; p.hidden = true; AT.popK = null; document.body.classList.remove('atpopen'); document.querySelectorAll('#atTop .atib.pop').forEach(b => b.classList.remove('pop')); }
+function atClosePop(soft) { const p = document.getElementById('atPop'); if (!p || p.hidden) return; if (soft && (AT.popK === 'text' || AT.popK === 'adjust')) return; p.hidden = true; AT.popK = null; document.body.classList.remove('atpopen'); document.querySelectorAll('#atStudio .atib.pop').forEach(b => b.classList.remove('pop')); }
 function atBindUI() {
   const st = document.getElementById('atStudio');
   st.addEventListener('click', e => {
@@ -964,7 +968,7 @@ function atBindUI() {
     }
     const a = b.dataset.a;
     if (a === 'undo') atUndo(); else if (a === 'redo') atUndo(true);
-    else if (a === 'layers' || a === 'color' || a === 'menu') atOpenPop(a, b);
+    else if (a === 'layers' || a === 'color' || a === 'menu') atOpenPop(a, b); else if (a === 'more') atOpenPop('xtools', b);
     else if (a === 'adjust') { atClosePop(); atAdjust(); }
     else if (a === 'select') { atClosePop(); atSetTool('select'); }
     else if (a === 'transform') { atClosePop(); if (AT.fl) atFloatCommit(); else atFloatStart(); }
@@ -978,7 +982,7 @@ function atBindUI() {
   document.getElementById('atDrop').onclick = () => { AT.pickMode = !AT.pickMode; atUIDrop(); if (AT.pickMode) atToast('المس اللوحة عشان تاخذ اللون'); };
   // سلايدر الحجم والشفافية (اسحب فوق/تحت)
   document.querySelectorAll('#atSide .atsl').forEach(el => {
-    const set = e => { const r = el.getBoundingClientRect(), f = atClamp(1 - (e.clientY - r.top) / r.height, 0, 1), t = AT.tool in AT.size ? AT.tool : 'brush';
+    const set = e => { const r = el.getBoundingClientRect(), f = atClamp((r.right - e.clientX) / r.width, 0, 1), t = AT.tool in AT.size ? AT.tool : 'brush';
       if (el.dataset.k === 'size') AT.size[t] = Math.max(1, Math.round(Math.pow(600, f))); else AT.op[t] = Math.max(.02, Math.round(f * 100) / 100);
       atUISliders(); const bub = document.getElementById('atBub'); bub.hidden = false; const sz = el.dataset.k === 'size' ? AT.size[t] : 0;
       bub.innerHTML = el.dataset.k === 'size' ? `<i style="width:${Math.min(120, sz * AT.view.z)}px;height:${Math.min(120, sz * AT.view.z)}px;background:${AT.color}"></i><span>${atNum(sz)} بكسل</span>` : `<i style="width:60px;height:60px;background:${AT.color};opacity:${AT.op[t]}"></i><span>${atNum(Math.round(AT.op[t] * 100))}٪</span>`; };
@@ -1004,7 +1008,12 @@ function atSelAct(k) {
 function atOpenPop(k, btn) {
   const pop = document.getElementById('atPop'); if (AT.popK === k && !pop.hidden) return atClosePop();
   atClosePop(); AT.popK = k; pop.hidden = false; pop.className = 'atpop at' + k; document.body.classList.add('atpopen'); if (btn) btn.classList.add('pop');
-  if (k === 'brushes') atBrushUI(pop); else if (k === 'layers') atLayersUI(); else if (k === 'color') atColorUI(pop); else if (k === 'menu') atMenuUI(pop);
+  if (k === 'brushes') atBrushUI(pop); else if (k === 'layers') atLayersUI(); else if (k === 'color') atColorUI(pop); else if (k === 'menu') atMenuUI(pop); else if (k === 'xtools') atMoreUI(pop);
+}
+// الجوال: الأدوات اللي ما تكفيها الشريط
+function atMoreUI(pop) {
+  const I = atIcon, it = (k, t, ic) => `<button data-${k.startsWith('t:') ? 't' : 'a'}="${k.slice(2)}"><span>${I(ic)}</span>${t}</button>`;
+  pop.innerHTML = `<div class="athd"><b>أدوات أكثر</b></div><div class="atmoreg">${it('a:redo', 'إعادة', 'redo')}${it('t:grad', 'تدرّج', 'grad')}${it('a:select', 'تحديد', 'sel')}${it('a:transform', 'تحويل', 'move')}${it('a:adjust', 'تعديلات', 'wand')}${it('a:image', 'صورة', 'img')}</div>`;
 }
 // مكتبة الفرش
 function atBrushUI(pop) {
