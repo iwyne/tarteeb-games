@@ -25,8 +25,48 @@ function tokenRoute(req, res) {
   });
 }
 
+// ===== الدخول بحساب ديسكورد (الموقع العادي) =====
+// /auth/discord يودّيك لديسكورد، وبعدها يرجع على /auth/discord/cb ونعطيك توكن موقّع (٩٠ يوم) ينحفظ بالمتصفح
+// لازم يكون الرابط https://موقعك/auth/discord/cb مضاف بـ Discord Developer Portal ← OAuth2 ← Redirects
+const crypto = require('crypto');
+const DSEC = () => process.env.SESSION_SECRET || process.env.DISCORD_CLIENT_SECRET || '';
+const dSign = o => { const b = Buffer.from(JSON.stringify(o)).toString('base64url'); return b + '.' + crypto.createHmac('sha256', 'tarteeb-dc|' + DSEC()).update(b).digest('base64url'); };
+function dCheck(t) { // يرجع {id, n} لو التوكن سليم
+  if (!t || typeof t !== 'string' || !DSEC()) return null; const [b, sig] = t.split('.');
+  const ok = sig && crypto.timingSafeEqual(Buffer.from(crypto.createHmac('sha256', 'tarteeb-dc|' + DSEC()).update(b).digest('base64url')), Buffer.from(sig.padEnd(43).slice(0, 43)));
+  if (!ok) return null; try { const o = JSON.parse(Buffer.from(b, 'base64url')); return o.exp > Date.now() ? o : null; } catch { return null; }
+}
+const reqOrigin = req => (req.headers['x-forwarded-proto'] || 'http').split(',')[0] + '://' + req.headers.host;
+async function discordAuth(req, res, u) {
+  const back = reqOrigin(req) + '/auth/discord/cb', id = process.env.DISCORD_CLIENT_ID;
+  const page = (js, msg) => { res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-store' }); res.end(`<!doctype html><meta charset="utf-8"><body style="font-family:sans-serif;text-align:center;padding:40px">${msg}<script>${js}</script>`); };
+  if (!id || !DSEC()) return page("setTimeout(()=>location.href='/',2500)", 'الدخول بديسكورد مو مفعّل بالسيرفر');
+  if (u.pathname === '/auth/discord') {
+    const st = crypto.randomBytes(12).toString('base64url');
+    res.writeHead(302, { Location: 'https://discord.com/oauth2/authorize?' + new URLSearchParams({ client_id: id, response_type: 'code', scope: 'identify', redirect_uri: back, state: st }), 'Set-Cookie': `dcst=${st}; Path=/auth; HttpOnly; SameSite=Lax; Max-Age=600` + (back.startsWith('https') ? '; Secure' : '') });
+    return res.end();
+  }
+  const ck = /(?:^|;\s*)dcst=([\w-]+)/.exec(req.headers.cookie || '');
+  if (!u.searchParams.get('code') || !ck || ck[1] !== u.searchParams.get('state')) return page("setTimeout(()=>location.href='/',2000)", 'ما تم الدخول، جرّب مرة ثانية');
+  try {
+    const tr = await fetch('https://discord.com/api/oauth2/token', { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: new URLSearchParams({ client_id: id, client_secret: process.env.DISCORD_CLIENT_SECRET || '', grant_type: 'authorization_code', code: u.searchParams.get('code'), redirect_uri: back }) });
+    const tj = await tr.json(); if (!tj.access_token) throw new Error('token');
+    const me = await (await fetch('https://discord.com/api/users/@me', { headers: { Authorization: 'Bearer ' + tj.access_token } })).json(); if (!me.id) throw new Error('me');
+    const prof = { id: me.id, n: cleanName(me.global_name || me.username), a: me.avatar ? `https://cdn.discordapp.com/avatars/${me.id}/${me.avatar}.png?size=64` : '', exp: Date.now() + 90 * 864e5 };
+    const tok = dSign(prof);
+    page(`try{localStorage.setItem('tarteeb-dc',${JSON.stringify(JSON.stringify({ tok, n: prof.n, a: prof.a, id: prof.id }))})}catch(e){};location.replace('/')`, 'تم الدخول...');
+  } catch (e) { console.error('discord auth', e.message); page("setTimeout(()=>location.href='/',2500)", 'صار خطأ بالدخول، جرّب مرة ثانية'); }
+}
+
 const server = http.createServer((req, res) => {
   if (req.method === 'POST' && req.url.split('?')[0] === '/api/token') return tokenRoute(req, res);
+  if (req.url.startsWith('/art/')) { // صور مرسم ترتيب: /art/<code>/<key>/<pid>/<tl|final|last>
+    const [, , code, key, pid, what] = req.url.split('?')[0].split('/'); const r = rooms.get(String(code || '').toUpperCase());
+    const out = r && r.game === 'art' && r.g && r.g.key === key && GAMES.art.http(r, decodeURIComponent(pid || ''), what);
+    if (!out) { res.writeHead(404); return res.end(); }
+    res.writeHead(200, { 'Content-Type': out.type, 'Content-Length': out.body.length, 'Cache-Control': what === 'last' ? 'no-store' : 'private, max-age=600' }); return res.end(out.body);
+  }
+  if (req.url.startsWith('/auth/discord')) { const u = new URL(req.url, 'http://x'); if (u.pathname === '/auth/discord' || u.pathname === '/auth/discord/cb') return discordAuth(req, res, u); }
   let p = decodeURIComponent(req.url.split('?')[0]);
   if (p === '/') p = '/index.html';
   const f = path.normalize(path.join(PUB, p));
@@ -39,10 +79,11 @@ const server = http.createServer((req, res) => {
     // ETag: يتغير مع تعديل الملف، فالمتصفح يرجع 304 بدل ما ينزل الملف كامل كل مرة
     const tag = '"' + st.size.toString(36) + '-' + Math.floor(st.mtimeMs).toString(36) + (isIndex ? '-' + Buffer.from(origin).toString('base64url').slice(-8) : '') + '"';
     // صور الفريق بدون كاش طويل عشان لو تغيّرت تبان فوراً (ETag يكفي)
-    const longCache = !p.startsWith('/team/') && (['.woff2', '.png', '.ico', '.mp3', '.mp4', '.webp', '.jpg', '.glb'].includes(ext) || /^\/(vendor|haunt|flags|mimic|chess|tut)\//.test(p));
-    const head = { 'Content-Type': MIME[ext] || 'application/octet-stream', 'Cache-Control': longCache ? 'public, max-age=604800' : 'no-cache', ETag: tag, Vary: 'Accept-Encoding' };
-    if (req.headers['if-none-match'] === tag) { res.writeHead(304, head); return res.end(); }
-    getBody(f, st, tag, origin, ext, (e, body) => {
+    const versioned = /[?&]v=/.test(req.url) && (ext === '.js' || ext === '.css'); // ملف بنسخة (?v=) ما يتغير أبد
+    const longCache = versioned || !p.startsWith('/team/') && (['.woff2', '.png', '.ico', '.mp3', '.mp4', '.webp', '.jpg', '.glb'].includes(ext) || /^\/(vendor|haunt|flags|mimic|chess|tut)\//.test(p));
+    const head = { 'Content-Type': MIME[ext] || 'application/octet-stream', 'Cache-Control': versioned ? 'public, max-age=31536000, immutable' : longCache ? 'public, max-age=604800' : 'no-cache', ETag: isIndex ? tag.slice(0, -1) + '-' + allVer() + '"' : tag, Vary: 'Accept-Encoding' };
+    if (req.headers['if-none-match'] === head.ETag) { res.writeHead(304, head); return res.end(); }
+    getBody(f, st, head.ETag, origin, ext, (e, body) => {
       if (e) { res.writeHead(404); return res.end('404'); }
       const ae = req.headers['accept-encoding'] || '';
       let out = body.raw;
@@ -55,6 +96,34 @@ const server = http.createServer((req, res) => {
   });
 });
 
+// تخفيف الموقع للجوال:
+// ١) نصغّر ملفات JS وCSS (نشيل المسافات والتعليقات بدون ما نغيّر أسماء المتغيرات) بـ esbuild لو موجود
+// ٢) كل ملف بالصفحة ياخذ ?v=بصمته، فالمتصفح يخزنه سنة وما يسأل عنه مرة ثانية إلا لو تغيّر
+let ESB = null; try { ESB = require('esbuild'); } catch {}
+function minify(d, ext) {
+  if (!ESB) return d;
+  try { return Buffer.from(ESB.transformSync(d.toString('utf8'), { loader: ext === '.css' ? 'css' : 'js', minifyWhitespace: true, minifySyntax: ext === '.css', charset: 'utf8', legalComments: 'none', target: ext === '.css' ? ['chrome90', 'safari14'] : undefined }).code); }
+  catch (e) { console.error('minify', path.basename(String(e.message)).slice(0, 120)); return d; }
+}
+const VER = new Map(); // ملف → [mtime, بصمة]
+function verOf(rel) {
+  const f = path.join(PUB, rel); let st; try { st = fs.statSync(f); } catch { return ''; }
+  const h = VER.get(f); if (h && h[0] === st.mtimeMs) return h[1];
+  const v = require('crypto').createHash('md5').update(fs.readFileSync(f)).digest('base64url').slice(0, 8);
+  VER.set(f, [st.mtimeMs, v]); return v;
+}
+// ملفات الألعاب تنحمّل بس لما تدخل اللعبة (public/app.js: GAME_JS)
+const LAZY = fs.readFileSync(path.join(PUB, 'app.js'), 'utf8').match(/GAME_JS = (\{[^}]+\})/);
+const LAZY_FILES = LAZY ? [...new Set([...LAZY[1].matchAll(/'([\w-]+\.js)'/g)].map(m => m[1]))] : [];
+function versionIndex(html) {
+  html = html.replace(/(<(?:script|link)\b[^>]*?\b(?:src|href)=")([\w\-/]+\.(?:js|css))(")/g, (m, a, f, b) => { const v = verOf(f); return v ? a + f + '?v=' + v + b : m; });
+  const gv = {}; LAZY_FILES.forEach(f => gv[f] = verOf(f));
+  return html.replace('<script src="sfx.js', `<script>window.GV=${JSON.stringify(gv)}</script>\n<script src="sfx.js`);
+}
+function allVer() {
+  const h = fs.readFileSync(path.join(PUB, 'index.html'), 'utf8'), fs2 = [...h.matchAll(/(?:src|href)="([\w\-/]+\.(?:js|css))"/g)].map(m => m[1]).concat(LAZY_FILES);
+  return require('crypto').createHash('md5').update(fs2.map(verOf).join('')).digest('base64url').slice(0, 6);
+}
 // كاش بالذاكرة للملفات النصية مضغوطة (br + gzip) — يقلل حجم التحميل تقريباً للربع
 const zlib = require('zlib');
 const ZIP = new Set(['.html', '.css', '.js', '.svg', '.json', '.webmanifest', '.txt']);
@@ -64,7 +133,8 @@ function getBody(f, st, tag, origin, ext, cb) {
   if (hit) return cb(null, hit);
   fs.readFile(f, (e, d) => {
     if (e) return cb(e);
-    if (origin) d = Buffer.from(d.toString('utf8').replace('content="icons/og.png"', `content="${origin}/icons/og.png"`));
+    if (origin) d = Buffer.from(versionIndex(d.toString('utf8').replace('content="icons/og.png"', `content="${origin}/icons/og.png"`)));
+    else if ((ext === '.js' || ext === '.css') && !/\.min\.|[\\/]vendor[\\/]|discord-sdk/.test(f)) d = minify(d, ext);
     const body = { raw: d };
     if (ZIP.has(ext) && d.length > 1024) {
       body.gz = zlib.gzipSync(d, { level: 9 });
@@ -129,15 +199,15 @@ const H = {
   }
 };
 const GAMES = { uno: { min: 2, max: 8 } };
-for (const k of ['codes', 'hive', 'liars', 'outside', 'typing', 'jackaroo', 'draw', 'flip', 'sus', 'haunt', 'mafia', 'phone', 'fib', 'bomb', 'auction', 'feud', 'flags', 'mimic', 'chess', 'jwb', 'baloot', 'cars', 'rich', 'boxing', 'brawl', 'tartayb', 'redlight', 'bwb', 'elim', 'emo', 'chairs', 'deal', 'qfl', 'ludo', 'bingo']) GAMES[k] = require('./games/' + k)(H);
-const META = { uno: { bots: true }, codes: { teams: true }, hive: { teams: true, bots: true }, liars: { bots: true }, outside: { bots: true }, typing: { bots: true }, jackaroo: { teams: true, bots: true }, draw: {}, flip: { bots: true }, sus: { bots: true }, haunt: { bots: true }, mafia: { bots: true }, phone: {}, fib: { bots: true }, bomb: { bots: true }, auction: { bots: true }, feud: { teams: true, bots: true }, flags: { bots: true }, mimic: {}, chess: { bots: true }, jwb: { bots: true }, baloot: { teams: true, bots: true }, cars: { bots: true }, rich: { bots: true }, boxing: { bots: true }, brawl: { bots: true }, tartayb: { bots: true }, redlight: { bots: true }, bwb: { bots: true }, elim: { bots: true }, emo: { bots: true }, chairs: { bots: true }, deal: { bots: true }, qfl: { bots: true }, ludo: { bots: true }, bingo: { bots: true } };
+for (const k of ['codes', 'hive', 'liars', 'outside', 'typing', 'jackaroo', 'draw', 'flip', 'sus', 'haunt', 'mafia', 'phone', 'fib', 'bomb', 'auction', 'feud', 'flags', 'mimic', 'chess', 'jwb', 'baloot', 'cars', 'rich', 'boxing', 'brawl', 'tartayb', 'redlight', 'bwb', 'elim', 'emo', 'chairs', 'deal', 'qfl', 'ludo', 'bingo', 'art']) GAMES[k] = require('./games/' + k)(H);
+const META = { uno: { bots: true }, codes: { teams: true }, hive: { teams: true, bots: true }, liars: { bots: true }, outside: { bots: true }, typing: { bots: true }, jackaroo: { teams: true, bots: true }, draw: {}, flip: { bots: true }, sus: { bots: true }, haunt: { bots: true }, mafia: { bots: true }, phone: {}, fib: { bots: true }, bomb: { bots: true }, auction: { bots: true }, feud: { teams: true, bots: true }, flags: { bots: true }, mimic: {}, chess: { bots: true }, jwb: { bots: true }, baloot: { teams: true, bots: true }, cars: { bots: true }, rich: { bots: true }, boxing: { bots: true }, brawl: { bots: true }, tartayb: { bots: true }, redlight: { bots: true }, bwb: { bots: true }, elim: { bots: true }, emo: { bots: true }, chairs: { bots: true }, deal: { bots: true }, qfl: { bots: true }, ludo: { bots: true }, bingo: { bots: true }, art: {} };
 const AVATARS = ['😎', '🦁', '🐪', '🦅', '🐺', '🦊', '🐯', '🐼', '🦄', '🐸', '👑', '🔥', '⚡', '🌙', '🎩', '🤠'];
 const cleanAv = a => AVATARS.includes(a) ? a : '';
 // شكل الشخصية بالبيت المسكون: جسم، بشرة، شعر، لون الشعر، اللبس، لونين، لحية
 const LOOKMAX = { b: 2, s: 4, h: 6, hc: 8, o: 7, c1: 12, c2: 12, bd: 2, mf: 4, ms: 4, me: 4, mt: 3 };
 const cleanLook = l => { if (!l || typeof l !== 'object') return null; const o = {}; for (const k in LOOKMAX) { const v = +l[k]; o[k] = Number.isInteger(v) && v >= 0 && v < LOOKMAX[k] ? v : 0; } return o; };
 const randLook = () => { const l = Object.fromEntries(Object.entries(LOOKMAX).map(([k, n]) => [k, Math.random() * n | 0])); l.h = 1 + (Math.random() * 5 | 0); l.hc = Math.random() * 6 | 0; return l; };
-const optsView = (r, p) => ({ stack: !!r.opts.stack, powers: !!r.opts.powers, turn: r.opts.turn || 15, lock: !!r.opts.lock, hasPass: !!r.opts.pass, pass: r.host === p.id ? (r.opts.pass || '') : null, target: r.opts.target || 5, imps: r.opts.imps || 1, doctor: !!r.opts.doctor, map: r.opts.map || 'ship', nwords: r.opts.words ? r.opts.words.length : 0, wordsText: r.host === p.id ? (r.opts.wordsText || '') : '', mcount: r.opts.mcount || 0, dayT: r.opts.dayT || 90, reveal: r.opts.reveal !== false, mroles: Object.assign({ doc: 1, det: 1, sniper: 1, god: 1, jester: 1, mayor: 1 }, r.opts.mroles), blives: r.opts.blives || 3, bdiff: r.opts.bdiff || 'mid', frounds: r.opts.frounds || 7, psteps: r.opts.psteps || 0, pdraw: r.opts.pdraw || 90, aitems: r.opts.aitems || 8, drounds: r.opts.drounds || 4, fcount: r.opts.fcount || 10, fmode: r.opts.fmode || 'flags', fdiff: r.opts.fdiff || 'easy', mrounds: r.opts.mrounds || 5, mpack: r.opts.mpack || 'all', ctime: r.opts.ctime || 'none', clevel: r.opts.clevel || 'mid', ccolor: r.opts.ccolor || 'rand' , jrounds: r.opts.jrounds || 7, jtime: r.opts.jtime || 30, jn: r.opts.jn || 3, krounds: r.opts.krounds || 3, ktime: r.opts.ktime || 75, mlim: r.opts.mlim == null ? 25 : r.opts.mlim, bwins: r.opts.bwins || 2, fwins: r.opts.fwins || 2, trounds: r.opts.trounds || 10, ttime: r.opts.ttime || 30, rtime: r.opts.rtime || 60, brounds: r.opts.brounds || 5, btime: r.opts.btime || 90, elives: r.opts.elives || 1, etime: r.opts.etime || 15, erounds: r.opts.erounds || 8, emtime: r.opts.emtime || 45, dsets: r.opts.dsets || 3, dtime: r.opts.dtime || 60, dxbld: r.opts.dxbld || 0, dxbig: r.opts.dxbig || 0, qrounds: r.opts.qrounds || 5, qtime: r.opts.qtime || 30, ltime: r.opts.ltime || 20, bspeed: r.opts.bspeed || 5, bgoal: r.opts.bgoal || 'line', bskin: r.opts.bskin || 'diw' });
+const optsView = (r, p) => ({ stack: !!r.opts.stack, powers: !!r.opts.powers, turn: r.opts.turn || 15, lock: !!r.opts.lock, hasPass: !!r.opts.pass, pass: r.host === p.id ? (r.opts.pass || '') : null, target: r.opts.target || 5, imps: r.opts.imps || 1, doctor: !!r.opts.doctor, map: r.opts.map || 'ship', nwords: r.opts.words ? r.opts.words.length : 0, wordsText: r.host === p.id ? (r.opts.wordsText || '') : '', mcount: r.opts.mcount || 0, dayT: r.opts.dayT || 90, reveal: r.opts.reveal !== false, mroles: Object.assign({ doc: 1, det: 1, sniper: 1, god: 1, jester: 1, mayor: 1 }, r.opts.mroles), blives: r.opts.blives || 3, bdiff: r.opts.bdiff || 'mid', frounds: r.opts.frounds || 7, psteps: r.opts.psteps || 0, pdraw: r.opts.pdraw || 90, aitems: r.opts.aitems || 8, drounds: r.opts.drounds || 4, fcount: r.opts.fcount || 10, fmode: r.opts.fmode || 'flags', fdiff: r.opts.fdiff || 'easy', mrounds: r.opts.mrounds || 5, mpack: r.opts.mpack || 'all', ctime: r.opts.ctime || 'none', clevel: r.opts.clevel || 'mid', ccolor: r.opts.ccolor || 'rand' , jrounds: r.opts.jrounds || 7, jtime: r.opts.jtime || 30, jn: r.opts.jn || 3, krounds: r.opts.krounds || 3, ktime: r.opts.ktime || 75, mlim: r.opts.mlim == null ? 25 : r.opts.mlim, bwins: r.opts.bwins || 2, fwins: r.opts.fwins || 2, trounds: r.opts.trounds || 10, ttime: r.opts.ttime || 30, rtime: r.opts.rtime || 60, brounds: r.opts.brounds || 5, btime: r.opts.btime || 90, elives: r.opts.elives || 1, etime: r.opts.etime || 15, erounds: r.opts.erounds || 8, emtime: r.opts.emtime || 45, dsets: r.opts.dsets || 3, dtime: r.opts.dtime || 60, dxbld: r.opts.dxbld || 0, dxbig: r.opts.dxbig || 0, qrounds: r.opts.qrounds || 5, qtime: r.opts.qtime || 30, ltime: r.opts.ltime || 20, bspeed: r.opts.bspeed || 5, bgoal: r.opts.bgoal || 'line', bskin: r.opts.bskin || 'diw', atheme: r.opts.atheme || '' });
 const maxOf = r => GAMES[r.game].max;
 
 const newRoom = (code, game = 'uno') => ({ code, game, g: null, opts: {}, owed: 0, botT: null, phase: 'lobby', players: [], host: null, deck: [], discard: [], color: null, dir: 1, turn: 0, pending: null, catchable: null, log: [], winner: null, chat: [], teams: false, score: [0, 0], winTeam: null, specs: [], recorded: false, banned: new Set(), turnSeq: 0, armed: -1, timer: null, deadline: 0, created: Date.now(), teamOnly: false });
@@ -576,7 +646,10 @@ function admit(ws, r, name, extra = {}) {
 }
 
 // صاحب الموقع (علي، داخل مكان التيم): يقدر يختار رقم النرد بلودو بحركة سرية
-const markBoss = (p, m) => { if (m.teamTok && STAFF && STAFF.check(m.teamTok) === 'علي') p.boss = true; };
+const markBoss = (p, m) => {
+  if (m.teamTok && STAFF && STAFF.check(m.teamTok) === 'علي') p.boss = true;
+  const d = dCheck(m.dtok); if (d && !p.uid) { p.uid = d.id; p.name = d.n; p.dc = true; } // داخل بحساب ديسكورد: اسمه من ديسكورد ونقاطه على حسابه
+};
 function join(ws, m) {
   const r = rooms.get(String(m.code || '').toUpperCase().trim());
   if (!r) return send(ws, { t: 'err', msg: 'الغرفة غير موجودة', reset: true });
@@ -725,6 +798,7 @@ wss.on('connection', (ws, req) => {
         else if (k === 'fwins' && r.game === 'brawl' && [1, 2, 3].includes(+v)) r.opts.fwins = +v;
         else if (k === 'bspeed' && r.game === 'bingo' && [3, 5, 7].includes(+v)) r.opts.bspeed = +v;
         else if (k === 'bgoal' && r.game === 'bingo' && ["line", "two", "full"].includes(v)) r.opts.bgoal = v;
+        else if (k === 'atheme' && r.game === 'art') r.opts.atheme = String(v || '').slice(0, 60);
         else if (k === 'bskin' && r.game === 'bingo' && ["diw", "hall", "tv"].includes(v)) r.opts.bskin = v;
         else if (k === 'ltime' && r.game === 'ludo' && [10, 20, 30].includes(+v)) r.opts.ltime = +v;
         else if (k === 'qrounds' && r.game === 'qfl' && [3, 5, 7].includes(+v)) r.opts.qrounds = +v;

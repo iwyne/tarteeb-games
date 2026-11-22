@@ -7,7 +7,7 @@ const HU = { T: null, loading: false, built: false, me: null, lv: 1, oth: {}, ke
 const hg = () => S && S.game === 'haunt' && S.g;
 const hname = id => (S.players.find(p => p.id === id) || {}).name || '؟';
 const hcol = id => { const g = hg(); return HCOL[g && g.col[id] != null ? g.col[id] : 0]; };
-const isMob = () => matchMedia('(pointer:coarse)').matches;
+var isMob = () => matchMedia('(pointer:coarse)').matches;
 const angD = (a, b) => { let d = (a - b) % (Math.PI * 2); if (d > Math.PI) d -= Math.PI * 2; if (d < -Math.PI) d += Math.PI * 2; return d; };
 const LOCKN = { study: 'مكتب الجد', master: 'الغرفة الكبيرة', attic: 'العلّية' };
 const RELICN = ['دمية مكسورة', 'صورة العائلة', 'الشمعة السودا', 'كتاب الطقوس'];

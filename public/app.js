@@ -13,6 +13,19 @@ const CORDER = { red: 0, yellow: 1, green: 2, blue: 3, pink: 0, teal: 1, orange:
 const PWR = { spy: ['👀', 'تجسّس', 'شوف أوراق لاعب ٥ ثواني'], steal: ['🫳', 'سرقة', 'خذ ورقة عشوائية من لاعب'], rain: ['🌧️', 'مطر أوراق', 'كل الباقين يسحبون ٢'], swap: ['🔄', 'بدّل اليد', 'بدّل أوراقك كلها مع لاعب'], shield: ['🛡️', 'درع', 'يرد +٢ و+٤ تلقائياً على اللي رماها'], freeze: ['🧊', 'تجميد', 'لاعب يفوّت دورين'], gift: ['🎁', 'هدية', 'أعط ورقتين عشوائية من يدك لأحد'], bomb: ['💣', 'قنبلة', 'كل الباقين يسحبون ورقة'] };
 const PTGT = ['spy', 'steal', 'swap', 'freeze', 'gift'];
 
+// ملفات كل لعبة تنحمّل بس لما تدخل غرفتها (أخف وأسرع على الجوال). السيرفر يضيف ?v= من GV عشان الكاش
+const GAME_JS = { art: ['art.js'], sus: ['sus-map.js', 'sus.js'], haunt: ['haunt-map.js', 'haunt.js', 'haunt-ext.js'], mafia: ['mafia.js'], fib: ['fib.js'], phone: ['phone.js'], auction: ['auction.js'], feud: ['feud.js'], jwb: ['jwb.js'], baloot: ['baloot.js'], cars: ['cars-map.js', 'cars.js'], rich: ['rich-board.js', 'rich.js'], boxing: ['box.js'], brawl: ['brawl-chars.js', 'brawl.js'], tartayb: ['tartayb.js'], bingo: ['bingo.js'], ludo: ['ludo.js'], qfl: ['qfl.js'], deal: ['deal.js'], chairs: ['chairs.js'], emo: ['emo.js'], elim: ['elim.js'], bwb: ['bwb.js'], redlight: ['redlight.js'], flags: ['flags.js'], mimic: ['mimic.js'], chess: ['chess.js'] };
+const GLOADED = {}; let msgQ = Promise.resolve();
+var isMob = () => matchMedia('(pointer:coarse)').matches; // تستخدمها أكثر من لعبة
+function loadGame(game) {
+  const fs = GAME_JS[game]; if (!fs) return null;
+  return GLOADED[game] || (GLOADED[game] = Promise.all(fs.map(f => new Promise((ok, no) => {
+    const sc = document.createElement('script'); sc.async = false; // بالترتيب (الماب قبل اللعبة)
+    sc.src = f + (window.GV && GV[f] ? '?v=' + GV[f] : ''); sc.onload = ok;
+    sc.onerror = () => { delete GLOADED[game]; no(new Error('load ' + f)); };
+    document.body.appendChild(sc);
+  }))));
+}
 const store = {
   get(k) { try { return JSON.parse(localStorage.getItem(k)); } catch { return null; } },
   set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} }
@@ -39,10 +52,10 @@ function connect() {
   ws = new WebSocket(IN_DISCORD ? `wss://${location.host}/.proxy/ws` : (location.protocol === 'https:' ? 'wss://' : 'ws://') + location.host);
   ws.onopen = () => {
     if (activityHello) ws.send(JSON.stringify(activityHello));
-    else if (session.code && session.token) ws.send(JSON.stringify({ t: 'join', ...session, dev: DEV, teamTok: window.teamTok && teamTok() }));
+    else if (session.code && session.token) ws.send(JSON.stringify({ t: 'join', ...session, dev: DEV, teamTok: window.teamTok && teamTok(), dtok: DC && DC.tok }));
     while (queue.length) ws.send(JSON.stringify(queue.shift()));
   };
-  ws.onmessage = e => on(JSON.parse(e.data));
+  ws.onmessage = e => { const m = JSON.parse(e.data); msgQ = msgQ.then(() => m.t === 'state' ? loadGame(m.game) : null).then(() => on(m), err => { console.error(err); on(m); }); };
   const me = ws;
   ws.onclose = () => { if (me !== ws) return; if (S) toast('انقطع الاتصال… نرجع نتصل'); clearTimeout(window.__rc); window.__rc = setTimeout(connect, 1500); };
 }
@@ -127,16 +140,26 @@ $('#avBtn').onclick = () => { $('#avPick').hidden = !$('#avPick').hidden; };
 $$('#avPick button').forEach(b => b.onclick = () => { myAv = myAv === b.dataset.a ? '' : b.dataset.a; store.set('tarteeb-av', myAv); drawAv(); $('#avPick').hidden = true; sfx('pop'); });
 drawAv();
 const face = p => p.av ? esc(p.av) : esc([...p.name][0] || '?');
-function myName() { const n = nameEl.value.trim(); if (n) store.set('tarteeb-name', n); return n; }
+function myName() { if (DC) return DC.n; const n = nameEl.value.trim(); if (n) store.set('tarteeb-name', n); return n; }
+// الدخول بحساب ديسكورد: الاسم من ديسكورد (ما ينغيّر)، والنقاط تنحفظ على حسابك
+let DC = IN_DISCORD ? null : store.get('tarteeb-dc');
+function dcUI() {
+  const box = $('#dcBox'); if (!box) return; box.hidden = IN_DISCORD;
+  document.querySelector('.panel').classList.toggle('dcon', !!DC);
+  const row = document.querySelector('.avrow'); if (DC) row.appendChild(box); else row.after(box); // وأنت داخل: البطاقة جنب صورتك
+  if (DC) { nameEl.value = DC.n; nameEl.readOnly = true; box.innerHTML = `<div class="dcme">${DC.a ? `<img src="${esc(DC.a)}" alt="">` : '<i></i>'}<span><small>داخل بحساب ديسكورد</small><b>${esc(DC.n)}</b></span><button type="button" class="btn sm" id="dcOut">اطلع</button></div>`; $('#dcOut').onclick = () => { store.set('tarteeb-dc', null); try { localStorage.removeItem('tarteeb-dc'); } catch {} DC = null; nameEl.readOnly = false; nameEl.value = store.get('tarteeb-name') || ''; dcUI(); }; }
+  else box.innerHTML = `<a class="dcbtn" href="/auth/discord">ادخل بحساب ديسكورد</a><small class="dcwhy">عشان نقاطك تنحفظ وما أحد ياخذ اسمك</small>`;
+}
+dcUI();
 $('#create').onclick = () => {
   const name = myName(); if (!name) { toast('اكتب اسمك أول'); return nameEl.focus(); }
-  session = {}; lastJoin = null; send({ t: 'create', name, game: SEL, av: myAv, dev: DEV, teamTok: window.teamTok && teamTok() });
+  session = {}; lastJoin = null; send({ t: 'create', name, game: SEL, av: myAv, dev: DEV, teamTok: window.teamTok && teamTok(), dtok: DC && DC.tok });
 };
 $('#join').onclick = () => {
   const name = myName(); if (!name) { toast('اكتب اسمك أول'); return nameEl.focus(); }
   const code = codeEl.value.trim().toUpperCase();
   if (code.length !== 4) { toast('الكود أربع خانات'); return codeEl.focus(); }
-  session = {}; lastJoin = { t: 'join', name, code, av: myAv, dev: DEV, teamTok: window.teamTok && teamTok() }; send(lastJoin);
+  session = {}; lastJoin = { t: 'join', name, code, av: myAv, dev: DEV, teamTok: window.teamTok && teamTok(), dtok: DC && DC.tok }; send(lastJoin);
 };
 codeEl.addEventListener('keydown', e => e.key === 'Enter' && $('#join').click());
 nameEl.addEventListener('keydown', e => e.key === 'Enter' && (codeEl.value.trim() ? $('#join') : $('#create')).click());

@@ -5,10 +5,10 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>ترتيب — ألعاب</title>
 <meta name="theme-color" content="#f3ead8">
-<meta name="description" content="ألعاب ترتيب — ٣٦ لعبة جماعية: أونو، شطرنج، القنبلة، صدّقني، المافيا وغيرها مع ربعك بكود غرفة">
+<meta name="description" content="ألعاب ترتيب — ٣٧ لعبة جماعية: أونو، شطرنج، القنبلة، صدّقني، المافيا وغيرها مع ربعك بكود غرفة">
 <meta property="og:type" content="website">
 <meta property="og:title" content="ترتيب — ألعاب">
-<meta property="og:description" content="بلوت، أونو، جوابك الترتيب، شطرنج، القنبلة، صدّقني وغيرها — ٣٦ لعبة. سوّ غرفة وعطّ الكود لربعك.">
+<meta property="og:description" content="بلوت، أونو، جوابك الترتيب، شطرنج، القنبلة، صدّقني وغيرها — ٣٧ لعبة. سوّ غرفة وعطّ الكود لربعك.">
 <meta property="og:image" content="icons/og.png">
 <meta name="twitter:card" content="summary_large_image">
 <script>try{var w=JSON.parse(localStorage.getItem("tarteeb-world"));if(w&&w!=="classic")document.documentElement.dataset.world=w}catch(e){}try{var t=JSON.parse(localStorage.getItem("tarteeb-theme"));if(t&&t!=="paper")document.documentElement.dataset.theme=t}catch(e){}try{if(JSON.parse(localStorage.getItem("tarteeb-lang"))==="en"){document.documentElement.lang="en";document.documentElement.dir="ltr"}}catch(e){}try{if(sessionStorage.getItem("tarteeb-splash")||/frame_id/.test(location.search))document.documentElement.classList.add("nosplash")}catch(e){}</script>
@@ -26,7 +26,7 @@
   <button id="spLang" class="splang" type="button">EN</button>
   <div class="sp-cards"><i class="c1">+2</i><i class="c2">7</i><i class="c3">⇄</i><i class="c4">★</i></div>
   <h1 class="sp-title">ترتيب<span>.</span></h1>
-  <p class="sp-tag">٣٦ لعبة جماعية مع ربعك</p>
+  <p class="sp-tag">٣٧ لعبة جماعية مع ربعك</p>
   <button id="spGo" class="sp-go" type="button">ابدأ ▶</button>
   <div class="sp-worlds"><p>🌍 اختر جو الموقع (تقدر تغيّره بعدين)</p><div id="spW" class="sp-wgrid"></div></div>
   <p class="sp-credit"><span>تم التطوير من قبل</span> <bdi dir="ltr" class="team">TRTB TEAM</bdi></p>
@@ -50,9 +50,9 @@
     <div class="home-top">
       <div class="hero">
         <h1><span class="ln">جمّع ربعك</span><br><span class="ln">والسهرة علينا<span class="dot">.</span></span></h1>
-        <p>٣٦ لعبة جماعية تشتغل من المتصفح وداخل الديسكورد. سوّ غرفة، عطهم الكود، وابدأوا.</p>
+        <p>٣٧ لعبة جماعية تشتغل من المتصفح وداخل الديسكورد. سوّ غرفة، عطهم الكود، وابدأوا.</p>
         <ul class="hstats" aria-label="مميزات">
-          <li>٣٦ لعبة</li>
+          <li>٣٧ لعبة</li>
           <li>بدون تحميل</li>
           <li>لين ٤٢ لاعب</li>
           <li>بوتات تكمّل العدد</li>
@@ -61,6 +61,7 @@
       </div>
       <div class="panel">
         <div class="avrow"><button id="avBtn" class="avbtn" type="button" title="اختر صورتك">🙂</button><label>اسمك<input id="name" maxlength="14" placeholder="اكتب اسمك" autocomplete="off"></label></div>
+        <div id="dcBox" class="dcbox"></div>
         <div id="avPick" class="avpick" hidden></div>
         <div class="pickrow">اللعبة: <b id="gname">أونو</b> <small id="ginfo"></small></div>
         <button id="create" class="btn red">سوّ غرفة جديدة</button>
@@ -240,6 +241,10 @@
       <article class="game play" data-game="bingo" tabindex="0">
         <svg class="logo" viewBox="0 0 100 100" aria-hidden="true"><rect x="9" y="9" width="86" height="86" rx="20" fill="#16130f"/><rect x="5" y="5" width="86" height="86" rx="20" fill="#8a1c1c" stroke="#16130f" stroke-width="5"/><circle cx="48" cy="48" r="30" fill="#f3e2c0" stroke="#16130f" stroke-width="4"/><circle cx="48" cy="48" r="19" fill="#fffaf0" stroke="#3a2416" stroke-width="2"/><text x="48" y="58" text-anchor="middle" font-family="Lalezar" font-size="26" fill="#8a1c1c">٣٨</text></svg>
         <h3>بينقو</h3><span class="tag">لين ٤٢ لاعب</span><span class="newtag">جديد</span>
+      </article>
+      <article class="game play" data-game="art" tabindex="0">
+        <svg class="logo" viewBox="0 0 100 100" aria-hidden="true"><rect x="9" y="9" width="86" height="86" rx="20" fill="#16130f"/><rect x="5" y="5" width="86" height="86" rx="20" fill="#3d7bff" stroke="#16130f" stroke-width="5"/><path d="M50 18c-19 0-33 13-33 29 0 13 10 21 21 21 6 0 7-4 6-8-1-5 2-8 7-8h8c11 0 18-7 18-15 0-11-12-19-27-19z" fill="#fff" stroke="#16130f" stroke-width="4" stroke-linejoin="round"/><circle cx="34" cy="40" r="5" fill="#e63946" stroke="#16130f" stroke-width="2.5"/><circle cx="46" cy="30" r="5" fill="#f4d35e" stroke="#16130f" stroke-width="2.5"/><circle cx="61" cy="31" r="5" fill="#2a9d8f" stroke="#16130f" stroke-width="2.5"/><path d="M84 52 58 80l-6 2 2-6 26-28z" fill="#f4a261" stroke="#16130f" stroke-width="4" stroke-linejoin="round"/></svg>
+        <h3>مرسم ترتيب</h3><span class="tag">بدون وقت</span><span class="newtag">جديد</span>
       </article>
       <article class="game play" data-game="rich" tabindex="0">
         <svg class="logo" viewBox="0 0 100 100" aria-hidden="true">
@@ -594,40 +599,8 @@
 <script src="reactchars.js"></script>
 <script src="app.js"></script>
 <script src="games.js"></script>
-<script src="sus-map.js"></script>
-<script src="sus.js"></script>
-<script src="haunt-map.js"></script>
-<script src="haunt.js"></script>
-<script src="haunt-ext.js"></script>
-<script src="mafia.js"></script>
 <script src="bomb.js"></script>
-<script src="fib.js"></script>
-<script src="phone.js"></script>
-<script src="auction.js"></script>
-<script src="feud.js"></script>
-<script src="jwb.js"></script>
-<script src="baloot.js"></script>
-<script src="cars-map.js"></script>
-<script src="cars.js"></script>
-<script src="rich-board.js"></script>
-<script src="rich.js"></script>
-<script src="box.js"></script>
-<script src="brawl-chars.js"></script>
-<script src="brawl.js"></script>
-<script src="tartayb.js"></script>
-<script src="bingo.js"></script>
-<script src="ludo.js"></script>
-<script src="qfl.js"></script>
-<script src="deal.js"></script>
-<script src="chairs.js"></script>
-<script src="emo.js"></script>
-<script src="elim.js"></script>
-<script src="bwb.js"></script>
 <script src="live.js"></script>
-<script src="redlight.js"></script>
-<script src="flags.js"></script>
-<script src="mimic.js"></script>
-<script src="chess.js"></script>
 <script src="team.js"></script>
 <script src="staff.js"></script>
 <script src="themes.js"></script>
