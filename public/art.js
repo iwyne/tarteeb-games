@@ -53,7 +53,19 @@ const AT_BR = [
   { id: 'stars', c: 'fx', n: 'نجوم', tip: 'star', sp: 1.1, flow: 1, szP: .3, opP: 0, min: .6, jit: .6, sc: 1.1, rot: 'rand', st: .05, def: 26 },
   { id: 'sparkle', c: 'fx', n: 'لمعة', tip: 'spark', sp: 1.3, flow: 1, szP: .3, opP: 0, min: .6, jit: .7, sc: .9, rot: 'rand', st: .05, def: 50, add: 1 },
   { id: 'hearts', c: 'fx', n: 'قلوب', tip: 'heart', sp: 1.2, flow: 1, szP: .3, opP: 0, min: .6, jit: .5, sc: 1, rot: 'rand', st: .05, def: 30 },
-  { id: 'dots', c: 'fx', n: 'نقاط', tip: 'hard', sp: 1.6, flow: 1, szP: .3, opP: 0, min: .6, jit: .3, st: .1, def: 14 }
+  { id: 'dots', c: 'fx', n: 'نقاط', tip: 'hard', sp: 1.6, flow: 1, szP: .3, opP: 0, min: .6, jit: .3, st: .1, def: 14 },
+  { id: 'marker2', c: 'ink', n: 'ماركر عريض', tip: 'round', sp: .03, flow: 1, szP: .1, opP: 0, min: .9, st: .35, def: 30 },
+  { id: 'chisel', c: 'ink', n: 'قلم قصب', tip: 'chisel', sp: .02, flow: 1, szP: .4, opP: 0, min: .5, rot: 'fixed', ang: 0, st: .5, def: 30 },
+  { id: 'pixel', c: 'fx', n: 'بكسل', tip: 'square', sp: .9, flow: 1, szP: 0, opP: 0, st: 0, def: 12 },
+  { id: 'bubbles', c: 'fx', n: 'فقاعات', tip: 'ring', sp: 1.4, flow: .9, szP: .3, opP: 0, min: .6, jit: .7, sc: 1, st: .05, def: 36 },
+  { id: 'glitter', c: 'fx', n: 'برق', tip: 'spark', sp: 1.5, flow: 1, szP: .2, opP: 0, min: .6, jit: .8, sc: 1.6, rot: 'rand', st: .05, def: 18, add: 1 },
+  { id: 'sponge', c: 'paint', n: 'إسفنجة', tip: 'sponge', sp: .35, flow: .7, szP: .3, opP: .4, min: .6, rot: 'rand', jit: .2, st: .1, def: 70 },
+  { id: 'smoke', c: 'nature', n: 'دخان', tip: 'cloud', sp: .12, flow: .18, szP: .3, opP: .5, min: .6, jit: .3, sc: .2, rot: 'rand', st: .3, def: 140 },
+  { id: 'rain', c: 'nature', n: 'مطر', tip: 'rain', sp: .6, flow: .9, szP: .2, opP: .2, min: .7, sc: .6, st: .05, def: 70 },
+  { id: 'snow', c: 'nature', n: 'ثلج', tip: 'soft', sp: 1.4, flow: 1, szP: .3, opP: 0, min: .6, jit: .8, sc: 1.4, st: .05, def: 12 },
+  { id: 'scales', c: 'nature', n: 'قشور سمك', tip: 'scale', sp: .55, flow: 1, szP: .2, opP: 0, min: .8, st: .2, def: 34 },
+  { id: 'pencilc', c: 'sketch', n: 'رصاص ناعم', grain: 1, tip: 'pencil', sp: .06, flow: .3, szP: .5, opP: .9, min: .4, rot: 'rand', st: .3, def: 8 },
+  { id: 'wink', c: 'water', wet: 1, n: 'حبر مائي', tip: 'round', sp: .03, flow: .35, szP: .6, opP: .5, min: .3, st: .45, taper: 30, def: 20 }
 ];
 // مجموعات ألوان جاهزة: تختار الشي اللي بتلوّنه وتلقى ألوانه
 const AT_GRP = [
@@ -108,6 +120,12 @@ function atTip(kind) {
   else if (kind === 'hatch') { g.strokeStyle = '#fff'; g.lineWidth = 7; g.lineCap = 'round'; for (let i = -3; i <= 3; i++) { g.globalAlpha = .65 + Math.random() * .35; g.beginPath(); g.moveTo(h + i * 30 - 70, h + 70); g.lineTo(h + i * 30 + 70, h - 70); g.stroke(); } g.globalCompositeOperation = 'destination-in'; rad([[0, 1], [.75, 1], [1, 0]]); }
   else if (kind === 'spark') { const gr = g.createRadialGradient(h, h, 0, h, h, h); gr.addColorStop(0, 'rgba(255,255,255,1)'); gr.addColorStop(.12, 'rgba(255,255,255,.9)'); gr.addColorStop(.3, 'rgba(255,255,255,.18)'); gr.addColorStop(1, 'rgba(255,255,255,0)'); g.fillStyle = gr; g.fillRect(0, 0, N, N); g.fillStyle = '#fff'; g.beginPath(); for (let i = 0; i < 8; i++) { const a = i * Math.PI / 4, r = i % 2 ? h * .1 : h - 2; g.lineTo(h + Math.cos(a) * r, h + Math.sin(a) * r); } g.fill(); }
   else if (kind === 'fur') { g.strokeStyle = '#fff'; g.lineCap = 'round'; for (let i = 0; i < 70; i++) { const a = Math.random() * 6.283, r0 = Math.random() * h * .3, r1 = h * (.55 + Math.random() * .42), cv = (Math.random() - .5) * .4; g.lineWidth = 1 + Math.random() * 2.2; g.globalAlpha = .35 + Math.random() * .55; g.beginPath(); g.moveTo(h + Math.cos(a) * r0, h + Math.sin(a) * r0); g.quadraticCurveTo(h + Math.cos(a + cv) * r1 * .6, h + Math.sin(a + cv) * r1 * .6, h + Math.cos(a) * r1, h + Math.sin(a) * r1); g.stroke(); } }
+  else if (kind === 'square') { g.fillStyle = '#fff'; g.fillRect(4, 4, N - 8, N - 8); }
+  else if (kind === 'ring') { g.strokeStyle = '#fff'; g.lineWidth = 12; g.beginPath(); g.arc(h, h, h - 10, 0, 7); g.stroke(); g.globalAlpha = .5; g.lineWidth = 6; g.beginPath(); g.arc(h - 30, h - 30, 18, Math.PI, Math.PI * 1.6); g.stroke(); }
+  else if (kind === 'sponge') { g.fillStyle = '#fff'; for (let i = 0; i < 90; i++) { const a = Math.random() * 6.283, d = Math.sqrt(Math.random()) * h * .9, r = 3 + Math.random() * 11; g.globalAlpha = .4 + Math.random() * .6; g.beginPath(); g.arc(h + Math.cos(a) * d, h + Math.sin(a) * d, r, 0, 7); g.fill(); } }
+  else if (kind === 'rain') { g.strokeStyle = '#fff'; g.lineCap = 'round'; for (let i = 0; i < 7; i++) { const x = 20 + Math.random() * (N - 40), y = 10 + Math.random() * (N - 90), l = 40 + Math.random() * 50; g.lineWidth = 3 + Math.random() * 3; g.globalAlpha = .5 + Math.random() * .5; g.beginPath(); g.moveTo(x, y); g.lineTo(x - l * .25, y + l); g.stroke(); } }
+  else if (kind === 'scale') { g.strokeStyle = '#fff'; g.lineWidth = 10; g.beginPath(); g.arc(h, h * .55, h * .8, Math.PI * .15, Math.PI * .85); g.stroke(); g.globalAlpha = .35; g.fillStyle = '#fff'; g.beginPath(); g.arc(h, h * .55, h * .72, Math.PI * .15, Math.PI * .85); g.fill(); }
+  else if (kind === 'chisel') { g.fillStyle = '#fff'; g.beginPath(); g.moveTo(h - 60, h + 10); g.lineTo(h + 50, h - 20); g.lineTo(h + 60, h - 6); g.lineTo(h - 50, h + 24); g.closePath(); g.fill(); }
   else if (kind === 'cloud') { for (let i = 0; i < 9; i++) { const a = Math.random() * 6.283, d = Math.random() * h * .35, r = h * (.3 + Math.random() * .25), x = h + Math.cos(a) * d, y = h + Math.sin(a) * d, gr = g.createRadialGradient(x, y, 0, x, y, r); gr.addColorStop(0, 'rgba(255,255,255,.75)'); gr.addColorStop(.6, 'rgba(255,255,255,.45)'); gr.addColorStop(1, 'rgba(255,255,255,0)'); g.fillStyle = gr; g.fillRect(0, 0, N, N); } }
   else rad([[0, 1], [1, 0]]);
   return AT_TIP[kind] = c;
@@ -1657,23 +1675,26 @@ function renderArt(body) {
 // ===== الرسام الآلي (علي وبشرى بس، يطلع لهم من القائمة) =====
 // تختار صورة ويرسمها كأنك أنت: تخطيط بالرصاص، بعدين ألوان كبيرة، بعدين تفاصيل، بفرش المرسم نفسها وضغط متغيّر،
 // وموزّعة على الوقت اللي تختاره عشان التسريع يطلع طبيعي.
-const ATB = { on: false, img: null, style: 'paint', mins: 5, prog: 0 };
+const ATB = { on: false, img: null, style: 'paint', mins: 5, prog: 0, det: 2, cover: false, paused: false };
 function atBotUI(pop) {
   pop.innerHTML = `<div class="athd"><b>الرسام الآلي</b></div><div class="atmenu">
     <div class="atsub">الصورة</div><div class="atrow wrap"><button data-bb="pick">${atIcon('img')} اختر صورة</button>${ATB.img ? `<img class="atbprev" src="${ATB.prev}" alt="">` : '<small>صورة شخص أو أي شي</small>'}</div>
-    <div class="atsub">الأسلوب</div><div class="atrow wrap">${[['paint', 'لوحة زيت'], ['color', 'ألوان وحبر'], ['sketch', 'رصاص']].map(([k, t]) => `<button data-bs="${k}" class="${ATB.style === k ? 'on' : ''}">${t}</button>`).join('')}</div>
+    <div class="atsub">الأسلوب</div><div class="atrow wrap">${[['paint', 'لوحة زيت'], ['color', 'ألوان وحبر'], ['anime', 'أنمي'], ['water', 'ألوان مائية'], ['sketch', 'رصاص'], ['pastel', 'باستيل']].map(([k, t]) => `<button data-bs="${k}" class="${ATB.style === k ? 'on' : ''}">${t}</button>`).join('')}</div>
+    <div class="atsub">التفاصيل</div><div class="atrow wrap">${[[1, 'بسيط'], [2, 'متوسط'], [3, 'دقيق']].map(([k, t]) => `<button data-bd="${k}" class="${ATB.det === k ? 'on' : ''}">${t}</button>`).join('')}<button data-bc="1" class="${ATB.cover ? 'on' : ''}">يملأ اللوحة</button></div>
     <div class="atsub">المدة</div><div class="atrow wrap">${[2, 3, 5, 10, 20, 40].map(n => `<button data-bm="${n}" class="${ATB.mins === n ? 'on' : ''}">${atNum(n)} د</button>`).join('')}</div>
-    <div class="atrow wrap">${ATB.on ? '<button data-bb="stop" class="on">وقّف</button>' : `<button data-bb="go" class="on"${ATB.img ? '' : ' disabled'}>ابدأ الرسم</button>`}</div>
+    <div class="atrow wrap">${ATB.on ? `<button data-bb="pause">${ATB.paused ? 'كمّل' : 'استراحة'}</button><button data-bb="stop" class="on">وقّف</button>` : `<button data-bb="go" class="on"${ATB.img ? '' : ' disabled'}>ابدأ الرسم</button>`}</div>
     ${ATB.on ? `<div class="atprog"><i style="width:${Math.round(ATB.prog * 100)}%"></i></div>` : ''}<small>يرسم على طبقات جديدة، وتقدر تكمّل عليها بعدين</small></div>`;
   pop.querySelectorAll('[data-bs]').forEach(b => b.onclick = e => { e.stopPropagation(); ATB.style = b.dataset.bs; atBotUI(pop); });
   pop.querySelectorAll('[data-bm]').forEach(b => b.onclick = e => { e.stopPropagation(); ATB.mins = +b.dataset.bm; atBotUI(pop); });
+  pop.querySelectorAll('[data-bd]').forEach(b => b.onclick = e => { e.stopPropagation(); ATB.det = +b.dataset.bd; atBotUI(pop); });
+  pop.querySelectorAll('[data-bc]').forEach(b => b.onclick = e => { e.stopPropagation(); ATB.cover = !ATB.cover; atBotUI(pop); });
   pop.querySelectorAll('[data-bb]').forEach(b => b.onclick = e => { e.stopPropagation(); const k = b.dataset.bb;
     if (k === 'pick') atPickFile(async f => { try { ATB.img = await createImageBitmap(f); const c = atMk(160, Math.round(160 * ATB.img.height / ATB.img.width)); c.getContext('2d').drawImage(ATB.img, 0, 0, c.width, c.height); ATB.prev = c.toDataURL(); } catch { atToast('ما قدرنا نفتح الصورة'); } atBotUI(pop); });
-    else if (k === 'go') { atClosePop(); atBotRun(); } else if (k === 'stop') { ATB.on = false; atBotUI(pop); } });
+    else if (k === 'go') { atClosePop(); atBotRun(); } else if (k === 'stop') { ATB.on = false; ATB.paused = false; atBotUI(pop); } else if (k === 'pause') { ATB.paused = !ATB.paused; atBotUI(pop); } });
 }
 function atBotPlan() {
   // نحلل الصورة على دقة صغيرة: ألوان قليلة (مثل الرسام يختار من لوحته)، حواف للتخطيط، ومناطق كل لون
-  const W = AT.W, H = AT.H, im = ATB.img, s0 = Math.min(W / im.width, H / im.height) * .96, iw = im.width * s0, ih = im.height * s0, ox = (W - iw) / 2, oy = (H - ih) / 2;
+  const W = AT.W, H = AT.H, im = ATB.img, s0 = ATB.cover ? Math.max(W / im.width, H / im.height) : Math.min(W / im.width, H / im.height) * .96, iw = im.width * s0, ih = im.height * s0, ox = (W - iw) / 2, oy = (H - ih) / 2;
   const A = Math.min(1, 300 / Math.max(iw, ih)), aw = Math.max(8, Math.round(iw * A)), ah = Math.max(8, Math.round(ih * A)), toD = (x, y) => [ox + x / A, oy + y / A], N = aw * ah;
   const ana = blur => { const c = atMk(aw, ah), g = c.getContext('2d'); if (blur && atHasFilter()) g.filter = `blur(${blur}px)`; g.drawImage(im, 0, 0, aw, ah); return g.getImageData(0, 0, aw, ah).data; };
   const px = ana(1.2), Lb = new Float32Array(N), L = new Float32Array(N); const pb = ana(4);
@@ -1683,7 +1704,7 @@ function atBotPlan() {
     [gx[i], gy[i]] = S(L, i); mag[i] = Math.hypot(gx[i], gy[i]); [fx[i], fy[i]] = S(Lb, i); }
   const at = (x, y) => atClamp(y | 0, 0, ah - 1) * aw + atClamp(x | 0, 0, aw - 1);
   const hex = (r, g, b) => '#' + [r, g, b].map(v => atClamp(Math.round(v), 0, 255).toString(16).padStart(2, '0')).join('');
-  const jit = () => (Math.random() - .5) * .9, st = ATB.style, base = Math.max(iw, ih), acts = [];
+  const jit = () => (Math.random() - .5) * .9, st = ATB.style, base = ATB.cover ? Math.max(W, H) : Math.max(iw, ih), acts = [], DET = ATB.det || 2, inDoc = ([x, y]) => x > -40 && y > -40 && x < W + 40 && y < H + 40;
   // ١) التخطيط: خطوط على الحواف، مرتبة وراء بعض (أقرب خط للي قبله) مثل اليد
   const srt = Array.from(mag).sort((a, b) => b - a), thr = Math.max(.08, srt[Math.floor(N * .1)] || .3), used = new Uint16Array(N); let sid = 0; const lines = [];
   for (let y = 2; y < ah - 2; y += 2) for (let x = 2; x < aw - 2; x += 2) { const i0 = y * aw + x; if (mag[i0] <= thr || used[i0]) continue; sid = sid % 65000 + 1;
@@ -1697,10 +1718,11 @@ function atBotPlan() {
       for (let k = 0; k < list.length; k++) { const p = list[k].pts, d1 = (p[0][0] - e[0]) ** 2 + (p[0][1] - e[1]) ** 2, d2 = (p[p.length - 1][0] - e[0]) ** 2 + (p[p.length - 1][1] - e[1]) ** 2; if (d2 < d1 && list[k].rev !== false) { if (d2 < bd) { bd = d2; bi = k; list[k].flip = true; } } else if (d1 < bd) { bd = d1; bi = k; list[k].flip = false; } }
       const c = list.splice(bi, 1)[0]; if (c.flip) c.pts.reverse(); out.push(c); } return out; };
   const sk = nn(lines.map(l => ({ pts: l.map(([x, y]) => toD(x + jit(), y + jit())) })).sort((a, b) => a.pts[0][1] - b.pts[0][1]));
-  const skCol = st === 'sketch' ? '#2a2a2a' : '#8a8a8a', skSz = Math.max(3, base / (st === 'sketch' ? 380 : 480));
-  sk.forEach(l => acts.push({ pts: l.pts, b: 'hb', sz: skSz, col: skCol, L: 0, ph: 'sk' }));
+  const skCol = st === 'sketch' ? '#2a2a2a' : st === 'water' ? '#b0aaa0' : '#8a8a8a', skSz = Math.max(3, base / (st === 'sketch' ? 380 : 480));
+  sk.forEach(l => { const p = l.pts.filter(inDoc); if (p.length > 1) acts.push({ pts: p, b: 'hb', sz: skSz, col: skCol, L: 0, ph: 'sk' }); });
+  acts.push({ pause: 1800 }); // يوقف يتأمل التخطيط قبل التلوين
   // ٢) التلوين: نقسم الصورة لألوان قليلة، وكل لون نلوّنه بضربات رايح جاي داخل منطقته (مثل اللي يلوّن بيده)
-  const K = st === 'sketch' ? 5 : 14, cols = [], lab = new Uint8Array(N);
+  const K = st === 'sketch' ? 3 + DET : st === 'anime' ? 5 + DET * 2 : [8, 14, 22][DET - 1], cols = [], lab = new Uint8Array(N);
   if (st === 'sketch') { const LQ = Array.from(L).sort((a, b) => a - b); for (let k = 0; k < K; k++) cols.push(LQ[Math.floor(N * (k + .5) / K)]); for (let i = 0; i < N; i++) { let bk = 0, bd = 9; cols.forEach((c, k) => { const d = Math.abs(L[i] - c); if (d < bd) { bd = d; bk = k; } }); lab[i] = bk; } }
   else { for (let k = 0; k < K; k++) { const i = Math.floor(Math.random() * N); cols.push([px[i * 4], px[i * 4 + 1], px[i * 4 + 2]]); }
     for (let it = 0; it < 8; it++) { const sm = cols.map(() => [0, 0, 0, 0]); for (let i = 0; i < N; i += 1) { let bk = 0, bd = 1e9; for (let k = 0; k < K; k++) { const c = cols[k], d = (px[i * 4] - c[0]) ** 2 + (px[i * 4 + 1] - c[1]) ** 2 + (px[i * 4 + 2] - c[2]) ** 2; if (d < bd) { bd = d; bk = k; } } lab[i] = bk; const q = sm[bk]; q[0] += px[i * 4]; q[1] += px[i * 4 + 1]; q[2] += px[i * 4 + 2]; q[3]++; }
@@ -1720,17 +1742,26 @@ function atBotPlan() {
       else { if (cur) strokes.push(cur); cur = [sg.a, sg.b]; flip = true; } }
     if (cur) strokes.push(cur);
     const c = cols[k], col = st === 'sketch' ? (() => { const g = Math.round(15 + c * 125); return hex(g, g, g); })() : hex(c[0], c[1], c[2]);
-    const br = st === 'sketch' ? '6b' : st === 'paint' ? 'round' : 'gouache', sz = st === 'sketch' ? base / 240 : sp / A * 2.5; // عريضة كفاية تغطي بدون خطوط بينها
-    nn(strokes.filter(p => p.length > 1).map(p => ({ pts: p.map(([x, y]) => toD(x + jit(), y + jit())) }))).forEach(o => acts.push({ pts: o.pts, b: br, sz, col, L: 0, ph: 'c' + k }));
+    const br = { sketch: '6b', paint: 'round', anime: 'marker2', water: 'wsoft', pastel: 'pastel' }[st] || 'gouache', sz = st === 'sketch' ? base / 240 : sp / A * (st === 'water' ? 3.2 : 2.5); // عريضة كفاية تغطي بدون خطوط بينها
+    nn(strokes.filter(p => p.length > 1).map(p => ({ pts: p.map(([x, y]) => toD(x + jit(), y + jit())).filter(inDoc) })).filter(o => o.pts.length > 1)).forEach(o => acts.push({ pts: o.pts, b: br, sz, col, L: 0, ph: 'c' + k }));
+    if (Math.random() < .25) acts.push({ pause: 600 + Math.random() * 900 });
   }
+  acts.push({ pause: 1500 });
+  // أنمي: ظل واحد غامق ونور واحد فاتح بمناطق حادة (cel shading)
+  if (st === 'anime') { const sh = []; for (let y = 2; y < ah; y += 3) for (let x = 2; x < aw; x += 3) { const i = at(x, y), c = cols[lab[i]], l = L[i], lc = (c[0] * .3 + c[1] * .59 + c[2] * .11) / 255; if (l < lc - .09) sh.push({ x, y, c: hex(c[0] * .72, c[1] * .66, c[2] * .78) }); }
+    nn(sh.map(o => ({ pts: [toD(o.x - 1.5, o.y + 1), toD(o.x + 1.5, o.y - 1)], col: o.c }))).forEach(o => acts.push({ pts: o.pts, b: 'marker2', sz: base / 120, col: o.col, L: 0, ph: 'sh', slow: 1.2 })); }
   // ٣) التفاصيل: ضربات صغيرة بألوان الصورة الحقيقية (ظل ونور) على المناطق اللي فيها تفاصيل، من فوق لتحت
-  if (st !== 'sketch') { const det = []; const r = Math.max(1.6, base * A / 90);
+  if (st !== 'sketch' && st !== 'anime') { const det = []; const r = Math.max(1.6, base * A / [60, 90, 140][DET - 1]);
     for (let y = r; y < ah; y += r * 1.3) for (let x = r; x < aw; x += r * 1.3) { const i = at(x, y), c = cols[lab[i]], d = Math.abs(px[i * 4] - c[0]) + Math.abs(px[i * 4 + 1] - c[1]) + Math.abs(px[i * 4 + 2] - c[2]); if (d < 38) continue;
       const a = Math.atan2(fy[i], fx[i]) + Math.PI / 2, l = r * (1.2 + Math.random()), p0 = [x - Math.cos(a) * l, y - Math.sin(a) * l], p1 = [x + Math.cos(a) * l, y + Math.sin(a) * l];
       det.push({ pts: [toD(p0[0] + jit(), p0[1] + jit()), toD(x, y), toD(p1[0] + jit(), p1[1] + jit())], col: hex(px[i * 4], px[i * 4 + 1], px[i * 4 + 2]) }); }
-    nn(det).forEach(o => acts.push({ pts: o.pts, b: st === 'paint' ? 'acr' : 'round', sz: r / A * 1.4, col: o.col, L: 0, ph: 'd' })); }
+    nn(det.map(o => ({ pts: o.pts.filter(inDoc), col: o.col })).filter(o => o.pts.length > 1)).forEach(o => acts.push({ pts: o.pts, b: { paint: 'acr', water: 'wwet', pastel: 'pastel' }[st] || 'round', sz: r / A * 1.4, col: o.col, L: 0, ph: 'd', slow: 1.6 })); }
+  // اللمسات الأخيرة: لمعة بأفتح الأماكن (عيون، انعكاسات)
+  if (st === 'paint' || st === 'anime' || st === 'color') { const hi = []; for (let y = 2; y < ah - 2; y += 2) for (let x = 2; x < aw - 2; x += 2) { const i = at(x, y); if (L[i] > .9 && L[i] - Lb[i] > .12) hi.push({ pts: [toD(x, y), toD(x + .6, y + .4)], col: '#ffffff' }); }
+    nn(hi.slice(0, 120)).forEach(o => acts.push({ pts: o.pts, b: 'round', sz: Math.max(3, base / 300), col: '#fffdf6', L: 0, ph: 'hi', slow: 2 })); }
   // ٤) التحديد بالحبر بالآخر (ألوان وحبر)، وللرصاص نعيد الخطوط الغامقة
-  if (st === 'color') sk.filter((_, i) => i % 3 !== 2).forEach(l => acts.push({ pts: l.pts, b: 'ink', sz: Math.max(3, base / 320), col: '#1c1a18', L: 1, ph: 'ln' }));
+  if (st === 'color' || st === 'anime') sk.filter((_, i) => st === 'anime' || i % 3 !== 2).forEach(l => { const p = l.pts.filter(inDoc); if (p.length > 1) acts.push({ pts: p, b: 'ink', sz: Math.max(3, base / (st === 'anime' ? 260 : 320)), col: '#1c1a18', L: 1, ph: 'ln', slow: 1.3 }); });
+  if (st === 'water') sk.filter((_, i) => i % 3 === 0).forEach(l => { const p = l.pts.filter(inDoc); if (p.length > 1) acts.push({ pts: p, b: 'pen', sz: Math.max(2, base / 600), col: '#3b3530', L: 1, ph: 'ln', slow: 1.3 }); });
   if (st === 'sketch') sk.filter((_, i) => i % 2 === 0).forEach(l => acts.push({ pts: l.pts, b: '6b', sz: skSz * 1.2, col: '#1c1c1c', L: 0, ph: 'ln' }));
   return acts;
 }
@@ -1740,29 +1771,36 @@ async function atBotRun() {
   atToast('نجهّز الرسمة…', 2000); await new Promise(r => setTimeout(r, 30));
   let plan; try { plan = atBotPlan(); } catch (e) { console.warn(e); return atToast('ما قدرنا نحلل الصورة'); }
   const keep = { tool: AT.tool, color: AT.color, bt: AT.bt.brush, size: AT.size.brush, op: AT.op.brush, sym: AT.sym, stream: Object.assign({}, AT.stream) };
-  atStructDo(() => { AT.layers.push(atLayer(ATB.style === 'sketch' ? 'رسم رصاص' : 'ألوان')); if (ATB.style === 'color') AT.layers.push(atLayer('خطوط')); });
-  const li = ATB.style === 'color' ? [AT.layers.length - 2, AT.layers.length - 1] : [AT.layers.length - 1];
+  const two = ['color', 'anime', 'water'].includes(ATB.style); atStructDo(() => { AT.layers.push(atLayer(ATB.style === 'sketch' ? 'رسم رصاص' : 'ألوان')); if (two) AT.layers.push(atLayer('خطوط')); });
+  const li = two ? [AT.layers.length - 2, AT.layers.length - 1] : [AT.layers.length - 1];
   ATB.on = true; ATB.prog = 0; AT.sym = 'none'; AT.sel = null; AT.botBusy = true; const u0 = AT.undo.length;
   // الوقت: نوزّعه على طول كل الخطوط + وقفات رفع القلم وتغيير اللون، والقلم يمشي نقطة نقطة مثل اليد
   const len = a => { let s = 0; for (let k = 1; k < a.pts.length; k++) s += Math.hypot(a.pts[k][0] - a.pts[k - 1][0], a.pts[k][1] - a.pts[k - 1][1]); return s; };
-  const lens = plan.map(len), totalLen = lens.reduce((a, b) => a + b, 0), changes = plan.reduce((n, a, i) => n + (i && a.col !== plan[i - 1].col ? 1 : 0), 0);
-  const T = ATB.mins * 60000, lift = Math.min(160, T * .25 / Math.max(1, plan.length)), pick = Math.min(900, T * .1 / Math.max(1, changes)), drawT = Math.max(T * .5, T - lift * plan.length - pick * changes), speed = totalLen / drawT; // بكسل بالمللي ثانية
+  const lens = plan.map(a => a.pause ? 0 : len(a) * (a.slow || 1)), totalLen = lens.reduce((a, b) => a + b, 0), strokesN = plan.filter(a => !a.pause).length, pauses = plan.reduce((t, a) => t + (a.pause || 0), 0), changes = plan.reduce((n, a, i) => n + (i && !a.pause && a.col !== (plan[i - 1].col) ? 1 : 0), 0);
+  const T = ATB.mins * 60000; let pausesLeft = pauses, strokesLeft = strokesN; const lift = Math.min(160, T * .22 / Math.max(1, strokesN)), pick = Math.min(900, T * .08 / Math.max(1, changes)), drawT = Math.max(T * .5, T - lift * strokesN - pick * changes - pauses), speed0 = totalLen / drawT; let speed = speed0; // بكسل بالمللي ثانية
   const wait = ms => new Promise(r => setTimeout(r, ms)), frame = () => new Promise(r => requestAnimationFrame(r)), t0 = Date.now(); let done = 0, lastCol = null;
   for (let i = 0; i < plan.length && ATB.on && document.getElementById('atStudio') && !AT.done; i++) {
     const s = plan[i];
+    while (ATB.paused && ATB.on) await wait(300);
+    // لو تأخرنا (الجهاز بطيء أو الفرشاة ثقيلة) نسرّع شوي عشان يخلص على الوقت
+    { const left = T - (Date.now() - t0) - pausesLeft - lift * strokesLeft, remLen = totalLen - done; speed = Math.max(speed0, remLen / Math.max(4000, left)); }
+    if (s.pause) { pausesLeft -= s.pause; if (Date.now() - t0 < T * .9) await wait(s.pause * (.7 + Math.random() * .6)); continue; } // يوقف يفكّر
+    strokesLeft--;
     if (s.col !== lastCol) { if (lastCol) await wait(pick * (.6 + Math.random() * .8)); lastCol = s.col; atAddHist(s.col); } // يختار لون
     AT.cur = li[s.L] != null ? li[s.L] : li[0]; AT.tool = 'brush'; AT.bt.brush = s.b; AT.size.brush = Math.max(1, s.sz); AT.op.brush = 1; AT.color = s.col; AT.stream[s.b] = .35; atUIColor();
-    let pr = .5 + Math.random() * .3; const P = () => (pr = atClamp(pr + (Math.random() - .5) * .12, .35, 1));
-    atStrokeStart(s.pts[0][0], s.pts[0][1], .3); if (!AT.stroke) continue;
+    // الضغط: يبدأ خفيف ويقوى بالنص ويخف بالآخر، مع رجفة بسيطة
+    const sl = s.slow || 1, tot = Math.max(1, s.pts.length - 1), pk = .65 + Math.random() * .3; let kk = 0; const P = () => atClamp(pk * Math.sin(Math.min(1, (kk + .3) / tot) * Math.PI) * (.92 + Math.random() * .16) + .12, .12, 1);
+    atStrokeStart(s.pts[0][0], s.pts[0][1], .15); if (!AT.stroke) continue;
     let k = 1, tLast = performance.now(), carry = 0;
-    while (k < s.pts.length && ATB.on) { await frame(); const now = performance.now(), dt = Math.min(80, now - tLast); tLast = now; carry += dt * speed * (.75 + Math.random() * .5);
-      while (k < s.pts.length && carry > 0) { const [ax, ay] = s.pts[k - 1], [bx, by] = s.pts[k], d = Math.hypot(bx - ax, by - ay) || 1, n = Math.max(1, Math.ceil(d / 6));
+    while (k < s.pts.length && ATB.on) { await frame(); const now = performance.now(), dt = Math.min(80, now - tLast); tLast = now; carry += dt * speed / sl * (.75 + Math.random() * .5);
+      kk = k; while (k < s.pts.length && carry > 0) { const [ax, ay] = s.pts[k - 1], [bx, by] = s.pts[k], d = Math.hypot(bx - ax, by - ay) || 1, n = Math.max(1, Math.ceil(d / 6));
         // نقسم الخط لنقاط صغيرة عشان القلم يمشي بالتدريج
         if (!s.sub) s.sub = 0; const take = Math.min(n - s.sub, Math.max(1, Math.floor(carry / (d / n))));
         for (let q = 1; q <= take; q++) { const f = (s.sub + q) / n; atStrokeTo(ax + (bx - ax) * f, ay + (by - ay) * f, P()); }
         s.sub += take; carry -= take * d / n; if (s.sub >= n) { s.sub = 0; k++; } }
       const el = Date.now() - t0; ATB.prog = Math.min(.99, (done + (k / s.pts.length) * lens[i]) / totalLen); }
     atStrokeEnd(); done += lens[i];
+    if (Math.random() < .006 && s.ph !== 'sk' && AT.undo.length > 1) { await wait(500 + Math.random() * 600); atUndo(); await wait(400); i--; done -= lens[i + 1]; continue; } // أحياناً يتراجع ويعيدها مثل الإنسان
     const pb = document.querySelector('.atpop.atabot .atprog i'); if (pb) pb.style.width = Math.round(ATB.prog * 100) + '%';
     await wait(lift * (.4 + Math.random() * 1.2)); // يرفع القلم
   }
