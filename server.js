@@ -142,7 +142,7 @@ const server = http.createServer((req, res) => {
     const tag = '"' + st.size.toString(36) + '-' + Math.floor(st.mtimeMs).toString(36) + (isIndex ? '-' + Buffer.from(origin).toString('base64url').slice(-8) : '') + '"';
     // صور الفريق بدون كاش طويل عشان لو تغيّرت تبان فوراً (ETag يكفي)
     const versioned = /[?&]v=/.test(req.url) && (ext === '.js' || ext === '.css'); // ملف بنسخة (?v=) ما يتغير أبد
-    const longCache = versioned || !p.startsWith('/team/') && (['.woff2', '.png', '.ico', '.mp3', '.mp4', '.webp', '.jpg', '.glb'].includes(ext) || /^\/(vendor|haunt|flags|mimic|chess|tut)\//.test(p));
+    const longCache = versioned || !p.startsWith('/team/') && (['.woff2', '.png', '.ico', '.mp3', '.mp4', '.webp', '.jpg', '.glb'].includes(ext) || /^\/(vendor|haunt|flags|mimic|chess|tut|rxg)\//.test(p));
     const head = { 'Content-Type': MIME[ext] || 'application/octet-stream', 'Cache-Control': versioned ? 'public, max-age=31536000, immutable' : longCache ? 'public, max-age=604800' : 'no-cache', ETag: isIndex ? tag.slice(0, -1) + '-' + allVer() + '"' : tag, Vary: 'Accept-Encoding' };
     if (req.headers['if-none-match'] === head.ETag) { res.writeHead(304, head); return res.end(); }
     getBody(f, st, head.ETag, origin, ext, (e, body) => {
@@ -151,6 +151,13 @@ const server = http.createServer((req, res) => {
       let out = body.raw;
       if (body.br && /\bbr\b/.test(ae)) { out = body.br; head['Content-Encoding'] = 'br'; }
       else if (body.gz && /\bgzip\b/.test(ae)) { out = body.gz; head['Content-Encoding'] = 'gzip'; }
+      // المقاطع: تقديم جزئي (Range) عشان الآيفون يشغّلها
+      const rg = ext === '.mp4' && /bytes=(\d*)-(\d*)/.exec(req.headers.range || '');
+      if (rg) { const b = body.raw, s0 = rg[1] ? +rg[1] : Math.max(0, b.length - +rg[2]), e0 = rg[1] && rg[2] ? Math.min(+rg[2], b.length - 1) : b.length - 1;
+        delete head['Content-Encoding']; head['Accept-Ranges'] = 'bytes';
+        if (s0 >= b.length || s0 > e0) { res.writeHead(416, { 'Content-Range': `bytes */${b.length}` }); return res.end(); }
+        head['Content-Range'] = `bytes ${s0}-${e0}/${b.length}`; head['Content-Length'] = e0 - s0 + 1; res.writeHead(206, head); return res.end(req.method === 'HEAD' ? undefined : b.slice(s0, e0 + 1)); }
+      if (ext === '.mp4') head['Accept-Ranges'] = 'bytes';
       head['Content-Length'] = out.length;
       res.writeHead(200, head);
       res.end(req.method === 'HEAD' ? undefined : out);
@@ -176,7 +183,7 @@ function verOf(rel) {
 }
 // ملفات الألعاب تنحمّل بس لما تدخل اللعبة (public/app.js: GAME_JS)
 const LAZY = fs.readFileSync(path.join(PUB, 'app.js'), 'utf8').match(/GAME_JS = (\{[^}]+\})/);
-const LAZY_FILES = LAZY ? [...new Set([...LAZY[1].matchAll(/'([\w-]+\.(?:js|css))'/g)].map(m => m[1]).concat(['tutor.js', 'i18n-dict.js']))] : [];
+const LAZY_FILES = LAZY ? [...new Set([...LAZY[1].matchAll(/'([\w-]+\.(?:js|css))'/g)].map(m => m[1]).concat(['tutor.js', 'i18n-dict.js', 'artbot.js']))] : [];
 function versionIndex(html) {
   html = html.replace(/(<(?:script|link)\b[^>]*?\b(?:src|href)=")([\w\-/]+\.(?:js|css))(")/g, (m, a, f, b) => { const v = verOf(f); return v ? a + f + '?v=' + v + b : m; });
   const gv = {}; LAZY_FILES.forEach(f => gv[f] = verOf(f));
@@ -248,7 +255,7 @@ function cname(c) {
 
 // ---- الألعاب الثانية (غير أونو) ----
 const H = {
-  log: (r, s) => log(r, s), shuffle, rate: (p, k, ms) => rate(p, k, ms),
+  log: (r, s) => log(r, s), shuffle, rxList: () => RX ? RX.list() : [], rate: (p, k, ms) => rate(p, k, ms),
   win: (r, ps) => ps.forEach(p => { p.wins = (p.wins || 0) + 1; }),
   alive: r => rooms.get(r.code) === r,
   err: (p, msg) => send(p.ws, { t: 'err', msg }), sendTo: (p, o) => p.online && send(p.ws, o), push: r => after(r),
@@ -261,15 +268,15 @@ const H = {
   }
 };
 const GAMES = { uno: { min: 2, max: 8 } };
-for (const k of ['codes', 'hive', 'liars', 'outside', 'typing', 'jackaroo', 'draw', 'flip', 'sus', 'haunt', 'mafia', 'phone', 'fib', 'bomb', 'auction', 'feud', 'flags', 'mimic', 'chess', 'jwb', 'baloot', 'cars', 'rich', 'boxing', 'brawl', 'tartayb', 'redlight', 'bwb', 'elim', 'emo', 'chairs', 'deal', 'qfl', 'ludo', 'bingo', 'art']) GAMES[k] = require('./games/' + k)(H);
-const META = { uno: { bots: true }, codes: { teams: true }, hive: { teams: true, bots: true }, liars: { bots: true }, outside: { bots: true }, typing: { bots: true }, jackaroo: { teams: true, bots: true }, draw: {}, flip: { bots: true }, sus: { bots: true }, haunt: { bots: true }, mafia: { bots: true }, phone: {}, fib: { bots: true }, bomb: { bots: true }, auction: { bots: true }, feud: { teams: true, bots: true }, flags: { bots: true }, mimic: {}, chess: { bots: true }, jwb: { bots: true }, baloot: { teams: true, bots: true }, cars: { bots: true }, rich: { bots: true }, boxing: { bots: true }, brawl: { bots: true }, tartayb: { bots: true }, redlight: { bots: true }, bwb: { bots: true }, elim: { bots: true }, emo: { bots: true }, chairs: { bots: true }, deal: { bots: true }, qfl: { bots: true }, ludo: { bots: true }, bingo: { bots: true }, art: {} };
+for (const k of ['codes', 'hive', 'liars', 'outside', 'typing', 'jackaroo', 'draw', 'flip', 'sus', 'haunt', 'mafia', 'phone', 'fib', 'bomb', 'auction', 'feud', 'flags', 'mimic', 'chess', 'jwb', 'baloot', 'cars', 'rich', 'boxing', 'brawl', 'tartayb', 'redlight', 'bwb', 'elim', 'emo', 'chairs', 'deal', 'qfl', 'ludo', 'bingo', 'art', 'rxg']) GAMES[k] = require('./games/' + k)(H);
+const META = { uno: { bots: true }, codes: { teams: true }, hive: { teams: true, bots: true }, liars: { bots: true }, outside: { bots: true }, typing: { bots: true }, jackaroo: { teams: true, bots: true }, draw: {}, flip: { bots: true }, sus: { bots: true }, haunt: { bots: true }, mafia: { bots: true }, phone: {}, fib: { bots: true }, bomb: { bots: true }, auction: { bots: true }, feud: { teams: true, bots: true }, flags: { bots: true }, mimic: {}, chess: { bots: true }, jwb: { bots: true }, baloot: { teams: true, bots: true }, cars: { bots: true }, rich: { bots: true }, boxing: { bots: true }, brawl: { bots: true }, tartayb: { bots: true }, redlight: { bots: true }, bwb: { bots: true }, elim: { bots: true }, emo: { bots: true }, chairs: { bots: true }, deal: { bots: true }, qfl: { bots: true }, ludo: { bots: true }, bingo: { bots: true }, art: {}, rxg: { bots: true } };
 const AVATARS = ['😎', '🦁', '🐪', '🦅', '🐺', '🦊', '🐯', '🐼', '🦄', '🐸', '👑', '🔥', '⚡', '🌙', '🎩', '🤠'];
 const cleanAv = a => AVATARS.includes(a) ? a : '';
 // شكل الشخصية بالبيت المسكون: جسم، بشرة، شعر، لون الشعر، اللبس، لونين، لحية
 const LOOKMAX = { b: 2, s: 4, h: 6, hc: 8, o: 7, c1: 12, c2: 12, bd: 2, mf: 4, ms: 4, me: 4, mt: 3 };
 const cleanLook = l => { if (!l || typeof l !== 'object') return null; const o = {}; for (const k in LOOKMAX) { const v = +l[k]; o[k] = Number.isInteger(v) && v >= 0 && v < LOOKMAX[k] ? v : 0; } return o; };
 const randLook = () => { const l = Object.fromEntries(Object.entries(LOOKMAX).map(([k, n]) => [k, Math.random() * n | 0])); l.h = 1 + (Math.random() * 5 | 0); l.hc = Math.random() * 6 | 0; return l; };
-const optsView = (r, p) => ({ stack: !!r.opts.stack, powers: !!r.opts.powers, turn: r.opts.turn || 15, lock: !!r.opts.lock, hasPass: !!r.opts.pass, pass: r.host === p.id ? (r.opts.pass || '') : null, target: r.opts.target || 5, imps: r.opts.imps || 1, doctor: !!r.opts.doctor, map: r.opts.map || 'ship', nwords: r.opts.words ? r.opts.words.length : 0, wordsText: r.host === p.id ? (r.opts.wordsText || '') : '', mcount: r.opts.mcount || 0, dayT: r.opts.dayT || 90, reveal: r.opts.reveal !== false, mroles: Object.assign({ doc: 1, det: 1, sniper: 1, god: 1, jester: 1, mayor: 1 }, r.opts.mroles), blives: r.opts.blives || 3, bdiff: r.opts.bdiff || 'mid', frounds: r.opts.frounds || 7, psteps: r.opts.psteps || 0, pdraw: r.opts.pdraw || 90, aitems: r.opts.aitems || 8, drounds: r.opts.drounds || 4, fcount: r.opts.fcount || 10, fmode: r.opts.fmode || 'flags', fdiff: r.opts.fdiff || 'easy', mrounds: r.opts.mrounds || 5, mpack: r.opts.mpack || 'all', ctime: r.opts.ctime || 'none', clevel: r.opts.clevel || 'mid', ccolor: r.opts.ccolor || 'rand' , jrounds: r.opts.jrounds || 7, jtime: r.opts.jtime || 30, jn: r.opts.jn || 3, krounds: r.opts.krounds || 3, ktime: r.opts.ktime || 75, mlim: r.opts.mlim == null ? 25 : r.opts.mlim, bwins: r.opts.bwins || 2, fwins: r.opts.fwins || 2, trounds: r.opts.trounds || 10, ttime: r.opts.ttime || 30, rtime: r.opts.rtime || 60, brounds: r.opts.brounds || 5, btime: r.opts.btime || 90, elives: r.opts.elives || 1, etime: r.opts.etime || 15, erounds: r.opts.erounds || 8, emtime: r.opts.emtime || 45, dsets: r.opts.dsets || 3, dtime: r.opts.dtime || 60, dxbld: r.opts.dxbld || 0, dxbig: r.opts.dxbig || 0, qrounds: r.opts.qrounds || 5, qtime: r.opts.qtime || 30, ltime: r.opts.ltime || 20, bspeed: r.opts.bspeed || 5, bgoal: r.opts.bgoal || 'line', bskin: r.opts.bskin || 'diw', atheme: r.opts.atheme || '', atime: r.opts.atime || 0, ajmode: r.opts.ajmode || 'all', ajudges: r.opts.ajudges || [], acollab: !!r.opts.acollab, amode: r.opts.amode || '', apass: r.opts.apass || 60, tour: !!r.opts.tour, blvl: r.opts.blvl || 'mid' });
+const optsView = (r, p) => ({ stack: !!r.opts.stack, powers: !!r.opts.powers, turn: r.opts.turn || 15, lock: !!r.opts.lock, hasPass: !!r.opts.pass, pass: r.host === p.id ? (r.opts.pass || '') : null, target: r.opts.target || 5, imps: r.opts.imps || 1, doctor: !!r.opts.doctor, map: r.opts.map || 'ship', nwords: r.opts.words ? r.opts.words.length : 0, wordsText: r.host === p.id ? (r.opts.wordsText || '') : '', mcount: r.opts.mcount || 0, dayT: r.opts.dayT || 90, reveal: r.opts.reveal !== false, mroles: Object.assign({ doc: 1, det: 1, sniper: 1, god: 1, jester: 1, mayor: 1 }, r.opts.mroles), blives: r.opts.blives || 3, bdiff: r.opts.bdiff || 'mid', frounds: r.opts.frounds || 7, psteps: r.opts.psteps || 0, pdraw: r.opts.pdraw || 90, aitems: r.opts.aitems || 8, drounds: r.opts.drounds || 4, fcount: r.opts.fcount || 10, fmode: r.opts.fmode || 'flags', fdiff: r.opts.fdiff || 'easy', mrounds: r.opts.mrounds || 5, mpack: r.opts.mpack || 'all', ctime: r.opts.ctime || 'none', clevel: r.opts.clevel || 'mid', ccolor: r.opts.ccolor || 'rand' , jrounds: r.opts.jrounds || 7, jtime: r.opts.jtime || 30, jn: r.opts.jn || 3, krounds: r.opts.krounds || 3, ktime: r.opts.ktime || 75, mlim: r.opts.mlim == null ? 25 : r.opts.mlim, bwins: r.opts.bwins || 2, fwins: r.opts.fwins || 2, trounds: r.opts.trounds || 10, ttime: r.opts.ttime || 30, rtime: r.opts.rtime || 60, brounds: r.opts.brounds || 5, btime: r.opts.btime || 90, elives: r.opts.elives || 1, etime: r.opts.etime || 15, erounds: r.opts.erounds || 8, emtime: r.opts.emtime || 45, dsets: r.opts.dsets || 3, dtime: r.opts.dtime || 60, dxbld: r.opts.dxbld || 0, dxbig: r.opts.dxbig || 0, qrounds: r.opts.qrounds || 5, qtime: r.opts.qtime || 30, ltime: r.opts.ltime || 20, bspeed: r.opts.bspeed || 5, bgoal: r.opts.bgoal || 'line', bskin: r.opts.bskin || 'diw', atheme: r.opts.atheme || '', atime: r.opts.atime || 0, ajmode: r.opts.ajmode || 'all', ajudges: r.opts.ajudges || [], acollab: !!r.opts.acollab, amode: r.opts.amode || '', apass: r.opts.apass || 60, tour: !!r.opts.tour, blvl: r.opts.blvl || 'mid', xrounds: r.opts.xrounds || 10, xtime: r.opts.xtime || 20, xmode: r.opts.xmode || 'pick' });
 const maxOf = r => GAMES[r.game].max;
 
 const newRoom = (code, game = 'uno') => ({ code, game, g: null, opts: {}, owed: 0, botT: null, phase: 'lobby', players: [], host: null, deck: [], discard: [], color: null, dir: 1, turn: 0, pending: null, catchable: null, log: [], winner: null, chat: [], teams: false, score: [0, 0], winTeam: null, specs: [], recorded: false, banned: new Set(), turnSeq: 0, armed: -1, timer: null, deadline: 0, created: Date.now(), teamOnly: false });
@@ -954,6 +961,9 @@ wss.on('connection', (ws, req) => {
         else if (k === 'dxbld' && r.game === 'deal' && [0, 1].includes(+v)) r.opts.dxbld = +v;
         else if (k === 'dxbig' && r.game === 'deal' && [0, 1].includes(+v)) r.opts.dxbig = +v;
         else if (k === 'erounds' && r.game === 'emo' && [5, 8, 12].includes(+v)) r.opts.erounds = +v;
+        else if (k === 'xrounds' && r.game === 'rxg' && [5, 10, 15].includes(+v)) r.opts.xrounds = +v;
+        else if (k === 'xtime' && r.game === 'rxg' && [15, 20, 30].includes(+v)) r.opts.xtime = +v;
+        else if (k === 'xmode' && r.game === 'rxg' && ['pick', 'type'].includes(v)) r.opts.xmode = v;
         else if (k === 'emtime' && r.game === 'emo' && [30, 45, 60].includes(+v)) r.opts.emtime = +v;
         else if (k === 'elives' && r.game === 'elim' && [1, 2, 3].includes(+v)) r.opts.elives = +v;
         else if (k === 'etime' && r.game === 'elim' && [10, 15, 20].includes(+v)) r.opts.etime = +v;

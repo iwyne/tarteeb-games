@@ -945,7 +945,8 @@ function atBindInput(cv) {
     const [dx, dy] = atToDoc(x, y);
     if (AT.pickMode || e.altKey) { AT.color = atSample(dx, dy); atUIColor(); atToast('أخذت اللون', 600); AT.pickMode = false; atUIDrop(); return; }
     if (AT.tool === 'vp') { const vps = AT.vp || atVpDef(); let k = -1, bd = 30; vps.forEach(([vx, vy], i) => { const [sx, sy] = atToScr(vx, vy), d = Math.hypot(sx - x, sy - y); if (d < bd) { bd = d; k = i; } }); if (k >= 0) AT.vpDrag = k; return; }
-    if (AT.botBusy) return atToast('الرسام الآلي يرسم الحين، وقّفه من القائمة');
+    if (ATB.refine) { atBotRefineAt(dx, dy); return; } // زيد تفاصيل هنا
+    if (AT.botBusy) return atToast('الرسام الآلي يرسم الحين، تحكم فيه من الشريط فوق');
     if (AT.tool === 'fill') { if (atMode() === 'oneline') return atToast('التعبئة مقفلة بهالطريقة'); return atFill(dx, dy); }
     if (AT.tool === 'text') return atTextAt(dx, dy);
     if (AT.tool === 'select') { if (AT.selMode === 'wand') return atWand(dx, dy); AT.lasso = { pts: [[dx, dy]], rect: AT.selMode === 'rect' }; if ((AT.selOp || 'new') === 'new') AT.sel = null; AT.dirty = true; return; }
@@ -1840,186 +1841,199 @@ function renderArt(body) {
 // ===== الرسام الآلي (علي وبشرى بس، يطلع لهم من القائمة) =====
 // تختار صورة ويرسمها كأنك أنت: تخطيط بالرصاص، بعدين ألوان كبيرة، بعدين تفاصيل، بفرش المرسم نفسها وضغط متغيّر،
 // وموزّعة على الوقت اللي تختاره عشان التسريع يطلع طبيعي.
-const ATB = { on: false, img: null, style: 'paint', mins: 5, prog: 0, det: 2, cover: false, paused: false };
+const ATB = { on: false, img: null, style: 'copy', mins: 5, prog: 0, det: 2, cover: false, paused: false, mul: 1, hand: true, frames: [] };
+const AT_BSTY = [['copy', 'نسخ الصورة'], ['paint', 'لوحة زيت'], ['pastel', 'باستيل'], ['color', 'ألوان وحبر'], ['anime', 'أنمي'], ['water', 'ألوان مائية'], ['sketch', 'رصاص'], ['charcoal', 'فحم'], ['comic', 'كوميكس'], ['pixel', 'بكسل آرت'], ['dots', 'نقاط']];
 function atBotUI(pop) {
   pop.innerHTML = `<div class="athd"><b>الرسام الآلي</b></div><div class="atmenu">
     <div class="atsub">الصورة</div><div class="atrow wrap"><button data-bb="pick">${atIcon('img')} اختر صورة</button>${ATB.img ? `<img class="atbprev" src="${ATB.prev}" alt="">` : '<small>صورة شخص أو أي شي</small>'}</div>
-    <div class="atsub">الأسلوب</div><div class="atrow wrap">${[['copy', 'نسخ الصورة'], ['paint', 'لوحة زيت'], ['color', 'ألوان وحبر'], ['anime', 'أنمي'], ['water', 'ألوان مائية'], ['sketch', 'رصاص'], ['pastel', 'باستيل']].map(([k, t]) => `<button data-bs="${k}" class="${ATB.style === k ? 'on' : ''}">${t}</button>`).join('')}</div>
+    <div class="atsub">الأسلوب</div><div class="atrow wrap">${AT_BSTY.map(([k, t]) => `<button data-bs="${k}" class="${ATB.style === k ? 'on' : ''}">${t}</button>`).join('')}</div>
     <div class="atsub">التفاصيل</div><div class="atrow wrap">${[[1, 'بسيط'], [2, 'متوسط'], [3, 'دقيق']].map(([k, t]) => `<button data-bd="${k}" class="${ATB.det === k ? 'on' : ''}">${t}</button>`).join('')}<button data-bc="1" class="${ATB.cover ? 'on' : ''}">يملأ اللوحة</button></div>
     <div class="atsub">المدة</div><div class="atrow wrap">${[2, 3, 5, 10, 20, 40].map(n => `<button data-bm="${n}" class="${ATB.mins === n ? 'on' : ''}">${atNum(n)} د</button>`).join('')}</div>
-    <div class="atrow wrap">${ATB.on ? `<button data-bb="pause">${ATB.paused ? 'كمّل' : 'استراحة'}</button><button data-bb="stop" class="on">وقّف</button>` : `<button data-bb="go" class="on"${ATB.img ? '' : ' disabled'}>ابدأ الرسم</button>`}</div>
-    ${ATB.on ? `<div class="atprog"><i style="width:${Math.round(ATB.prog * 100)}%"></i></div>` : ''}<small>يرسم على طبقات جديدة، وتقدر تكمّل عليها بعدين</small></div>`;
+    <div class="atrow wrap"><button data-bh="1" class="${ATB.hand ? 'on' : ''}">اليد والألوان تبين</button></div>
+    <div class="atrow wrap">${ATB.on ? '<small>يرسم الحين، تحكم فيه من الشريط فوق</small>' : `<button data-bb="go" class="on"${ATB.img ? '' : ' disabled'}>ابدأ الرسم</button>`}</div>
+    <small>${atCollab() ? 'بالرسم الجماعي يرسم بطبقتك بس، وداخل التحديد لو حددت مكان' : 'يرسم على طبقات جديدة (خلفية، شكل، تفاصيل…) وتقدر تعدّل عليها بعدين'}</small></div>`;
   pop.querySelectorAll('[data-bs]').forEach(b => b.onclick = e => { e.stopPropagation(); ATB.style = b.dataset.bs; atBotUI(pop); });
   pop.querySelectorAll('[data-bm]').forEach(b => b.onclick = e => { e.stopPropagation(); ATB.mins = +b.dataset.bm; atBotUI(pop); });
   pop.querySelectorAll('[data-bd]').forEach(b => b.onclick = e => { e.stopPropagation(); ATB.det = +b.dataset.bd; atBotUI(pop); });
   pop.querySelectorAll('[data-bc]').forEach(b => b.onclick = e => { e.stopPropagation(); ATB.cover = !ATB.cover; atBotUI(pop); });
+  pop.querySelectorAll('[data-bh]').forEach(b => b.onclick = e => { e.stopPropagation(); ATB.hand = !ATB.hand; atBotUI(pop); });
   pop.querySelectorAll('[data-bb]').forEach(b => b.onclick = e => { e.stopPropagation(); const k = b.dataset.bb;
     if (k === 'pick') atPickFile(async f => { try { ATB.img = await createImageBitmap(f); const c = atMk(160, Math.round(160 * ATB.img.height / ATB.img.width)); c.getContext('2d').drawImage(ATB.img, 0, 0, c.width, c.height); ATB.prev = c.toDataURL(); } catch { atToast('ما قدرنا نفتح الصورة'); } atBotUI(pop); });
-    else if (k === 'go') { atClosePop(); atBotRun(); } else if (k === 'stop') { ATB.on = false; ATB.paused = false; atBotUI(pop); } else if (k === 'pause') { ATB.paused = !ATB.paused; atBotUI(pop); } });
+    else if (k === 'go') { atClosePop(); atBotRun(); } });
 }
-function atBotPlan() {
-  // نحلل الصورة على دقة صغيرة: ألوان قليلة (مثل الرسام يختار من لوحته)، حواف للتخطيط، ومناطق كل لون
-  if (ATB.style === 'copy') return atBotCopy();
-  const W = AT.W, H = AT.H, im = ATB.img, s0 = ATB.cover ? Math.max(W / im.width, H / im.height) : Math.min(W / im.width, H / im.height) * .96, iw = im.width * s0, ih = im.height * s0, ox = (W - iw) / 2, oy = (H - ih) / 2;
-  const A = Math.min(1, 300 / Math.max(iw, ih)), aw = Math.max(8, Math.round(iw * A)), ah = Math.max(8, Math.round(ih * A)), toD = (x, y) => [ox + x / A, oy + y / A], N = aw * ah;
-  const ana = blur => { const c = atMk(aw, ah), g = c.getContext('2d'); if (blur && atHasFilter()) g.filter = `blur(${blur}px)`; g.drawImage(im, 0, 0, aw, ah); return g.getImageData(0, 0, aw, ah).data; };
-  const px = ana(1.2), Lb = new Float32Array(N), L = new Float32Array(N); const pb = ana(4);
-  for (let i = 0; i < N; i++) { L[i] = (px[i * 4] * .3 + px[i * 4 + 1] * .59 + px[i * 4 + 2] * .11) / 255; Lb[i] = (pb[i * 4] * .3 + pb[i * 4 + 1] * .59 + pb[i * 4 + 2] * .11) / 255; }
-  const gx = new Float32Array(N), gy = new Float32Array(N), mag = new Float32Array(N), fx = new Float32Array(N), fy = new Float32Array(N);
-  for (let y = 1; y < ah - 1; y++) for (let x = 1; x < aw - 1; x++) { const i = y * aw + x, S = (A, i) => [(A[i - aw + 1] + 2 * A[i + 1] + A[i + aw + 1]) - (A[i - aw - 1] + 2 * A[i - 1] + A[i + aw - 1]), (A[i + aw - 1] + 2 * A[i + aw] + A[i + aw + 1]) - (A[i - aw - 1] + 2 * A[i - aw] + A[i - aw + 1])];
-    [gx[i], gy[i]] = S(L, i); mag[i] = Math.hypot(gx[i], gy[i]); [fx[i], fy[i]] = S(Lb, i); }
-  const at = (x, y) => atClamp(y | 0, 0, ah - 1) * aw + atClamp(x | 0, 0, aw - 1);
-  const hex = (r, g, b) => '#' + [r, g, b].map(v => atClamp(Math.round(v), 0, 255).toString(16).padStart(2, '0')).join('');
-  const jit = () => (Math.random() - .5) * .9, st = ATB.style, base = ATB.cover ? Math.max(W, H) : Math.max(iw, ih), acts = [], DET = ATB.det || 2, inDoc = ([x, y]) => x > -40 && y > -40 && x < W + 40 && y < H + 40;
-  // ١) التخطيط: خطوط على الحواف، مرتبة وراء بعض (أقرب خط للي قبله) مثل اليد
-  const srt = Array.from(mag).sort((a, b) => b - a), thr = Math.max(.08, srt[Math.floor(N * .1)] || .3), used = new Uint16Array(N); let sid = 0; const lines = [];
-  for (let y = 2; y < ah - 2; y += 2) for (let x = 2; x < aw - 2; x += 2) { const i0 = y * aw + x; if (mag[i0] <= thr || used[i0]) continue; sid = sid % 65000 + 1;
-    for (const dir of [1, -1]) { let cx = x, cy = y; const pts = dir === 1 ? [] : null, out = [];
-      for (let n = 0; n < 60; n++) { const i = at(cx, cy), a = Math.atan2(gy[i], gx[i]) + Math.PI / 2; let nx = cx + Math.cos(a) * 1.5 * dir, ny = cy + Math.sin(a) * 1.5 * dir;
-        if (out.length > 1) { const [px2, py2] = out[out.length - 2]; if ((nx - cx) * (cx - px2) + (ny - cy) * (cy - py2) < 0) { nx = 2 * cx - nx; ny = 2 * cy - ny; } }
-        const j = at(nx, ny); if (mag[j] < thr * .55 || (used[j] && used[j] !== sid) || nx < 0 || ny < 0 || nx >= aw || ny >= ah) break; cx = nx; cy = ny; out.push([cx, cy]); for (let yy = -1; yy <= 1; yy++) for (let xx = -1; xx <= 1; xx++) used[at(cx + xx, cy + yy)] = sid; }
-      if (dir === 1) lines.push(out.reverse().concat([[x, y]])); else lines[lines.length - 1] = lines[lines.length - 1].concat(out); }
-    if (lines[lines.length - 1].length < 5) lines.pop(); if (lines.length > 700) break; }
-  const nn = list => { if (!list.length) return list; const out = [list.shift()]; while (list.length) { const e = out[out.length - 1].pts ? out[out.length - 1].pts[out[out.length - 1].pts.length - 1] : null; let bi = 0, bd = 1e18;
-      for (let k = 0; k < list.length; k++) { const p = list[k].pts, d1 = (p[0][0] - e[0]) ** 2 + (p[0][1] - e[1]) ** 2, d2 = (p[p.length - 1][0] - e[0]) ** 2 + (p[p.length - 1][1] - e[1]) ** 2; if (d2 < d1 && list[k].rev !== false) { if (d2 < bd) { bd = d2; bi = k; list[k].flip = true; } } else if (d1 < bd) { bd = d1; bi = k; list[k].flip = false; } }
-      const c = list.splice(bi, 1)[0]; if (c.flip) c.pts.reverse(); out.push(c); } return out; };
-  const sk = nn(lines.map(l => ({ pts: l.map(([x, y]) => toD(x + jit(), y + jit())) })).sort((a, b) => a.pts[0][1] - b.pts[0][1]));
-  const skCol = st === 'sketch' ? '#2a2a2a' : st === 'water' ? '#b0aaa0' : '#8a8a8a', skSz = Math.max(3, base / (st === 'sketch' ? 380 : 480));
-  sk.forEach(l => { const p = l.pts.filter(inDoc); if (p.length > 1) acts.push({ pts: p, b: 'hb', sz: skSz, col: skCol, L: 0, ph: 'sk' }); });
-  acts.push({ pause: 1800 }); // يوقف يتأمل التخطيط قبل التلوين
-  // ٢) التلوين: نقسم الصورة لألوان قليلة، وكل لون نلوّنه بضربات رايح جاي داخل منطقته (مثل اللي يلوّن بيده)
-  const K = st === 'sketch' ? 3 + DET : st === 'anime' ? 5 + DET * 2 : [8, 14, 22][DET - 1], cols = [], lab = new Uint8Array(N);
-  if (st === 'sketch') { const LQ = Array.from(L).sort((a, b) => a - b); for (let k = 0; k < K; k++) cols.push(LQ[Math.floor(N * (k + .5) / K)]); for (let i = 0; i < N; i++) { let bk = 0, bd = 9; cols.forEach((c, k) => { const d = Math.abs(L[i] - c); if (d < bd) { bd = d; bk = k; } }); lab[i] = bk; } }
-  else { for (let k = 0; k < K; k++) { const i = Math.floor(Math.random() * N); cols.push([px[i * 4], px[i * 4 + 1], px[i * 4 + 2]]); }
-    for (let it = 0; it < 8; it++) { const sm = cols.map(() => [0, 0, 0, 0]); for (let i = 0; i < N; i += 1) { let bk = 0, bd = 1e9; for (let k = 0; k < K; k++) { const c = cols[k], d = (px[i * 4] - c[0]) ** 2 + (px[i * 4 + 1] - c[1]) ** 2 + (px[i * 4 + 2] - c[2]) ** 2; if (d < bd) { bd = d; bk = k; } } lab[i] = bk; const q = sm[bk]; q[0] += px[i * 4]; q[1] += px[i * 4 + 1]; q[2] += px[i * 4 + 2]; q[3]++; }
-      sm.forEach((q, k) => { if (q[3]) cols[k] = [q[0] / q[3], q[1] / q[3], q[2] / q[3]]; }); } }
-  const area = cols.map((_, k) => lab.reduce((a, v) => a + (v === k), 0));
-  const order = cols.map((_, k) => k).filter(k => area[k] > N * .002).sort((a, b) => st === 'sketch' ? cols[b] - cols[a] : area[b] - area[a]);
-  for (const k of order) {
-    if (st === 'sketch' && (cols[k] > .7 || k === order[0])) continue; // الفاتح (والخلفية) يبقى ورق
-    const reg = area[k] / N, sp = st === 'sketch' ? 3.2 + cols[k] * 3 : Math.max(2.2, Math.min(9, Math.sqrt(area[k]) / 9)), ang = st === 'sketch' ? -.8 + (k % 2) * .5 : (() => { let sx = 0, sy = 0; for (let i = 0; i < N; i += 3) if (lab[i] === k) { const a = Math.atan2(fy[i], fx[i]) * 2; sx += Math.cos(a); sy += Math.sin(a); } return Math.atan2(sy, sx) / 2 + Math.PI / 2; })();
-    const ux = Math.cos(ang), uy = Math.sin(ang), vx = -uy, vy = ux, R = Math.hypot(aw, ah), segs = [];
-    for (let t = -R; t <= R; t += sp * (.85 + Math.random() * .3)) { let run = null; for (let u = -R; u <= R; u += 1) { const x = aw / 2 + vx * t + ux * u, y = ah / 2 + vy * t + uy * u, inside = x >= 0 && y >= 0 && x < aw && y < ah && lab[at(x, y)] === k;
-        if (inside && !run) run = [[x, y]]; else if (inside) run[1] = [x, y]; else if (run) { if (run[1]) segs.push({ t, a: run[0], b: run[1] }); run = null; } } if (run && run[1]) segs.push({ t, a: run[0], b: run[1] }); }
-    // نوصل الخطوط رايح جاي لين تبعد
-    const strokes = []; let cur = null, flip = false;
-    for (const sg of segs) { const a = flip ? sg.b : sg.a, b = flip ? sg.a : sg.b;
-      if (cur && Math.hypot(a[0] - cur[cur.length - 1][0], a[1] - cur[cur.length - 1][1]) < sp * 2.6 && cur.length < 40) { cur.push(a, b); flip = !flip; }
-      else { if (cur) strokes.push(cur); cur = [sg.a, sg.b]; flip = true; } }
-    if (cur) strokes.push(cur);
-    const c = cols[k], col = st === 'sketch' ? (() => { const g = Math.round(15 + c * 125); return hex(g, g, g); })() : hex(c[0], c[1], c[2]);
-    const br = { sketch: '6b', paint: 'round', anime: 'marker2', water: 'wsoft', pastel: 'pastel' }[st] || 'gouache', sz = st === 'sketch' ? base / 240 : sp / A * (st === 'water' ? 3.2 : 2.5); // عريضة كفاية تغطي بدون خطوط بينها
-    nn(strokes.filter(p => p.length > 1).map(p => ({ pts: p.map(([x, y]) => toD(x + jit(), y + jit())).filter(inDoc) })).filter(o => o.pts.length > 1)).forEach(o => acts.push({ pts: o.pts, b: br, sz, col, L: 0, ph: 'c' + k }));
-    if (Math.random() < .25) acts.push({ pause: 600 + Math.random() * 900 });
+// ===== التحليل بالخلفية (artbot.js كـ Worker)، ولو ما ضبط نحسبه بالصفحة =====
+let ATB_LIB = null;
+const atBotSrc = () => 'artbot.js' + (window.GV && GV['artbot.js'] ? '?v=' + GV['artbot.js'] : '');
+const atBotLib = () => ATB_LIB || (ATB_LIB = new Promise((ok, no) => { if (window.ATBOT) return ok(); const s = document.createElement('script'); s.src = atBotSrc(); s.onload = ok; s.onerror = () => { ATB_LIB = null; no(new Error('artbot')); }; document.head.appendChild(s); }));
+async function atBotCall(k, cfg, imgs) {
+  await atBotLib();
+  try {
+    if (typeof Worker === 'undefined') throw 0;
+    const w = AT.botW || (AT.botW = new Worker(atBotSrc())), id = Math.random();
+    return await new Promise((ok, no) => { const tm = setTimeout(() => no(new Error('timeout')), 120000);
+      const on = e => { if (e.data.id !== id) return; clearTimeout(tm); w.removeEventListener('message', on); e.data.ok ? ok(e.data.r) : no(new Error(e.data.err)); };
+      w.addEventListener('message', on); w.onerror = er => { clearTimeout(tm); no(er); }; w.postMessage({ k, id, cfg, imgs }); });
+  } catch (e) { if (AT.botW && e && e.message === 'timeout') { AT.botW.terminate(); AT.botW = null; } console.warn('bot worker → main', e); await new Promise(r => setTimeout(r, 30)); return k === 'refine' ? ATBOT.refine(cfg, imgs) : ATBOT.plan(cfg, imgs); }
+}
+const atBotPix = (src, sx, sy, sw, sh, w, h) => { const c = atMk(w, h), g = c.getContext('2d', { willReadFrequently: true }); g.imageSmoothingQuality = 'high'; g.drawImage(src, sx, sy, sw, sh, 0, 0, w, h); return { w, h, data: g.getImageData(0, 0, w, h).data }; };
+function atBotBox() { // وين تنحط الصورة: اللوحة كاملة، أو التحديد بالرسم الجماعي
+  const tb = atCollab() && AT.sel ? AT.sel.box : [0, 0, AT.W, AT.H], TW = tb[2] - tb[0], TH = tb[3] - tb[1], im = ATB.img;
+  const s0 = ATB.cover ? Math.max(TW / im.width, TH / im.height) : Math.min(TW / im.width, TH / im.height) * .96, iw = im.width * s0, ih = im.height * s0;
+  return [tb[0] + (TW - iw) / 2, tb[1] + (TH - ih) / 2, iw, ih];
+}
+// ===== الشريط فوق، اليد، ولوحة الألوان =====
+function atBotBar() {
+  const st = document.getElementById('atStudio'); if (!st) return; let b = document.getElementById('atBotBar');
+  if (!b) { b = document.createElement('div'); b.id = 'atBotBar'; b.className = 'atbotbar'; st.appendChild(b); }
+  const vid = !ATB.on && ATB.frames.length > 8, left = ATB.on && ATB.T ? Math.max(0, Math.round((ATB.T - (ATB.vt || 0)) / ATB.mul / 1000)) : 0;
+  b.innerHTML = `<div class="atbbt"><b>${ATB.on ? (ATB.refine ? 'المس المكان اللي تبيه يزيد تفاصيله' : ATB.paused ? 'استراحة' : 'الرسام يرسم') : 'خلص الرسم'}</b><small>${ATB.on ? `${atNum(Math.round(ATB.prog * 100))}٪${left ? ' · باقي ' + atNum(Math.floor(left / 60)) + ':' + atNum(String(left % 60).padStart(2, '0')) : ''}` : ''}</small></div>
+    <div class="atprog"><i style="width:${Math.round((ATB.on ? ATB.prog : 1) * 100)}%"></i></div>
+    <div class="atbbr">${ATB.on ? `<button data-bk="pause">${ATB.paused ? 'كمّل' : 'استراحة'}</button><span class="atbsp">${[.5, 1, 2, 4].map(m => `<button data-bk="mul" data-m="${m}" class="${ATB.mul === m ? 'on' : ''}">×${m === .5 ? '½' : atNum(m)}</button>`).join('')}</span><button data-bk="refine" class="${ATB.refine ? 'on' : ''}">زيد تفاصيل هنا</button><button data-bk="stop" class="red">وقّف</button>`
+      : `${vid ? '<button data-bk="video" class="on">نزّل فيديو التسريع</button>' : ''}<button data-bk="refine" class="${ATB.refine ? 'on' : ''}">زيد تفاصيل هنا</button><button data-bk="close">سكّر</button>`}</div>`;
+  b.querySelectorAll('[data-bk]').forEach(x => x.onclick = e => { e.stopPropagation(); const k = x.dataset.bk;
+    if (k === 'pause') ATB.paused = !ATB.paused; else if (k === 'mul') ATB.mul = +x.dataset.m; else if (k === 'stop') { ATB.on = false; ATB.paused = false; }
+    else if (k === 'refine') { ATB.refine = !ATB.refine; if (ATB.refine) atToast('المس المكان باللوحة'); } else if (k === 'video') return atBotVideo(x); else if (k === 'close') { ATB.refine = false; b.remove(); atBotHandHide(); return; }
+    atBotBar(); });
+}
+function atBotHandEls() {
+  const wrap = AT.cv && AT.cv.parentElement; if (!wrap) return null; let h = document.getElementById('atBotHand'), p = document.getElementById('atBotPal');
+  if (!h) { h = document.createElement('div'); h.id = 'atBotHand'; h.className = 'atbhand'; // يد ماسكة قلم (الرأس عند ٠،٠)
+    h.innerHTML = `<svg viewBox="0 0 120 120" width="120" height="120"><g transform="translate(6 114)"><path d="M0 0 L10 -14 L56 -62 L64 -54 L18 -8 Z" fill="#3b3f4a"/><path d="M0 0 L10 -14 L14 -10 Z" fill="var(--bc,#222)"/><path d="M56 -62 L64 -70 L72 -62 L64 -54 Z" fill="#e8b4b8"/>
+      <path d="M30 -44 C38 -58 56 -66 70 -62 C86 -58 104 -66 110 -54 C116 -42 104 -26 88 -22 C72 -18 60 -10 46 -14 C36 -17 26 -30 30 -44 Z" fill="#f2c9a5" stroke="#c99470" stroke-width="2"/>
+      <path d="M34 -40 C40 -36 48 -36 54 -40" fill="none" stroke="#c99470" stroke-width="2" stroke-linecap="round"/><path d="M60 -30 C70 -28 80 -30 88 -36" fill="none" stroke="#c99470" stroke-width="2" stroke-linecap="round"/></g></svg>`;
+    wrap.appendChild(h); }
+  if (!p) { p = document.createElement('div'); p.id = 'atBotPal'; p.className = 'atbpal'; wrap.appendChild(p); }
+  return { h, p, wrap };
+}
+function atBotHandHide() { ['atBotHand', 'atBotPal'].forEach(id => { const e = document.getElementById(id); if (e) e.remove(); }); }
+function atBotHandSet(sx, sy, down) { const E = ATB.hand && atBotHandEls(); if (!E) return; ATB.hs = [sx, sy]; const o = AT.cv.getBoundingClientRect(), w = E.wrap.getBoundingClientRect();
+  E.h.style.transform = `translate(${sx + o.left - w.left - 6}px, ${sy + o.top - w.top - 114 + (down ? 0 : -10)}px)`; E.h.style.setProperty('--bc', AT.color); E.h.classList.toggle('up', !down); }
+const atBotDocHand = (x, y, down) => { const [sx, sy] = atToScr(x, y); atBotHandSet(sx, sy, down); };
+async function atBotTween(target, ms) { // تتحرك اليد بنعومة لمكان (نحسب الهدف كل إطار عشان لو تحرّك العرض)
+  if (!ATB.hand || !ATB.hs) { const t = target(); atBotHandSet(t[0], t[1], false); return new Promise(r => setTimeout(r, ms)); }
+  const [x0, y0] = ATB.hs, t0 = performance.now(); return new Promise(res => { const f = () => { const k = Math.min(1, (performance.now() - t0) / Math.max(1, ms)), e = k < .5 ? 2 * k * k : 1 - (-2 * k + 2) ** 2 / 2, t = target();
+    atBotHandSet(x0 + (t[0] - x0) * e, y0 + (t[1] - y0) * e - Math.sin(k * Math.PI) * 18, false); if (k < 1 && ATB.on) requestAnimationFrame(f); else res(); }; requestAnimationFrame(f); });
+}
+const atBotSame = (a, b) => { if (!a || !b) return false; if (a === b) return true; const x = atHex(a), y = atHex(b); return Math.abs(x[0] - y[0]) + Math.abs(x[1] - y[1]) + Math.abs(x[2] - y[2]) < 40; }; // ألوان قريبة = نفس اللون باللوحة
+function atBotPalAdd(col) { // لوحة ألوان صغيرة تحت: كل لون جديد ينحط فيها واليد تروح له
+  const E = ATB.hand && atBotHandEls(); if (!E) return null; let sw = [...E.p.children].find(c => atBotSame(c.dataset.c, col));
+  if (!sw) { sw = document.createElement('i'); sw.dataset.c = col; sw.style.background = col; E.p.prepend(sw); while (E.p.children.length > 10) E.p.lastChild.remove(); }
+  const r = sw.getBoundingClientRect(), o = AT.cv.getBoundingClientRect(); return () => [r.left + r.width / 2 - o.left, r.top + r.height / 2 - o.top];
+}
+// ===== فيديو التسريع =====
+function atBotSnap(final) {
+  if (!AT.comp || AT.stroke) return; const k = 720 / Math.max(AT.W, AT.H), c = atMk(Math.round(AT.W * k / 2) * 2, Math.round(AT.H * k / 2) * 2), g = c.getContext('2d');
+  g.fillStyle = AT.bg; g.fillRect(0, 0, c.width, c.height); g.drawImage(AT.comp, 0, 0, c.width, c.height);
+  c.toBlob(b => { if (b) { ATB.frames.push(b); if (ATB.frames.length > 400) ATB.frames = ATB.frames.filter((_, i) => i % 2 === 0 || i === ATB.frames.length - 1); } }, 'image/jpeg', .82);
+}
+async function atBotVideo(btn) {
+  if (typeof MediaRecorder === 'undefined') return atToast('متصفحك ما يقدر يسوي فيديو، جرب كروم');
+  const fr = ATB.frames.slice(); if (fr.length < 2) return; const first = await createImageBitmap(fr[0]), c = atMk(first.width, first.height), g = c.getContext('2d');
+  const mime = ['video/mp4;codecs=avc1', 'video/mp4', 'video/webm;codecs=vp9', 'video/webm'].find(m => MediaRecorder.isTypeSupported(m)); if (!mime) return atToast('متصفحك ما يقدر يسوي فيديو');
+  btn.disabled = true; btn.textContent = 'نجهّز الفيديو…';
+  const stream = c.captureStream(30), rec = new MediaRecorder(stream, { mimeType: mime, videoBitsPerSecond: 6e6 }), parts = []; rec.ondataavailable = e => { if (e.data.size) parts.push(e.data); };
+  const done = new Promise(r => rec.onstop = r); rec.start(250);
+  const draw = bm => { g.drawImage(bm, 0, 0, c.width, c.height); g.font = `700 ${Math.round(c.height / 28)}px Tajawal, system-ui`; g.fillStyle = 'rgba(0,0,0,.35)'; g.textAlign = 'left'; g.fillText('ترتيب', c.width * .03 + 1, c.height * .96 + 1); g.fillStyle = 'rgba(255,255,255,.85)'; g.fillText('ترتيب', c.width * .03, c.height * .96); };
+  const per = Math.max(33, Math.min(120, 9000 / fr.length)); // الفيديو تقريباً ٩ ثواني
+  for (let i = 0; i < fr.length; i++) { const bm = i ? await createImageBitmap(fr[i]) : first; draw(bm); bm.close && bm.close(); await new Promise(r => setTimeout(r, per)); }
+  await new Promise(r => setTimeout(r, 2000)); rec.stop(); await done;
+  const blob = new Blob(parts, { type: mime.split(';')[0] }), a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'tarteeb-painter.' + (mime.includes('mp4') ? 'mp4' : 'webm'); document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 30000);
+  btn.disabled = false; btn.textContent = 'نزّل فيديو التسريع';
+}
+// ===== زيد تفاصيل هنا: نقارن الصورة باللي مرسوم بهالمكان ونرسم الفرق =====
+async function atBotRefineAt(x, y) {
+  ATB.refine = false; atBotBar(); if (!ATB.img || !ATB.box) return atToast('ارسم بالرسام أول');
+  const [ox, oy, iw, ih] = ATB.box, R = Math.max(90, Math.max(iw, ih) * .12), rx = atClamp(x - R, Math.max(0, ox), Math.min(AT.W, ox + iw)), ry = atClamp(y - R, Math.max(0, oy), Math.min(AT.H, oy + ih)), rx1 = atClamp(x + R, Math.max(0, ox), Math.min(AT.W, ox + iw)), ry1 = atClamp(y + R, Math.max(0, oy), Math.min(AT.H, oy + ih));
+  if (rx1 - rx < 20 || ry1 - ry < 20) return atToast('المس داخل الصورة');
+  const rw = rx1 - rx, rh = ry1 - ry, k = 200 / Math.max(rw, rh), w = Math.max(8, Math.round(rw * k)), h = Math.max(8, Math.round(rh * k)), im = ATB.img, sx = im.width / iw, sy = im.height / ih;
+  if (!AT.stroke) atCompose(AT.comp, null);
+  const imgs = { t: atBotPix(im, (rx - ox) * sx, (ry - oy) * sy, rw * sx, rh * sy, w, h), cur: atBotPix(AT.comp, rx, ry, rw, rh, w, h) };
+  atToast('يزيد تفاصيل هنا…', 1500);
+  const r = await atBotCall('refine', { box: [rx, ry, rw, rh], det: ATB.det, layer: ATB.detL || 0 }, imgs);
+  if (!r.acts.length) return atToast('هالمكان قريب من الصورة');
+  if (ATB.on && ATB.add) ATB.add(r.acts); else atBotRun({ acts: r.acts, layers: null });
+}
+// ===== التشغيل: اليد تمشي نقطة نقطة، تشيل القلم وتختار لون، والوقت يتوزع على المدة =====
+async function atBotRun(pre) {
+  if (ATB.on || !AT.ready) return; if (!pre && !ATB.img) return;
+  const collab = atCollab(); if (collab && atMine() < 0) return atToast('ما لقينا طبقتك');
+  let plan;
+  if (pre) plan = { acts: pre.acts, layers: null };
+  else {
+    ATB.box = atBotBox(); const cfg = { style: ATB.style, det: ATB.det, mins: ATB.mins, cover: ATB.cover, W: AT.W, H: AT.H, box: ATB.box, bgc: atHex(AT.bg.length === 7 ? AT.bg : '#ffffff') };
+    atToast('يحلل الصورة…', 2500); ATB.analysing = true;
+    try { await atBotLib(); const [ox, oy, iw, ih] = ATB.box, im = ATB.img, imgs = {};
+      for (const nd of ATBOT.needs(cfg)) imgs[nd.k] = atBotPix(im, 0, 0, im.width, im.height, nd.wh[0], nd.wh[1]);
+      plan = await atBotCall('plan', cfg, imgs);
+    } catch (e) { console.warn(e); ATB.analysing = false; return atToast('ما قدرنا نحلل الصورة'); }
+    ATB.analysing = false; if (!document.getElementById('atStudio') || AT.done) return;
   }
-  acts.push({ pause: 1500 });
-  // أنمي: ظل واحد غامق ونور واحد فاتح بمناطق حادة (cel shading)
-  if (st === 'anime') { const sh = []; for (let y = 2; y < ah; y += 3) for (let x = 2; x < aw; x += 3) { const i = at(x, y), c = cols[lab[i]], l = L[i], lc = (c[0] * .3 + c[1] * .59 + c[2] * .11) / 255; if (l < lc - .09) sh.push({ x, y, c: hex(c[0] * .72, c[1] * .66, c[2] * .78) }); }
-    nn(sh.map(o => ({ pts: [toD(o.x - 1.5, o.y + 1), toD(o.x + 1.5, o.y - 1)], col: o.c }))).forEach(o => acts.push({ pts: o.pts, b: 'marker2', sz: base / 120, col: o.col, L: 0, ph: 'sh', slow: 1.2 })); }
-  // ٣) التفاصيل: ضربات صغيرة بألوان الصورة الحقيقية (ظل ونور) على المناطق اللي فيها تفاصيل، من فوق لتحت
-  if (st !== 'sketch' && st !== 'anime') { const det = []; const r = Math.max(1.6, base * A / [60, 90, 140][DET - 1]);
-    for (let y = r; y < ah; y += r * 1.3) for (let x = r; x < aw; x += r * 1.3) { const i = at(x, y), c = cols[lab[i]], d = Math.abs(px[i * 4] - c[0]) + Math.abs(px[i * 4 + 1] - c[1]) + Math.abs(px[i * 4 + 2] - c[2]); if (d < 38) continue;
-      const a = Math.atan2(fy[i], fx[i]) + Math.PI / 2, l = r * (1.2 + Math.random()), p0 = [x - Math.cos(a) * l, y - Math.sin(a) * l], p1 = [x + Math.cos(a) * l, y + Math.sin(a) * l];
-      det.push({ pts: [toD(p0[0] + jit(), p0[1] + jit()), toD(x, y), toD(p1[0] + jit(), p1[1] + jit())], col: hex(px[i * 4], px[i * 4 + 1], px[i * 4 + 2]) }); }
-    nn(det.map(o => ({ pts: o.pts.filter(inDoc), col: o.col })).filter(o => o.pts.length > 1)).forEach(o => acts.push({ pts: o.pts, b: { paint: 'acr', water: 'wwet', pastel: 'pastel' }[st] || 'round', sz: r / A * 1.4, col: o.col, L: 0, ph: 'd', slow: 1.6 })); }
-  // اللمسات الأخيرة: لمعة بأفتح الأماكن (عيون، انعكاسات)
-  if (st === 'paint' || st === 'anime' || st === 'color') { const hi = []; for (let y = 2; y < ah - 2; y += 2) for (let x = 2; x < aw - 2; x += 2) { const i = at(x, y); if (L[i] > .9 && L[i] - Lb[i] > .12) hi.push({ pts: [toD(x, y), toD(x + .6, y + .4)], col: '#ffffff' }); }
-    nn(hi.slice(0, 120)).forEach(o => acts.push({ pts: o.pts, b: 'round', sz: Math.max(3, base / 300), col: '#fffdf6', L: 0, ph: 'hi', slow: 2 })); }
-  // ٤) التحديد بالحبر بالآخر (ألوان وحبر)، وللرصاص نعيد الخطوط الغامقة
-  if (st === 'color' || st === 'anime') sk.filter((_, i) => st === 'anime' || i % 3 !== 2).forEach(l => { const p = l.pts.filter(inDoc); if (p.length > 1) acts.push({ pts: p, b: 'ink', sz: Math.max(3, base / (st === 'anime' ? 260 : 320)), col: '#1c1a18', L: 1, ph: 'ln', slow: 1.3 }); });
-  if (st === 'water') sk.filter((_, i) => i % 3 === 0).forEach(l => { const p = l.pts.filter(inDoc); if (p.length > 1) acts.push({ pts: p, b: 'pen', sz: Math.max(2, base / 600), col: '#3b3530', L: 1, ph: 'ln', slow: 1.3 }); });
-  if (st === 'sketch') sk.filter((_, i) => i % 2 === 0).forEach(l => acts.push({ pts: l.pts, b: '6b', sz: skSz * 1.2, col: '#1c1c1c', L: 0, ph: 'ln' }));
-  return acts;
-}
-// نسخ الصورة: رسم طبقات من الفرشاة الكبيرة للصغيرة، وكل طبقة ما ترسم إلا وين اللوحة لسه بعيدة عن الصورة
-// (نفس فكرة Hertzmann: ضربات منحنية تمشي مع اتجاه الحواف، ولونها من الصورة نفسها)، فالنتيجة تقرب من الأصل جداً
-function atBotCopy() {
-  const W = AT.W, H = AT.H, im = ATB.img, s0 = ATB.cover ? Math.max(W / im.width, H / im.height) : Math.min(W / im.width, H / im.height) * .96, iw = im.width * s0, ih = im.height * s0, ox = (W - iw) / 2, oy = (H - ih) / 2;
-  const DET = ATB.det || 2, A = Math.min(1, [360, 520, 720][DET - 1] / Math.max(iw, ih)), aw = Math.max(8, Math.round(iw * A)), ah = Math.max(8, Math.round(ih * A)), N = aw * ah, toD = (x, y) => [ox + x / A, oy + y / A];
-  const hex = (r, g, b) => '#' + [r, g, b].map(v => atClamp(Math.round(v), 0, 255).toString(16).padStart(2, '0')).join('');
-  const get = blur => { const c = atMk(aw, ah), g = c.getContext('2d'); if (blur && atHasFilter()) g.filter = `blur(${blur}px)`; g.drawImage(im, 0, 0, aw, ah); return g.getImageData(0, 0, aw, ah).data; };
-  // اللوحة التقريبية: نرسم عليها نفس الضربات عشان نعرف وين باقي فرق
-  const ap = atMk(aw, ah), ag = ap.getContext('2d', { willReadFrequently: true }); ag.fillStyle = AT.bg; ag.fillRect(0, 0, aw, ah); ag.lineCap = 'round'; ag.lineJoin = 'round';
-  const R0 = Math.max(aw, ah) / 22, radii = [R0, R0 / 2, R0 / 4, R0 / 8, R0 / 14].filter(r => r >= .9); if (DET === 3 && radii[radii.length - 1] > 1.1) radii.push(.9);
-  let budget = Math.round(ATB.mins * 60000 / 55); const acts = [], T = 26; // T: قد إيش لازم يكون الفرق عشان نرسم
-  radii.forEach((r, pi) => {
-    const ref = get(Math.max(.5, r * .5)), cur = ag.getImageData(0, 0, aw, ah).data, L = new Float32Array(N);
-    for (let i = 0; i < N; i++) L[i] = ref[i * 4] * .3 + ref[i * 4 + 1] * .59 + ref[i * 4 + 2] * .11;
-    const at = (x, y) => atClamp(Math.round(y), 0, ah - 1) * aw + atClamp(Math.round(x), 0, aw - 1);
-    const dif = i => Math.hypot(ref[i * 4] - cur[i * 4], ref[i * 4 + 1] - cur[i * 4 + 1], ref[i * 4 + 2] - cur[i * 4 + 2]);
-    const grad = (x, y) => { const i = at(x, y), xi = i % aw, yi = (i / aw) | 0; if (xi < 1 || yi < 1 || xi >= aw - 1 || yi >= ah - 1) return [0, 0]; return [(L[i - aw + 1] + 2 * L[i + 1] + L[i + aw + 1]) - (L[i - aw - 1] + 2 * L[i - 1] + L[i + aw - 1]), (L[i + aw - 1] + 2 * L[i + aw] + L[i + aw + 1]) - (L[i - aw - 1] + 2 * L[i - aw] + L[i - aw + 1])]; };
-    const step = Math.max(1, r), cand = [];
-    for (let y = 0; y < ah; y += step) for (let x = 0; x < aw; x += step) { // بكل مربع: متوسط الفرق، ولو كبير نبدأ ضربة من أبعد نقطة
-      let sum = 0, n = 0, bi = -1, bd = -1; const x1 = Math.min(aw, x + step), y1 = Math.min(ah, y + step);
-      for (let yy = y | 0; yy < y1; yy++) for (let xx = x | 0; xx < x1; xx++) { const i = yy * aw + xx, d = dif(i); sum += d; n++; if (d > bd) { bd = d; bi = i; } }
-      if (n && (pi === 0 ? sum / n > 4 : sum / n > T)) cand.push({ i: bi, e: sum / n }); }
-    const allow = Math.max(40, Math.floor(budget / (radii.length - pi))); cand.sort((a, b) => b.e - a.e); const pick = cand.slice(0, allow); budget -= pick.length;
-    const maxLen = pi === 0 ? 4 : pi < 3 ? 8 : 6, strokes = [];
-    for (const c of pick) { let x = c.i % aw, y = (c.i / aw) | 0; const i0 = c.i, col = [ref[i0 * 4], ref[i0 * 4 + 1], ref[i0 * 4 + 2]], pts = [[x, y]]; let ldx = 0, ldy = 0;
-      for (let k = 1; k < maxLen; k++) { const [gx, gy] = grad(x, y), gm = Math.hypot(gx, gy); if (gm < 8 && k > 1) { /* مافيه حافة: يكمل بنفس الاتجاه */ } let dx, dy; if (gm >= 8) { dx = -gy / gm; dy = gx / gm; } else if (k === 1) { const a = Math.random() * Math.PI; dx = Math.cos(a); dy = Math.sin(a); } else { dx = ldx; dy = ldy; }
-        if (ldx * dx + ldy * dy < 0) { dx = -dx; dy = -dy; } dx = .7 * dx + .3 * ldx; dy = .7 * dy + .3 * ldy; const m = Math.hypot(dx, dy) || 1; dx /= m; dy /= m;
-        const nx = x + dx * r, ny = y + dy * r; if (nx < 0 || ny < 0 || nx >= aw || ny >= ah) break; const j = at(nx, ny);
-        const dRef = Math.hypot(ref[j * 4] - col[0], ref[j * 4 + 1] - col[1], ref[j * 4 + 2] - col[2]), dCur = Math.hypot(ref[j * 4] - cur[j * 4], ref[j * 4 + 1] - cur[j * 4 + 1], ref[j * 4 + 2] - cur[j * 4 + 2]);
-        if (k > 1 && dRef > dCur) break; x = nx; y = ny; ldx = dx; ldy = dy; pts.push([x, y]); }
-      if (pts.length === 1) { const a = Math.atan2(...grad(pts[0][0], pts[0][1]).reverse()) + Math.PI / 2; pts.push([pts[0][0] + Math.cos(a) * r * .6, pts[0][1] + Math.sin(a) * r * .6]); }
-      strokes.push({ pts, col, q: (col[0] >> 5) * 64 + (col[1] >> 5) * 8 + (col[2] >> 5) }); }
-    // الترتيب: نجمع الألوان القريبة (مثل الرسام يخلص لون وبعدين ينتقل)، وكل مجموعة الأقرب فالأقرب
-    const groups = new Map(); strokes.forEach(o => { if (!groups.has(o.q)) groups.set(o.q, []); groups.get(o.q).push(o); });
-    const gl = [...groups.values()].sort((a, b) => b.length - a.length);
-    const sz = Math.max(1.5, r * 2.1 / A), br = 'round';
-    for (const g of gl) { let last = null; const left = g.slice();
-      while (left.length) { let bi = 0; if (last) { let bd = 1e18; for (let k = 0; k < left.length; k++) { const p = left[k].pts[0], d = (p[0] - last[0]) ** 2 + (p[1] - last[1]) ** 2; if (d < bd) { bd = d; bi = k; } } }
-        const o = left.splice(bi, 1)[0]; last = o.pts[o.pts.length - 1]; const ch = hex(...o.col.map(v => v + (Math.random() - .5) * 6));
-        ag.strokeStyle = hex(...o.col); ag.lineWidth = r * 2; ag.beginPath(); o.pts.forEach(([x, y], k) => k ? ag.lineTo(x, y) : ag.moveTo(x, y)); if (o.pts.length < 2) ag.lineTo(o.pts[0][0] + .1, o.pts[0][1]); ag.stroke();
-        acts.push({ pts: o.pts.map(([x, y]) => toD(x + (Math.random() - .5) * .3, y + (Math.random() - .5) * .3)), b: br, sz, col: ch, L: 0, ph: 'p' + pi, flat: 1, thin: pi >= 2, slow: pi === 0 ? .7 : 1 }); } }
-    if (pi < radii.length - 1) acts.push({ pause: 900 + Math.random() * 900 }); // يوقف يقارن بالصورة
-  });
-  if (!ATB.cover) acts.clip = [ox, oy, iw, ih]; return acts;
-}
-async function atBotRun() {
-  if (ATB.on || !ATB.img || !AT.ready) return; if (atCollab()) return atToast('الرسام الآلي ما يشتغل بالرسم الجماعي');
-  if (AT.layers.length + 2 > AT.maxL) return atToast('الطبقات مليانة، احذف وحدة أول');
-  atToast('نجهّز الرسمة…', 2000); await new Promise(r => setTimeout(r, 30));
-  let plan; try { plan = atBotPlan(); } catch (e) { console.warn(e); return atToast('ما قدرنا نحلل الصورة'); }
-  const keep = { tool: AT.tool, color: AT.color, bt: AT.bt.brush, size: AT.size.brush, op: AT.op.brush, sym: AT.sym, stream: Object.assign({}, AT.stream) };
-  const two = ['color', 'anime', 'water'].includes(ATB.style); atStructDo(() => { AT.layers.push(atLayer(ATB.style === 'sketch' ? 'رسم رصاص' : ATB.style === 'copy' ? 'نسخة الصورة' : 'ألوان')); if (two) AT.layers.push(atLayer('خطوط')); });
-  const li = two ? [AT.layers.length - 2, AT.layers.length - 1] : [AT.layers.length - 1];
-  if (plan.clip) { const m = atMk(AT.W, AT.H), [cx, cy, cw, ch] = plan.clip; m.getContext('2d').fillRect(cx, cy, cw, ch); AT.selOv = null; plan.sel = { mask: m, box: [Math.max(0, cx - 3), Math.max(0, cy - 3), Math.min(AT.W, cx + cw + 4), Math.min(AT.H, cy + ch + 4)] }; } // نسخ الصورة: ما يطلع برا حدود الصورة
-  ATB.on = true; ATB.prog = 0; ATB.n = 0; ATB.tot = plan.filter(a => !a.pause).length; AT.sym = 'none'; AT.sel = plan.sel || null; AT.botBusy = true; const u0 = AT.undo.length;
-  // الوقت: نوزّعه على طول كل الخطوط + وقفات رفع القلم وتغيير اللون، والقلم يمشي نقطة نقطة مثل اليد
-  const len = a => { let s = 0; for (let k = 1; k < a.pts.length; k++) s += Math.hypot(a.pts[k][0] - a.pts[k - 1][0], a.pts[k][1] - a.pts[k - 1][1]); return s; };
-  const lens = plan.map(a => a.pause ? 0 : len(a) * (a.slow || 1)), totalLen = lens.reduce((a, b) => a + b, 0), strokesN = plan.filter(a => !a.pause).length, pauses = plan.reduce((t, a) => t + (a.pause || 0), 0), changes = plan.reduce((n, a, i) => n + (i && !a.pause && a.col !== (plan[i - 1].col) ? 1 : 0), 0);
-  const T = ATB.mins * 60000; let pausesLeft = pauses, strokesLeft = strokesN; const lift = Math.min(160, T * .22 / Math.max(1, strokesN)), pick = Math.min(900, T * .08 / Math.max(1, changes)), drawT = Math.max(T * .5, T - lift * strokesN - pick * changes - pauses), speed0 = totalLen / drawT; let speed = speed0; // بكسل بالمللي ثانية
-  const wait = ms => new Promise(r => setTimeout(r, ms)), frame = () => new Promise(r => requestAnimationFrame(r)), t0 = Date.now(); let done = 0, lastCol = null, yT = 0;
-  for (let i = 0; i < plan.length && ATB.on && document.getElementById('atStudio') && !AT.done; i++) {
-    const s = plan[i];
-    while (ATB.paused && ATB.on) await wait(300);
-    // لو تأخرنا (الجهاز بطيء أو الفرشاة ثقيلة) نسرّع شوي عشان يخلص على الوقت
-    { const left = T - (Date.now() - t0) - pausesLeft - lift * strokesLeft, remLen = totalLen - done; speed = Math.max(speed0, remLen / Math.max(4000, left)); }
-    if (s.pause) { pausesLeft -= s.pause; if (Date.now() - t0 < T * .9) await wait(s.pause * (.7 + Math.random() * .6)); continue; } // يوقف يفكّر
+  // الطبقات: كل مرحلة بطبقة (بالجماعي: طبقتك بس، ولو ما فيه مكان: طبقة وحدة)
+  let li;
+  if (collab) li = [atMine()];
+  else if (plan.layers) { let names = plan.layers.slice().reverse().filter((n, i, a) => true).reverse(); if (AT.layers.length + names.length > AT.maxL) names = AT.layers.length + 1 <= AT.maxL ? ['الرسام'] : null;
+    if (!names) return atToast('الطبقات مليانة، احذف وحدة أول');
+    const at0 = AT.layers.length; atStructDo(() => { names.forEach(n => AT.layers.push(atLayer(n))); }); li = names.map((_, i) => at0 + i);
+    ATB.detL = Math.min(2, li.length - 1); ATB.li = li; }
+  else li = ATB.li && ATB.li.every(i => AT.layers[i]) ? ATB.li : [AT.cur];
+  const Lof = s => li[Math.min(s.L || 0, li.length - 1)];
+  if (!pre) { ATB.frames = []; }
+  // نقص على حدود الصورة (ونحترم التحديد بالجماعي)
+  let selKeep = AT.sel;
+  if (!collab && plan.clip && ATB.box) { const [cx, cy, cw, ch] = ATB.box, m = atMk(AT.W, AT.H); m.getContext('2d').fillRect(cx, cy, cw, ch); AT.selOv = null; AT.sel = { mask: m, box: [Math.max(0, Math.floor(cx - 3)), Math.max(0, Math.floor(cy - 3)), Math.min(AT.W, Math.ceil(cx + cw + 4)), Math.min(AT.H, Math.ceil(cy + ch + 4))] }; }
+  const keep = { tool: AT.tool, color: AT.color, bt: Object.assign({}, AT.bt), size: Object.assign({}, AT.size), op: Object.assign({}, AT.op), sym: AT.sym, stream: Object.assign({}, AT.stream), cur: AT.cur };
+  const pxB = atBr('pixel'), pxSp = pxB.sp; pxB.sp = .25; // البكسل: نخلي الختم متقارب عشان ما يطلع فراغ بآخر الصف
+  const acts = plan.acts; ATB.on = true; ATB.paused = false; ATB.refine = false; ATB.prog = 0; ATB.n = 0; AT.sym = 'none'; AT.botBusy = true; const u0 = AT.undo.length;
+  const len = a => { let s = 0; for (let k = 1; k < a.pts.length; k++) s += Math.hypot(a.pts[k][0] - a.pts[k - 1][0], a.pts[k][1] - a.pts[k - 1][1]); return s * (a.slow || 1); };
+  const lens = acts.map(a => a.pause ? 0 : len(a)); let totalLen = lens.reduce((a, b) => a + b, 0) || 1, strokesLeft = acts.filter(a => !a.pause).length, pausesLeft = acts.reduce((t, a) => t + (a.pause || 0), 0);
+  const changes = acts.reduce((n, a, i) => n + (i && !a.pause && !atBotSame(a.col, acts[i - 1].col) ? 1 : 0), 0), strokesN = strokesLeft;
+  const T = pre ? Math.max(15000, strokesN * 120) : ATB.mins * 60000; ATB.T = T;
+  const lift = Math.min(160, T * .22 / Math.max(1, strokesN)), pick = Math.min(900, T * .08 / Math.max(1, changes)), drawT = Math.max(T * .5, T - lift * strokesN - pick * changes - pausesLeft), speed0 = totalLen / drawT; let speed = speed0;
+  // ساعة «افتراضية»: السرعة (×٢، ×٤) والاستراحة تأثر عليها
+  let last = performance.now(); ATB.vt = 0; const tick = () => { const n = performance.now(); if (!ATB.paused) ATB.vt += (n - last) * ATB.mul; last = n; return ATB.vt; };
+  const wait = async ms => { const end = tick() + ms; while (ATB.on && tick() < end) await new Promise(r => setTimeout(r, Math.min(60, Math.max(5, (end - ATB.vt) / ATB.mul)))); };
+  const frame = () => new Promise(r => requestAnimationFrame(r)); let done = 0, lastCol = null, yT = 0, lastSnap = 0, barT = 0;
+  ATB.add = more => { const at = ATB.i + 1; acts.splice(at, 0, { pause: 500 }, ...more); const ls = more.map(len); lens.splice(at, 0, 0, ...ls); totalLen += ls.reduce((a, b) => a + b, 0); strokesLeft += more.length; atToast('بيزيد التفاصيل بعد هالضربة'); };
+  atBotBar(); if (ATB.hand) { const s0 = acts.find(a => !a.pause); if (s0) atBotDocHand(s0.pts[0][0], s0.pts[0][1] - 40, false); }
+  if (!pre) atBotSnap();
+  for (let i = 0; i < acts.length && ATB.on && document.getElementById('atStudio') && !AT.done; i++) {
+    ATB.i = i; const s = acts[i];
+    while (ATB.paused && ATB.on) { await new Promise(r => setTimeout(r, 200)); tick(); }
+    if (Date.now() - barT > 1000) { barT = Date.now(); atBotBar(); }
+    { const left = T - tick() - pausesLeft - lift * strokesLeft, remLen = totalLen - done; speed = Math.max(speed0, remLen / Math.max(4000, left)); }
+    if (s.pause) { pausesLeft -= s.pause; if (tick() < T * .9) await wait(s.pause * (.7 + Math.random() * .6)); continue; }
     strokesLeft--;
-    if (s.thin && Date.now() - t0 > T * (done / totalLen) + T * .08 && Math.random() < .5) { done += lens[i]; continue; } // الجهاز بطيء: نخفف التفاصيل عشان يخلص على الوقت
-    const rush = Date.now() - t0 > T * (done / totalLen) * .9 + 2500; // متأخرين عن الوقت: نرسم أسرع وبدون وقفات (الأجهزة البطيئة)
-    if (s.col !== lastCol) { if (lastCol && !rush) await wait(pick * (.6 + Math.random() * .8)); lastCol = s.col; atAddHist(s.col); } // يختار لون
-    AT.cur = li[s.L] != null ? li[s.L] : li[0]; AT.tool = 'brush'; AT.bt.brush = s.b; AT.size.brush = Math.max(1, s.sz); AT.op.brush = 1; AT.color = s.col; AT.stream[s.b] = .35; atUIColor();
-    // الضغط: يبدأ خفيف ويقوى بالنص ويخف بالآخر، مع رجفة بسيطة
+    if (s.thin) { const late = tick() - T * (done / totalLen); if (tick() > T * 1.2 || (late > T * .04 && Math.random() < Math.min(.8, late / (T * .15)))) { done += lens[i]; continue; } } // متأخرين (جهاز بطيء): نخفف التفاصيل على قد التأخير
+    const rush = tick() > T * (done / totalLen) * .9 + 2500;
+    // يختار اللون: اليد تروح للوحة الألوان وترجع
+    if (s.tool !== 'smudge' && s.tool !== 'eraser' && !atBotSame(s.col, lastCol)) { AT.color = s.col; atUIColor(); const pal = atBotPalAdd(s.col);
+      if (lastCol && !rush) { if (pal && ATB.hand && pick / ATB.mul >= 90) { await atBotTween(pal, pick * .45 / ATB.mul); await wait(pick * .15); } else await wait(pick * (.6 + Math.random() * .8)); }
+      lastCol = s.col; atAddHist(s.col); }
+    // يرفع القلم ويروح لبداية الضربة الجاية
+    if (ATB.hand) { const tw = Math.min(500, lift * (.6 + Math.random() * .8)) / ATB.mul; if (!rush && tw >= 45) await atBotTween(() => atToScr(s.pts[0][0], s.pts[0][1]), tw); else { atBotDocHand(s.pts[0][0], s.pts[0][1], false); if (!rush && tw > 4) await wait(tw * ATB.mul); } } // يرفع القلم ويروح للضربة الجاية
+    if (!s.tool) { AT.color = s.col; }
+    const tool = s.tool || 'brush'; AT.cur = Lof(s); AT.tool = tool; AT.bt[tool] = s.b; AT.size[tool] = Math.max(1, s.sz); AT.op[tool] = s.op != null ? s.op : tool === 'smudge' ? .6 : 1; AT.color = s.tool ? AT.color : s.col; AT.stream[s.b] = s.px ? 0 : .35;
     const sl = s.slow || 1, tot = Math.max(1, s.pts.length - 1), pk = .65 + Math.random() * .3; let kk = 0; const P = () => s.flat ? .9 + Math.random() * .1 : atClamp(pk * Math.sin(Math.min(1, (kk + .3) / tot) * Math.PI) * (.92 + Math.random() * .16) + .12, .12, 1);
-    atStrokeStart(s.pts[0][0], s.pts[0][1], .15); if (!AT.stroke) continue;
+    atStrokeStart(s.pts[0][0], s.pts[0][1], s.flat ? .9 : .15); if (!AT.stroke) continue;
     let k = 1, tLast = performance.now(), carry = 0;
-    while (k < s.pts.length && ATB.on) { if (!rush || performance.now() - yT > 14) { await frame(); yT = performance.now(); } const now = performance.now(), dt = Math.min(80, now - tLast); tLast = now; carry += rush ? 1e9 : dt * speed / sl * (.75 + Math.random() * .5);
+    while (k < s.pts.length && ATB.on) {
+      if (ATB.paused) { await new Promise(r => setTimeout(r, 200)); tick(); tLast = performance.now(); continue; }
+      if (!rush || performance.now() - yT > 14) { await frame(); yT = performance.now(); } const now = performance.now(), dt = Math.min(250, now - tLast); tLast = now; carry += rush ? 1e9 : dt * ATB.mul * speed / sl * (.75 + Math.random() * .5);
       kk = k; while (k < s.pts.length && carry > 0) { const [ax, ay] = s.pts[k - 1], [bx, by] = s.pts[k], d = Math.hypot(bx - ax, by - ay) || 1, n = Math.max(1, Math.ceil(d / 6));
-        // نقسم الخط لنقاط صغيرة عشان القلم يمشي بالتدريج
         if (!s.sub) s.sub = 0; const take = Math.min(n - s.sub, Math.max(1, Math.floor(carry / (d / n))));
         for (let q = 1; q <= take; q++) { const f = (s.sub + q) / n; atStrokeTo(ax + (bx - ax) * f, ay + (by - ay) * f, P()); }
         s.sub += take; carry -= take * d / n; if (s.sub >= n) { s.sub = 0; k++; } }
-      const el = Date.now() - t0; ATB.prog = Math.min(.99, (done + (k / s.pts.length) * lens[i]) / totalLen); }
-    atStrokeEnd(); done += lens[i]; ATB.n = (ATB.n || 0) + 1;
-    if (Math.random() < .006 && s.ph !== 'sk' && AT.undo.length > 1) { await wait(500 + Math.random() * 600); atUndo(); await wait(400); i--; done -= lens[i + 1]; continue; } // أحياناً يتراجع ويعيدها مثل الإنسان
-    const pb = document.querySelector('.atpop.atabot .atprog i'); if (pb) pb.style.width = Math.round(ATB.prog * 100) + '%';
-    if (!rush) await wait(lift * (.4 + Math.random() * 1.2)); // يرفع القلم
+      if (ATB.hand) { const p = s.pts[Math.min(k, s.pts.length - 1)], q = s.pts[Math.max(0, k - 1)], f = s.sub ? s.sub / Math.max(1, Math.ceil(Math.hypot(p[0] - q[0], p[1] - q[1]) / 6)) : 0; atBotDocHand(q[0] + (p[0] - q[0]) * f, q[1] + (p[1] - q[1]) * f, true); }
+      ATB.prog = Math.min(.99, (done + (k / s.pts.length) * lens[i]) / totalLen); }
+    atStrokeEnd(); done += lens[i]; ATB.n++;
+    if (!pre && Math.random() < .005 && s.ph && s.ph[0] === 'p' && AT.undo.length > u0 + 1) { await wait(500 + Math.random() * 600); atUndo(); await wait(400); i--; done -= lens[i + 1]; strokesLeft++; continue; } // أحياناً يتراجع ويعيدها
+    if (Date.now() - lastSnap > Math.max(250, T / ATB.mul / 240)) { lastSnap = Date.now(); atBotSnap(); }
+    if (!rush && !ATB.hand) await wait(lift * (.4 + Math.random() * 1.2));
   }
-  if (AT.stroke) atStrokeEnd(); if (plan.sel && AT.sel === plan.sel) AT.sel = null;
-  Object.assign(AT, { tool: keep.tool, color: keep.color, sym: keep.sym }); AT.bt.brush = keep.bt; AT.size.brush = keep.size; AT.op.brush = keep.op; AT.stream = keep.stream;
-  AT.undo.length = Math.min(AT.undo.length, u0); AT.redo = []; AT.mem = AT.undo.reduce((m, x) => m + (x.mem || 0), 0); atUIUndo(); // تراجع وحدة تشيل الرسمة كلها (طبقاتها)
-  const fin = ATB.on; ATB.on = false; AT.botBusy = false; atUITool(); atUIColor(); atUISliders(); atLayersUI(); atCapSoon(); atSaveSoon(); atToast(fin ? 'خلص الرسم' : 'وقّفنا الرسام');
+  if (AT.stroke) atStrokeEnd(); AT.sel = selKeep; pxB.sp = pxSp;
+  Object.assign(AT, { tool: keep.tool, color: keep.color, sym: keep.sym, cur: AT.layers[keep.cur] ? (collab ? keep.cur : AT.cur) : AT.cur }); AT.bt = keep.bt; AT.size = keep.size; AT.op = keep.op; AT.stream = keep.stream;
+  AT.undo.length = Math.min(AT.undo.length, u0); AT.redo = []; AT.mem = AT.undo.reduce((m, x) => m + (x.mem || 0), 0); atUIUndo();
+  const fin = ATB.on; ATB.on = false; ATB.add = null; AT.botBusy = false; atBotSnap(true); setTimeout(() => atBotSnap(true), 400);
+  if (ATB.hand) await atBotTween(() => { const r = AT.cv.getBoundingClientRect(); return [r.width - 70, r.height - 40]; }, 600);
+  atUITool(); atUIColor(); atUISliders(); atLayersUI(); atCapSoon(); atSaveSoon(); atBotBar(); atToast(fin ? 'خلص الرسم' : 'وقّفنا الرسام');
 }

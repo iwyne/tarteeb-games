@@ -341,3 +341,17 @@
 .atmref{position:absolute;top:10px;inset-inline-start:10px;background:#1c1c24ee;border-radius:10px;padding:6px;display:flex;flex-direction:column;gap:4px;align-items:center}
 .atmref canvas{width:160px;height:120px;border-radius:6px;background:#fff}
 .atvh small+small{display:block}
+/* الرسام الآلي: الشريط فوق، اليد، ولوحة الألوان */
+.atbotbar{position:absolute;top:calc(env(safe-area-inset-top,0px) + 62px);left:50%;transform:translateX(-50%);z-index:35;width:min(560px,94vw);background:rgba(20,20,26,.92);color:#fff;border-radius:16px;padding:10px 12px;display:grid;gap:8px;box-shadow:0 10px 30px #0006;backdrop-filter:blur(8px)}
+.atbotbar .atbbt{display:flex;justify-content:space-between;align-items:baseline;gap:8px}.atbotbar .atbbt b{font-size:.95rem}.atbotbar .atbbt small{opacity:.75;font-weight:700}
+.atbotbar .atprog{height:6px;border-radius:9px;background:#ffffff22;overflow:hidden}.atbotbar .atprog i{display:block;height:100%;background:linear-gradient(90deg,#ffd166,#ff6fa3);transition:width .4s}
+.atbotbar .atbbr{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.atbotbar button{border:0;border-radius:10px;padding:7px 11px;background:#2e2f3a;color:#fff;font:800 .82rem Tajawal,system-ui;cursor:pointer}
+.atbotbar button.on{background:#ffd166;color:#16130f}.atbotbar button.red{background:#c62828}.atbotbar button:disabled{opacity:.6}
+.atbotbar .atbsp{display:inline-flex;background:#2e2f3a;border-radius:10px;padding:2px}.atbotbar .atbsp button{padding:5px 8px;background:transparent}.atbotbar .atbsp button.on{background:#ffd166}
+.atbhand{position:absolute;left:0;top:0;width:120px;height:120px;pointer-events:none;z-index:30;filter:drop-shadow(0 6px 8px #0005);transition:filter .2s;will-change:transform}
+.atbhand.up{filter:drop-shadow(0 16px 14px #0004)}
+.atbpal{position:absolute;left:12px;top:50%;transform:translateY(-50%);z-index:29;display:flex;flex-direction:column;gap:6px;padding:10px 8px;border-radius:14px;background:#f7f1e3;box-shadow:0 6px 18px #0004;pointer-events:none}
+.atbpal:empty{display:none}.atbpal i{width:22px;height:22px;border-radius:50%;border:2px solid #fff;box-shadow:0 1px 3px #0005;animation:atbpal .3s ease-out}
+@keyframes atbpal{from{transform:scale(.2)}to{transform:scale(1)}}
+@media (max-width:700px){.atbotbar{top:calc(env(safe-area-inset-top,0px) + 54px);padding:8px}.atbotbar button{padding:6px 8px;font-size:.76rem}.atbhand{transform-origin:6px 114px}}

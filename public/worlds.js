@@ -19,10 +19,10 @@
     airport: '✈️ مطار ترتيب الدولي · الصالة ٢٥', notebook: '✏️ دفتر ألعاب الشلّة الرسمي'
   };
   const TICK = '⚡ عاجل: جوابك الترتيب نزلت رسمياً · المافيا تضرب من جديد · المندس ما زال طليق · رقم قياسي في سبّاق الكتابة · ٣٧ لعبة بدون تحميل ⚡';
-  const GC = { uno: '#d8342b', codes: '#d6452f', hive: '#d99a1e', liars: '#7a4ee0', flip: '#c2367a', chess: '#7a5434', mimic: '#c93c78', auction: '#8a5a1c', jwb: '#0f8b8d',
+  const GC = { rxg: '#fe2c55', uno: '#d8342b', codes: '#d6452f', hive: '#d99a1e', liars: '#7a4ee0', flip: '#c2367a', chess: '#7a5434', mimic: '#c93c78', auction: '#8a5a1c', jwb: '#0f8b8d',
     feud: '#1c3f8f', flags: '#2a5bd7', phone: '#13a3b5', fib: '#b8281f', bomb: '#c48a12', mafia: '#5b1b2a', haunt: '#3a2140', sus: '#2b3a8f', outside: '#1f8f52',
     typing: '#e0761a', jackaroo: '#1a8a4c', draw: '#2a5bd7', baloot: '#1d6b47', cars: '#3a3c43', rich: '#1fa35c', boxing: '#2b1f45', brawl: '#3b1e5c', tartayb: '#2f7a4a', redlight: '#7a2f5c', bwb: '#2f4a3a', elim: '#5b2a86', emo: '#1f8f52', chairs: '#b5563a', deal: '#8a1c1c', qfl: '#0f3d3a', ludo: '#6b3a1c', bingo: '#8a1c1c', art: '#3d7bff' };
-  const FLIGHT = { uno: 'UNO7', codes: 'CODE', hive: 'HIVE', liars: 'LIAR', flip: 'FLIP', chess: 'CHSS', mimic: 'VOIC', auction: 'BIDS', jwb: 'JWB1', feud: 'FAML',
+  const FLIGHT = { rxg: 'RXN1', uno: 'UNO7', codes: 'CODE', hive: 'HIVE', liars: 'LIAR', flip: 'FLIP', chess: 'CHSS', mimic: 'VOIC', auction: 'BIDS', jwb: 'JWB1', feud: 'FAML',
     flags: 'FLAG', phone: 'TELE', fib: 'LIES', bomb: 'BOOM', mafia: 'MFIA', haunt: 'GHST', sus: 'SUS4', outside: 'OUTS', typing: 'TYPE', jackaroo: 'JACK', draw: 'DRAW', cars: 'CHSE', rich: 'RICH', boxing: 'KO25', brawl: 'FZ26', tartayb: 'TRTB', art: 'ARTS', bingo: 'BNGO', ludo: 'LUDO', qfl: 'QFL', deal: 'DEAL', chairs: 'SEAT', emo: 'EMOJ', elim: 'QUIZ', bwb: 'BWB1', redlight: 'STOP', baloot: 'BLOT' };
   const get = () => { try { return JSON.parse(localStorage.getItem('tarteeb-world')) || 'classic'; } catch { return 'classic'; } };
   const save = w => { try { localStorage.setItem('tarteeb-world', JSON.stringify(w)); } catch {} };

@@ -26,6 +26,7 @@ const GTI = {
   qfl: { s: 'card', t: 'ترتيب قفل', html: () => `<div class="qfgc"><img src="qfl/back.webp?v=1"><img src="qfl/nm1.webp?v=1"><img src="qfl/n25.webp?v=1"></div>` },
   ludo: { s: 'card', t: 'لودو', html: () => `<div class="lugd"><i style="background:#8a1c1c"></i><i style="background:#2f6b3c;animation-delay:.15s"></i><i style="background:#c98b3a;animation-delay:.3s"></i><i style="background:#2a4a7a;animation-delay:.45s"></i></div>` },
   bingo: { s: 'card', t: 'بينقو', html: () => `<div class="bngd"><b style="background:#8a1c1c">ب</b><b style="background:#3a2416;animation-delay:.1s">ي</b><b style="background:#8a1c1c;animation-delay:.2s">ن</b><b style="background:#3a2416;animation-delay:.3s">ق</b><b style="background:#8a1c1c;animation-delay:.4s">و</b></div>` },
+  rxg: { s: 'whoosh', t: 'خمّن الرياكشن', html: () => `<div class="tk"><i class="pl"></i><b>وش قال؟</b></div>` },
   art: { s: 'pop', t: 'مرسم ترتيب', html: () => `<b class="lt">ر</b>` },
   tartayb: { s: 'shuffle', t: 'تراتيب', html: () => `<i class="tl">ب</i><i class="tl">ي</i><i class="tl">ت</i><i class="tl">ر</i>` },
   brawl: { s: 'thunder', t: 'ساحة القتال', html: () => `<i class="gl a">👊</i><i class="gl b">🦵</i><b class="pw">FIGHT!</b>` },

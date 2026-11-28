@@ -1,0 +1,69 @@
+/* rxg: خمّن الرياكشن — ستايل تيك توك غامق (تنحمّل مع اللعبة) */
+.rxw{--cy:#25f4ee;--pk:#fe2c55;--W:min(980px,calc(100vw - 16px));width:var(--W);margin-inline:calc((100% - var(--W)) / 2);display:grid;grid-template-columns:minmax(0,1fr) 15em;gap:1em;align-items:start;font-family:Tajawal,system-ui,sans-serif;font-weight:700}
+.rxcard{display:flex;flex-direction:column;gap:.6em;background:#000;border-radius:22px;padding:8px;box-shadow:-4px 0 0 var(--cy),4px 0 0 var(--pk),0 0 0 3px #16130f;color:#fff;max-width:560px;width:100%;justify-self:center}
+.rxframe{position:relative;height:min(68dvh,calc((100vw - 32px) * 1.25));min-height:300px;border-radius:16px;overflow:hidden;background:#111}
+.rxmedia{position:absolute;inset:0}
+.rxmedia .bgm{position:absolute;inset:-8%;width:116%;height:116%;object-fit:cover;filter:blur(26px) brightness(.5) saturate(1.2)}
+.rxmedia .fg{position:absolute;inset:0;width:100%;height:100%;object-fit:contain}
+.rxmedia .fg.flash{animation:rxFlash .5s ease-out}
+@keyframes rxFlash{0%{filter:brightness(2.2);transform:scale(1.04)}100%{filter:none;transform:none}}
+.rxwait{position:absolute;inset:0;display:grid;place-content:center;text-align:center;gap:.4em}
+.rxwait b{font:400 2.2em Lalezar,Tajawal,sans-serif}.rxwait small{color:#bbb}
+.rxtop{position:absolute;top:0;left:0;right:0;padding:10px 12px 26px;background:linear-gradient(#000a,transparent);pointer-events:none}
+.rxbar{height:4px;border-radius:9px;background:#ffffff30;overflow:hidden;margin-bottom:8px}
+.rxbar i{display:block;height:100%;width:0;margin-inline-start:auto;background:linear-gradient(90deg,var(--pk),var(--cy));transition:width .2s linear}
+.rxhead{display:flex;justify-content:flex-start;gap:10px;align-items:center}
+.rxhead b{font:400 1.35em Lalezar,Tajawal,sans-serif;text-shadow:0 2px 6px #000}
+.rxhead span{background:#0008;border-radius:99px;padding:2px 10px;font-size:.85em;direction:rtl}
+.rxside{position:absolute;left:10px;bottom:30%;display:grid;gap:12px;justify-items:center}
+.rxbub{display:grid;justify-items:center;gap:2px}
+.rxbub b{display:grid;place-items:center;width:44px;height:44px;border-radius:50%;background:#0007;border:2px solid #fff3;font-size:1.05em}
+.rxbub small{font-size:.72em;text-shadow:0 1px 4px #000}
+.rxbub.low b{background:var(--pk);border-color:#fff;animation:rxPulse .5s infinite alternate}
+@keyframes rxPulse{to{transform:scale(1.1)}}
+.rxsnd{position:absolute;top:58px;left:50%;transform:translateX(-50%);border:0;border-radius:99px;background:#fff;color:#000;padding:8px 16px;font:800 .95em Tajawal;cursor:pointer;z-index:2}
+.rxcap{position:absolute;left:0;right:0;bottom:0;padding:44px 66px 14px 14px;background:linear-gradient(transparent,#000c 55%);display:grid;gap:3px;pointer-events:none}
+.rxcap b{font-size:1.15em;text-shadow:0 2px 6px #000}
+.rxcap small{color:#ccc;font-size:.82em}
+.rxcap .ans{font:400 1.9em Lalezar,Tajawal,sans-serif;line-height:1.15;animation:rxUp .35s ease-out}
+.rxcap em{justify-self:start;font-style:normal;border-radius:99px;padding:2px 12px;font-size:.95em}
+.rxcap em.ok{background:#1fa35c}.rxcap em.no{background:#ffffff26}
+@keyframes rxUp{from{opacity:0;transform:translateY(10px)}}
+.rxctl{min-height:3em}
+.rxopts{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.rxopts button{position:relative;border:0;border-radius:14px;background:#1f1f1f;color:#fff;padding:14px 10px;font:800 1em Tajawal;line-height:1.35;cursor:pointer;min-height:3.4em;transition:transform .1s,background .15s}
+.rxopts button:not([disabled]):hover{background:#2b2b2b}.rxopts button:not([disabled]):active{transform:scale(.96)}
+.rxopts button.sel{background:#fff;color:#000}
+.rxopts button.ok{background:#1fa35c}
+.rxopts button.bad{background:var(--pk)}
+.rxopts button.dim{opacity:.45}
+.rxopts button[disabled]{cursor:default}
+.rxopts button small{position:absolute;top:-7px;left:-5px;background:#fff;color:#000;border-radius:99px;min-width:22px;padding:1px 6px;font-size:.75em}
+.rxform{display:flex;gap:8px}
+.rxform input{flex:1;min-width:0;border:1.5px solid #2b2b2b;background:#1f1f1f;color:#fff;border-radius:14px;padding:13px;font:700 16px Tajawal}
+.rxform input:focus{outline:0;border-color:var(--cy)}
+.rxform button{border:0;border-radius:14px;background:var(--pk);color:#fff;padding:0 22px;font:400 1.3em Lalezar,Tajawal,sans-serif;cursor:pointer}
+.rxform [disabled]{opacity:.5}
+.rxform.shake{animation:rxShake .35s}
+@keyframes rxShake{25%{transform:translateX(-7px)}50%{transform:translateX(6px)}75%{transform:translateX(-3px)}}
+.rxtip{min-height:1.4em;padding:6px 4px 0;font-size:.85em;color:#999}
+.rxtip.hot{color:#ffc928}.rxtip.no{color:var(--pk)}
+.rxend{text-align:center;padding:12px;font-size:1.2em}.rxend b{font:400 1.4em Lalezar,Tajawal,sans-serif;color:var(--cy)}
+.rxscores{background:#121212;color:#fff;border-radius:18px;padding:12px;box-shadow:0 0 0 3px #16130f}
+.rxscores h4{margin:0 0 8px;font:400 1.3em Lalezar,Tajawal,sans-serif}
+.rxscores ol{list-style:none;margin:0;padding:0;display:grid;gap:5px}
+.rxscores li{display:flex;align-items:center;gap:8px;background:#1f1f1f;border-radius:10px;padding:6px 9px;font-size:.92em}
+.rxscores li b{color:#888;width:1.2em}
+.rxscores li .nm{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rxscores li i{font-style:normal;color:#1fa35c;font-size:.85em}
+.rxscores li em{font-style:normal}
+.rxscores li.me{box-shadow:inset 0 0 0 1.5px var(--cy)}
+.rxscores li.ok{background:#173d29}.rxscores li.dn .nm::after{content:' ✓';color:#888}
+@media (max-width:760px){
+  .rxw{grid-template-columns:1fr;gap:.6em}
+  .rxframe{height:calc(100dvh - 300px);min-height:280px}
+  .rxopts button{padding:11px 8px;font-size:.92em}
+  .rxscores ol{grid-template-columns:1fr 1fr}
+  /* أزرار الشات فوق يسار الإطار بدل ما تغطي الخيارات */
+  body.rxon .fabs.dock{bottom:auto!important;top:66px;left:12px;flex-direction:row;transform:scale(.82);transform-origin:top left}
+}
