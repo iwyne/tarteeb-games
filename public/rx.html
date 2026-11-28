@@ -1,0 +1,224 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>ارفع رياكشن · ترتيب</title>
+<meta name="theme-color" content="#000000">
+<link rel="icon" href="/favicon.svg">
+<style>
+@font-face{font-family:'Lalezar';font-display:swap;src:url(fonts/lalezar-arabic-400-normal.woff2) format('woff2');unicode-range:U+0600-06FF,U+200C-200F,U+FE70-FEFF}
+@font-face{font-family:'Tajawal';font-weight:700;font-display:swap;src:url(fonts/tajawal-arabic-700-normal.woff2) format('woff2')}
+@font-face{font-family:'Tajawal';font-weight:800;font-display:swap;src:url(fonts/tajawal-arabic-800-normal.woff2) format('woff2')}
+*{box-sizing:border-box;margin:0;-webkit-tap-highlight-color:transparent}
+:root{--cy:#25f4ee;--pk:#fe2c55;--bg:#000;--s1:#121212;--s2:#1f1f1f;--s3:#2b2b2b;--mut:#a3a3a3}
+html,body{background:var(--bg);color:#fff;font-family:Tajawal,system-ui,sans-serif;font-weight:700}
+.wrap{max-width:520px;margin:0 auto;padding:14px 14px 40px}
+header{display:flex;justify-content:space-between;align-items:center;padding:6px 2px 14px}
+header h1{font:26px Lalezar,Tajawal;letter-spacing:.2px}
+header h1 span{background:linear-gradient(90deg,var(--cy),var(--pk));-webkit-background-clip:text;background-clip:text;color:transparent}
+header a{color:var(--mut);text-decoration:none;font-size:14px}
+.tabs{display:flex;gap:8px;margin-bottom:14px}
+.tabs button{flex:1;border:0;border-radius:99px;padding:10px;background:var(--s2);color:#ddd;font:800 14px Tajawal}
+.tabs button.on{background:#fff;color:#000}
+.tabs b{display:inline-block;min-width:20px;padding:0 6px;margin-inline-start:4px;border-radius:99px;background:var(--pk);color:#fff;font-size:12px}
+.drop{display:grid;place-items:center;text-align:center;gap:8px;border:2px dashed #444;border-radius:20px;padding:44px 16px;cursor:pointer;background:var(--s1)}
+.drop:hover,.drop.over{border-color:var(--cy)}
+.drop strong{font:22px Lalezar,Tajawal}.drop small{color:var(--mut);font-size:13px;line-height:1.6}
+.plus{width:64px;height:64px;border-radius:18px;background:linear-gradient(135deg,var(--cy),var(--pk));display:grid;place-items:center}
+.plus svg{width:30px;height:30px}
+/* الإطار بشكل تيك توك: أي مقاس (مربع، عرضي) يتوسّط وورا نسخة مغبّشة تعبّي الفراغ */
+.frame{position:relative;aspect-ratio:9/16;width:min(100%,calc(62vh*9/16));margin:0 auto;border-radius:18px;overflow:hidden;background:#000}
+.frame .bgm{position:absolute;inset:-8%;width:116%;height:116%;object-fit:cover;filter:blur(26px) brightness(.55) saturate(1.2)}
+.frame .fg{position:absolute;inset:0;width:100%;height:100%;object-fit:contain}
+.frame .lbl{position:absolute;top:10px;right:10px;background:#0009;border-radius:99px;padding:3px 10px;font-size:12px}
+.frame .mute{position:absolute;bottom:10px;left:10px;border:0;border-radius:99px;background:#0009;color:#fff;padding:6px 12px;font:800 12px Tajawal}
+.card{background:var(--s1);border-radius:18px;padding:14px;display:grid;gap:12px;margin-top:14px}
+label.f{display:grid;gap:6px;font-size:14px}
+label.f small{color:var(--mut);font-weight:700;font-size:12px}
+input[type=text]{width:100%;border:1.5px solid var(--s3);background:var(--s2);color:#fff;border-radius:12px;padding:12px;font:700 16px Tajawal}
+input[type=text]:focus{outline:0;border-color:var(--cy)}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chips button{border:1.5px solid var(--s3);background:var(--s2);color:#ddd;border-radius:99px;padding:6px 14px;font:800 13px Tajawal}
+.chips button.on{background:#fff;color:#000;border-color:#fff}
+.trim{display:grid;gap:8px}
+.trim .row{display:flex;align-items:center;gap:10px;font-size:13px}
+.trim .row span{width:56px;color:var(--mut)}
+.trim input{flex:1;accent-color:var(--pk)}
+.trim output{width:52px;text-align:left;direction:ltr;font-size:13px}
+.go{width:100%;border:0;border-radius:14px;padding:14px;background:var(--pk);color:#fff;font:22px Lalezar,Tajawal;cursor:pointer}
+.go:disabled{opacity:.45}
+.ghost{border:1.5px solid var(--s3);background:transparent;color:#fff;border-radius:12px;padding:10px 14px;font:800 14px Tajawal;cursor:pointer}
+.prog{height:6px;border-radius:9px;background:var(--s3);overflow:hidden}.prog i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--cy),var(--pk));transition:width .2s}
+.err{color:#ff8a9b;font-size:14px}
+.done{text-align:center;display:grid;gap:12px;padding:30px 10px}
+.done .ok{width:72px;height:72px;margin:0 auto;border-radius:50%;background:var(--cy);display:grid;place-items:center}
+.done h2{font:28px Lalezar,Tajawal}.done p{color:var(--mut);line-height:1.7}
+.list{display:grid;gap:14px}
+.item .frame{width:min(100%,calc(46vh*9/16));justify-self:center}
+.meta{color:var(--mut);font-size:12.5px}
+.acts{display:flex;gap:8px}.acts button{flex:1}
+.acts .yes{background:#19c37d;border-color:#19c37d}.acts .no{background:var(--s2)}.acts .del{flex:0 0 auto;color:#ff8a9b}
+.empty{color:var(--mut);text-align:center;padding:40px 10px}
+.login{display:grid;gap:10px;text-align:center;padding:20px 4px;color:var(--mut);line-height:1.7}
+[hidden]{display:none!important}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header><h1>ارفع <span>رياكشن</span></h1><a href="/">ترتيب</a></header>
+  <nav class="tabs" id="tabs" hidden><button data-t="up" class="on">ارفع</button><button data-t="pending">تنتظر<b id="nP">٠</b></button><button data-t="ok">المقبولة</button></nav>
+
+  <section id="up">
+    <div id="pick">
+      <label class="drop" id="drop"><input type="file" id="file" accept="video/mp4,video/webm,video/quicktime,image/gif,image/jpeg,image/png,image/webp" hidden>
+        <span class="plus"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></span>
+        <strong>اختر مقطع الرياكشن</strong>
+        <small>فيديو (mp4) أو GIF أو صورة · أقصى حجم ١٢ ميقا<br>أي مقاس يمشي: طولي، مربع، أو عرضي</small>
+      </label>
+    </div>
+    <div id="form" hidden>
+      <div class="frame" id="pv"><span class="lbl" id="pvL">كذا بيطلع باللعبة</span><button class="mute" id="mute" hidden>تشغيل الصوت</button></div>
+      <div class="card">
+        <div class="trim" id="trim" hidden>
+          <div class="row"><span>يبدأ من</span><input type="range" id="tS" min="0" step=".1" value="0"><output id="oS">0.0</output></div>
+          <div class="row"><span>ينتهي عند</span><input type="range" id="tE" min="0" step=".1" value="0"><output id="oE">0.0</output></div>
+          <small class="meta" id="tInfo">باللعبة يشتغل الجزء اللي تختاره بس (أقصى شي ٢٠ ثانية)</small>
+        </div>
+        <label class="f">وش اسم الرياكشن؟ <input type="text" id="n" maxlength="60" placeholder="الاسم اللي الناس يعرفونه فيه"></label>
+        <label class="f">أسماء ثانية ينعرف فيها <small>افصل بينها بفاصلة، عشان لو أحد كتبها باللعبة تنحسب صح</small><input type="text" id="a" maxlength="200" placeholder="مثلاً: اسمه الثاني، اسم صاحبه"></label>
+        <div class="f" style="display:grid;gap:6px;font-size:14px">القسم<div class="chips" id="cats"></div></div>
+        <label class="f">اسمك <small>اختياري</small><input type="text" id="by" maxlength="24"></label>
+        <div class="err" id="err" hidden></div>
+        <div class="prog" id="prog" hidden><i></i></div>
+        <button class="go" id="send">ارفع</button>
+        <button class="ghost" id="other">اختر ملف ثاني</button>
+      </div>
+    </div>
+    <div class="done" id="done" hidden>
+      <div class="ok"><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></div>
+      <h2>وصل!</h2><p>بيطلع باللعبة أول ما يوافق عليه التيم.<br>عندك غيره؟</p>
+      <button class="go" id="again">ارفع رياكشن ثاني</button>
+    </div>
+  </section>
+
+  <section id="pending" hidden><div class="list" id="lP"></div></section>
+  <section id="ok" hidden><div class="list" id="lO"></div></section>
+</div>
+<script>
+(() => {
+  const $ = s => document.querySelector(s), N = n => String(n).replace(/\d/g, d => '٠١٢٣٤٥٦٧٨٩'[d]);
+  const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const ls = k => { try { return JSON.parse(localStorage.getItem(k)); } catch { return null; } };
+  const TEAM = (ls('tarteeb-staff') || {}).tok || '';
+  const CATS = ['عربي', 'عالمي', 'مشاهير', 'أطفال', 'أخرى'], MAXB = 12 * 1024 * 1024, MAXCLIP = 20;
+  let F = null, url = null, cat = 'عربي', dims = { w: 0, h: 0, d: 0 };
+  $('#by').value = ls('tarteeb-name') || '';
+  const chips = (el, cur, on) => { el.innerHTML = CATS.map(c => `<button type="button" class="${c === cur ? 'on' : ''}" data-c="${c}">${c}</button>`).join(''); el.querySelectorAll('button').forEach(b => b.onclick = () => { on(b.dataset.c); chips(el, b.dataset.c, on); }); };
+  chips($('#cats'), cat, c => { cat = c; });
+  const isVid = f => /^video\//.test(f.type) || /\.(mp4|webm|mov)$/i.test(f.name);
+
+  // المعاينة: نفس شكل اللعبة (المقطع بالنص وخلفه نسخة مغبّشة)
+  function frame(el, src, vid, s, e) {
+    el.querySelectorAll('.bgm,.fg').forEach(x => x.remove());
+    const mk = cls => { const m = document.createElement(vid ? 'video' : 'img'); m.className = cls; m.src = src; if (vid) { m.muted = true; m.playsInline = true; m.loop = !s && !e; m.autoplay = true; m.preload = 'metadata'; } return m; };
+    const bg = mk('bgm'), fg = mk('fg'); el.prepend(fg); el.prepend(bg);
+    if (vid) { const loop = () => { const st = +(fg.dataset.s || 0), en = +(fg.dataset.e || 0); if (en && fg.currentTime >= en) { fg.currentTime = st; bg.currentTime = st; } }; fg.dataset.s = s || 0; fg.dataset.e = e || 0; fg.addEventListener('timeupdate', loop); fg.addEventListener('loadedmetadata', () => { if (s) { fg.currentTime = s; bg.currentTime = s; } }); }
+    return { bg, fg };
+  }
+  function pick(f) {
+    $('#err').hidden = true;
+    if (!f) return;
+    if (f.size > MAXB) return showErr('الملف أكبر من ١٢ ميقا، قصّه أو صغّره وجرب');
+    if (!/^(video|image)\//.test(f.type) && !/\.(mp4|webm|mov|gif)$/i.test(f.name)) return showErr('لازم فيديو أو GIF أو صورة');
+    F = f; if (url) URL.revokeObjectURL(url); url = URL.createObjectURL(f);
+    $('#pick').hidden = true; $('#form').hidden = false; $('#done').hidden = true;
+    const vid = isVid(f), m = frame($('#pv'), url, vid);
+    $('#mute').hidden = !vid; $('#mute').textContent = 'تشغيل الصوت';
+    $('#mute').onclick = () => { m.fg.muted = !m.fg.muted; $('#mute').textContent = m.fg.muted ? 'تشغيل الصوت' : 'كتم الصوت'; };
+    $('#trim').hidden = true; dims = { w: 0, h: 0, d: 0 };
+    if (vid) {
+      m.fg.addEventListener('loadedmetadata', () => {
+        const d = m.fg.duration || 0; dims = { w: m.fg.videoWidth, h: m.fg.videoHeight, d: Math.round(d * 10) / 10 };
+        if (!m.fg.videoWidth) showErr('المتصفح ما قدر يشغّل هالفيديو. لو من آيفون صدّره mp4 (H.264) وجرب');
+        $('#pvL').textContent = shape(dims);
+        if (d > 1.5) { const tS = $('#tS'), tE = $('#tE'); tS.max = tE.max = d.toFixed(1); tS.value = 0; tE.value = Math.min(d, MAXCLIP).toFixed(1); $('#trim').hidden = false; trimUpd(m); tS.oninput = tE.oninput = () => trimUpd(m); }
+      }, { once: true });
+      m.fg.addEventListener('error', () => showErr('المتصفح ما قدر يشغّل هالفيديو. لو من آيفون صدّره mp4 (H.264) وجرب'), { once: true });
+    } else m.fg.addEventListener('load', () => { dims = { w: m.fg.naturalWidth, h: m.fg.naturalHeight, d: 0 }; $('#pvL').textContent = shape(dims); }, { once: true });
+    setTimeout(() => $('#n').focus(), 50);
+  }
+  const shape = ({ w, h }) => !w ? 'كذا بيطلع باللعبة' : Math.abs(w / h - 1) < .12 ? 'مربع · كذا بيطلع باللعبة' : w > h ? 'عرضي · كذا بيطلع باللعبة' : 'طولي · كذا بيطلع باللعبة';
+  function trimUpd(m) {
+    const tS = $('#tS'), tE = $('#tE'); let s = +tS.value, e = +tE.value;
+    if (e - s < .5) { if (document.activeElement === tS) s = Math.max(0, e - .5); else e = Math.min(+tE.max, s + .5); }
+    if (e - s > MAXCLIP) { if (document.activeElement === tS) e = s + MAXCLIP; else s = e - MAXCLIP; }
+    tS.value = s; tE.value = e; $('#oS').textContent = s.toFixed(1); $('#oE').textContent = e.toFixed(1);
+    $('#tInfo').textContent = `يشتغل باللعبة ${N((e - s).toFixed(1))} ثانية (أقصى شي ${N(MAXCLIP)})`;
+    m.fg.dataset.s = s; m.fg.dataset.e = e; m.fg.loop = false; if (m.fg.currentTime < s || m.fg.currentTime > e) { m.fg.currentTime = s; m.bg.currentTime = s; } m.fg.play().catch(() => {}); m.bg.play().catch(() => {});
+  }
+  const showErr = t => { const e = $('#err'); e.textContent = t; e.hidden = false; };
+  $('#file').onchange = e => pick(e.target.files[0]);
+  const dr = $('#drop'); ['dragenter', 'dragover'].forEach(k => dr.addEventListener(k, e => { e.preventDefault(); dr.classList.add('over'); }));
+  ['dragleave', 'drop'].forEach(k => dr.addEventListener(k, e => { e.preventDefault(); dr.classList.remove('over'); }));
+  dr.addEventListener('drop', e => pick(e.dataTransfer.files[0]));
+  $('#other').onclick = () => { $('#file').value = ''; $('#file').click(); };
+  $('#again').onclick = () => { $('#done').hidden = true; $('#pick').hidden = false; $('#n').value = ''; $('#a').value = ''; $('#file').value = ''; };
+
+  $('#send').onclick = () => {
+    const n = $('#n').value.trim(); if (!n) { $('#n').focus(); return showErr('اكتب اسم الرياكشن'); }
+    if (!F) return;
+    try { localStorage.setItem('tarteeb-name', JSON.stringify($('#by').value.trim() || ls('tarteeb-name') || '')); } catch {}
+    const q = new URLSearchParams({ n, a: $('#a').value, c: cat, by: $('#by').value.trim(), w: dims.w || '', h: dims.h || '', d: dims.d || '' });
+    if (!$('#trim').hidden) { q.set('s', $('#tS').value); q.set('e', $('#tE').value); }
+    const x = new XMLHttpRequest(); x.open('POST', '/api/rx/up?' + q); x.setRequestHeader('Content-Type', F.type || 'application/octet-stream');
+    $('#prog').hidden = false; $('#send').disabled = true; $('#err').hidden = true;
+    x.upload.onprogress = e => { if (e.lengthComputable) $('#prog i').style.width = (e.loaded / e.total * 100) + '%'; };
+    x.onload = () => { $('#send').disabled = false; $('#prog').hidden = true; $('#prog i').style.width = 0; let r = {}; try { r = JSON.parse(x.responseText); } catch {}
+      if (x.status === 200 && r.ok) { $('#form').hidden = true; $('#done').hidden = false; F = null; $('#pv').querySelectorAll('video').forEach(v => v.pause()); if (TEAM) counts(); }
+      else showErr(r.err || 'صار خطأ، جرب مرة ثانية'); };
+    x.onerror = () => { $('#send').disabled = false; $('#prog').hidden = true; showErr('انقطع الاتصال، جرب مرة ثانية'); };
+    x.send(F);
+  };
+
+  // ===== التيم: المراجعة =====
+  if (TEAM) {
+    $('#tabs').hidden = false;
+    $('#tabs').querySelectorAll('button').forEach(b => b.onclick = () => { $('#tabs').querySelectorAll('button').forEach(x => x.classList.toggle('on', x === b)); ['up', 'pending', 'ok'].forEach(t => { $('#' + t).hidden = t !== b.dataset.t; }); document.querySelectorAll('#pending video,#ok video').forEach(v => v.pause()); if (b.dataset.t !== 'up') load(b.dataset.t); });
+    counts();
+  }
+  function counts() { fetch('/api/rx/list?st=ok').then(r => r.json()).then(o => { $('#nP').textContent = N(o.counts.pending); }).catch(() => {}); }
+  function load(st) {
+    const box = st === 'pending' ? $('#lP') : $('#lO'); box.innerHTML = '<div class="empty">نحمّل…</div>';
+    fetch('/api/rx/list?st=' + st, { headers: { 'x-team': TEAM } }).then(r => r.json()).then(o => {
+      if (o.err) { box.innerHTML = `<div class="login">${esc(o.err)}<br>ادخل مكان التيم من الموقع مرة وحدة وارجع هنا.</div>`; return; }
+      $('#nP').textContent = N(o.counts.pending);
+      if (!o.list.length) { box.innerHTML = `<div class="empty">${st === 'pending' ? 'ما فيه شي ينتظر' : 'ما فيه رياكشنات مقبولة للحين'}</div>`; return; }
+      box.innerHTML = o.list.map(x => `<div class="card item" data-id="${x.id}">
+        <div class="frame"><span class="lbl">${esc(shape(x))}${x.d ? ' · ' + N(x.d) + ' ث' : ''}</span>${/^(mp4|webm|mov)$/.test(x.ext) ? '<button class="mute">تشغيل الصوت</button>' : ''}</div>
+        <label class="f">الاسم <input type="text" data-k="n" value="${esc(x.n)}" maxlength="60"></label>
+        <label class="f">أسماء ثانية <input type="text" data-k="a" value="${esc((x.a || []).join('، '))}" maxlength="200"></label>
+        <div class="chips" data-cat="${esc(x.c)}"></div>
+        <div class="meta">رفعه ${esc(x.by)} · ${new Date(x.t).toLocaleDateString('ar-SA-u-nu-arab', { day: 'numeric', month: 'long' })} · ${x.sz < 1048576 ? N(Math.max(1, Math.round(x.sz / 1024))) + ' كيلو' : N((x.sz / 1048576).toFixed(1)) + ' ميقا'}${x.e ? ` · يشتغل من ${N(x.s)} إلى ${N(x.e)} ث` : ''}${x.rv ? ' · وافق ' + esc(x.rv) : ''}${x.ext === 'mov' ? ' · ملف mov (ممكن ما يشتغل على أندرويد)' : ''}</div>
+        <div class="acts">${st === 'pending' ? '<button class="ghost yes" data-act="ok">قبول</button><button class="ghost no" data-act="no">رفض</button>' : '<button class="ghost" data-act="save">حفظ التعديل</button>'}<button class="ghost del" data-act="del">حذف</button></div></div>`).join('');
+      box.querySelectorAll('.item').forEach((el, i) => {
+        const x = o.list[i], vid = /^(mp4|webm|mov)$/.test(x.ext), m = frame(el.querySelector('.frame'), x.u, vid, x.s, x.e); let c = x.c;
+        const mb = el.querySelector('.mute'); if (mb) mb.onclick = () => { m.fg.muted = !m.fg.muted; mb.textContent = m.fg.muted ? 'تشغيل الصوت' : 'كتم الصوت'; };
+        chips(el.querySelector('.chips'), c, v => { c = v; });
+        el.querySelectorAll('[data-act]').forEach(b => b.onclick = () => {
+          const act = b.dataset.act; if (act === 'del' && !confirm('تحذف الرياكشن نهائياً؟')) return;
+          const body = { id: x.id, n: el.querySelector('[data-k=n]').value, a: el.querySelector('[data-k=a]').value, c, act: act === 'save' ? undefined : act };
+          b.disabled = true;
+          fetch('/api/rx/rev', { method: 'POST', headers: { 'Content-Type': 'application/json', 'x-team': TEAM }, body: JSON.stringify(body) }).then(r => r.json()).then(r => {
+            if (!r.ok) { b.disabled = false; return alert(r.err || 'ما ضبط'); }
+            if (act === 'save') { b.textContent = 'انحفظ'; setTimeout(() => { b.textContent = 'حفظ التعديل'; b.disabled = false; }, 1200); return; }
+            m.fg.pause(); el.remove(); counts(); if (!box.children.length) load(st);
+          }).catch(() => { b.disabled = false; });
+        });
+      });
+    }).catch(() => { box.innerHTML = '<div class="empty">ما قدرنا نحمّل، جرب مرة ثانية</div>'; });
+  }
+})();
+</script>
+</body>
+</html>

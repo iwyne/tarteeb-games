@@ -120,6 +120,7 @@ const server = http.createServer((req, res) => {
     const b = STORE.getFileLocal(`gal/${d}/${f}`); if (!b) { res.writeHead(404); return res.end(); }
     res.writeHead(200, { 'Content-Type': f.endsWith('.tl') ? 'application/octet-stream' : (b[0] === 0xff ? 'image/jpeg' : b[0] === 0x89 ? 'image/png' : 'image/webp'), 'Cache-Control': 'public, max-age=86400' }); return res.end(b);
   }
+  if (req.url.startsWith('/api/rx/') || req.url.startsWith('/rx/')) { const ip = String(req.headers['x-forwarded-for'] || req.socket.remoteAddress || '').split(',')[0].trim(); if (!apiRate(ip)) { res.writeHead(429); return res.end(); } return RX.handle(req, res, ip).catch(e => { console.error('rx', e); try { res.writeHead(500); res.end(); } catch {} }); }
   if (req.url.startsWith('/api/')) return apiRoute(req, res);
   if (req.url.startsWith('/art/')) { // صور مرسم ترتيب: /art/<code>/<key>/<pid>/<tl|final|last>
     const [, , code, key, pid, what] = req.url.split('?')[0].split('/'); const r = rooms.get(String(code || '').toUpperCase());
@@ -129,7 +130,7 @@ const server = http.createServer((req, res) => {
   }
   if (req.url.startsWith('/auth/discord')) { const u = new URL(req.url, 'http://x'); if (u.pathname === '/auth/discord' || u.pathname === '/auth/discord/cb') return discordAuth(req, res, u); }
   let p = decodeURIComponent(req.url.split('?')[0]);
-  if (p === '/') p = '/index.html';
+  if (p === '/') p = '/index.html'; if (p === '/rx') p = '/rx.html'; // صفحة رفع الرياكشنات
   const f = path.normalize(path.join(PUB, p));
   if (!f.startsWith(PUB)) { res.writeHead(403); return res.end(); }
   fs.stat(f, (se, st) => {
@@ -175,7 +176,7 @@ function verOf(rel) {
 }
 // ملفات الألعاب تنحمّل بس لما تدخل اللعبة (public/app.js: GAME_JS)
 const LAZY = fs.readFileSync(path.join(PUB, 'app.js'), 'utf8').match(/GAME_JS = (\{[^}]+\})/);
-const LAZY_FILES = LAZY ? [...new Set([...LAZY[1].matchAll(/'([\w-]+\.js)'/g)].map(m => m[1]))] : [];
+const LAZY_FILES = LAZY ? [...new Set([...LAZY[1].matchAll(/'([\w-]+\.(?:js|css))'/g)].map(m => m[1]).concat(['tutor.js', 'i18n-dict.js']))] : [];
 function versionIndex(html) {
   html = html.replace(/(<(?:script|link)\b[^>]*?\b(?:src|href)=")([\w\-/]+\.(?:js|css))(")/g, (m, a, f, b) => { const v = verOf(f); return v ? a + f + '?v=' + v + b : m; });
   const gv = {}; LAZY_FILES.forEach(f => gv[f] = verOf(f));
@@ -210,7 +211,7 @@ function getBody(f, st, tag, origin, ext, cb) {
 const wss = new WebSocketServer({ server, maxPayload: 3 * 1024 * 1024 }); // أكبر رسالة ١ ميغا (تسجيل الأصوات تحت ٤٠٠ كيلو)
 const rooms = new Map();
 let PTS = null; // نقاط السيرفر (points.js)
-let STAFF = null; // مكان التيم (staff.js) — يتجهّز تحت قبل ما نستقبل اتصالات
+let STAFF = null, RX = null; // مكان التيم (staff.js) — يتجهّز تحت قبل ما نستقبل اتصالات
 const COLORS = ['red', 'yellow', 'green', 'blue'];
 const AR = { red: 'أحمر', yellow: 'أصفر', green: 'أخضر', blue: 'أزرق' };
 const MAXSPEC = 30;
@@ -832,6 +833,7 @@ async function activity(ws, m) {
 
 PTS = require('./points')({ send });
 STAFF = require('./staff')({ rooms, wss, send, rate, closeRoom, kick: kickPlayer });
+RX = require('./rx')({ STORE, STAFF }); // رياكشنات «خمّن الرياكشن»
 
 wss.on('connection', (ws, req) => {
   ws.ip = String(req.headers['x-forwarded-for'] || req.socket.remoteAddress || '').split(',')[0].trim();

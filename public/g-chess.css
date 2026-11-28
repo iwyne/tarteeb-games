@@ -1,0 +1,50 @@
+/* chess: تنحمّل مع اللعبة (loadGame) */
+.chmain{display:grid;gap:6px;justify-items:center}
+.chbar{display:flex;align-items:center;gap:8px;width:min(560px,100%);background:#fffaf0;border:3px solid #16130f;border-radius:12px;padding:4px 8px;box-shadow:3px 3px 0 #16130f}
+.chav{display:grid;place-items:center;width:34px;height:34px;border-radius:50%;border:3px solid #16130f;font-size:1rem;flex:none}
+.chbar>b{font-size:.95rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.chbar small{font-size:.75rem;opacity:.7}
+.chcap{display:flex;align-items:center;flex-wrap:wrap;flex:1;min-width:0;direction:ltr;justify-content:flex-end}
+.chcap img{width:20px;height:20px;margin-inline-start:-6px}
+.chcap i{font-style:normal;font-weight:900;font-size:.85rem;margin-inline-start:4px}
+.chclk{font:400 1.35rem Lalezar,sans-serif;background:#d8c39d;border:3px solid #16130f;border-radius:8px;padding:0 10px;min-width:72px;text-align:center;direction:ltr;flex:none}
+.chbd{position:relative;width:min(560px,100%,calc(100vh - 260px));min-width:260px;aspect-ratio:1;display:grid;grid-template-columns:repeat(8,1fr);border:6px solid #16130f;border-radius:6px;box-shadow:6px 6px 0 #16130f;direction:ltr;touch-action:none;user-select:none}
+.chsq{position:relative;display:grid;place-items:center}
+.chsq.tgt::after{content:'';position:absolute;width:30%;height:30%;border-radius:50%;background:rgba(22,19,15,.35)}
+.chpc{position:relative;width:92%;height:92%;z-index:1;pointer-events:none;filter:drop-shadow(1px 2px 0 rgba(0,0,0,.25))}
+.chsq em{position:absolute;font:800 .62rem/1 Tajawal,sans-serif;font-style:normal;opacity:.75;pointer-events:none}
+.chghost{position:fixed;z-index:9999;pointer-events:none;filter:drop-shadow(3px 6px 4px rgba(0,0,0,.4));transform:scale(1.12)}
+.chside{display:grid;gap:8px;align-content:start}
+.chstat{display:grid;gap:4px;justify-items:center;text-align:center;background:#fffaf0;border:3px solid #16130f;border-radius:12px;padding:8px;box-shadow:3px 3px 0 #16130f}
+.chturn{font:400 1.25rem Lalezar,sans-serif}
+.chcheck{color:#e8362d;font:400 1.6rem Lalezar,sans-serif;animation:pulse .5s 3 alternate}
+.chres{font:400 1.4rem Lalezar,sans-serif;color:#e8362d}
+.chbtns{display:flex;flex-wrap:wrap;gap:6px;justify-content:center}
+.chlist{margin:0;padding:6px;list-style:none;max-height:300px;overflow:auto;background:#fffaf0;border:3px solid #16130f;border-radius:12px;font:700 .95rem Tajawal,sans-serif;direction:ltr}
+.chlist li{display:grid;grid-template-columns:32px 1fr 1fr;gap:4px;padding:2px 4px}
+.chlist li:nth-child(odd){background:#f3e6cc}
+.chlist b{opacity:.6}
+@media (max-width:760px){.chlist{display:flex;max-height:none;overflow-x:auto;white-space:nowrap;gap:8px}}
+@media (max-width:760px){.chlist li{display:flex;gap:4px;background:none!important}}
+@media (max-width:760px){.chbd{width:min(100%,calc(100vh - 230px))}}
+.chprom{position:absolute;inset:0;display:grid;place-items:center;background:rgba(22,19,15,.55);z-index:5;border-radius:16px}
+.chprom>div{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;align-items:center;background:#fffaf0;border:4px solid #16130f;border-radius:14px;padding:12px;box-shadow:6px 6px 0 #16130f;max-width:90%}
+.chprom b{width:100%;text-align:center;font:400 1.3rem Lalezar,sans-serif}
+.chprom button{width:64px;height:64px;border:3px solid #16130f;border-radius:10px;background:#efd9b4;cursor:pointer}
+.chprom img{width:100%;height:100%}
+#chTop,#chBot{width:min(560px,100%)}
+.chbar{width:100%;box-sizing:border-box}
+.chtabs{grid-column:1/-1;display:flex;gap:8px;overflow-x:auto;padding:2px 2px 6px}
+.chtab{display:grid;grid-template-columns:64px auto;grid-template-rows:auto auto auto;gap:0 8px;align-items:center;text-align:start;background:#fffaf0;border:3px solid #16130f;border-radius:12px;padding:6px 10px 6px 6px;box-shadow:3px 3px 0 #16130f;cursor:pointer;font-family:Tajawal,sans-serif;color:#16130f;flex:none}
+.chtab .chmini{grid-row:1/4;width:64px;height:64px;display:grid;grid-template-columns:repeat(8,1fr);grid-template-rows:repeat(8,1fr);border:2px solid #16130f;direction:ltr}
+.chmini i{display:block;position:relative}
+.chmini img{position:absolute;inset:0;width:100%;height:100%}
+.chtab b{font-size:.92rem}
+.chtab small{font-size:.75rem;opacity:.8;white-space:nowrap}
+.chtab em{font-style:normal;font-size:.78rem;font-weight:800}
+.chtno{background:#16130f;color:#fffaf0;border-radius:999px;padding:0 10px}
+@media (max-width:560px){.chtab{grid-template-columns:44px auto;padding:4px 8px 4px 4px}}
+@media (max-width:560px){.chtab .chmini{width:44px;height:44px}}
+@media (max-width:560px){.chtab small{display:none}}
+.chbd{grid-template-rows:repeat(8,1fr)}
+.chsq{min-height:0;min-width:0}

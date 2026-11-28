@@ -1,0 +1,73 @@
+/* bingo: تنحمّل مع اللعبة (loadGame) */
+.bgw{--W:min(1300px,calc(100vw - 20px));width:var(--W);margin-inline:calc((100% - var(--W)) / 2);position:relative;border-radius:20px;padding:1.4em;font-size:clamp(12px,min(1.1vw,1.8dvh),19px);min-height:max(30em,calc(100dvh - 8em));display:flex;flex-direction:column;gap:1em;border:4px solid #120a05;box-shadow:var(--sh)}
+.bgmain{display:flex;gap:2.5em;align-items:center;justify-content:center;flex:1;flex-wrap:wrap}
+.bgcard{display:grid;grid-template-columns:repeat(5,4.6em);gap:.4em;padding:.9em;border-radius:18px}
+.bgh{display:grid;place-items:center;height:3.2em;font:400 2.3em/1 Lalezar;color:#fff;border-radius:10px;background:var(--c)}
+.bgc{position:relative;height:4.6em;font:400 2em Lalezar,sans-serif;border-radius:12px;cursor:pointer;display:grid;place-items:center;padding:0}
+.bgspec{font:400 1.4em Lalezar;padding:2em}
+.bgside{display:flex;flex-direction:column;align-items:center;gap:.8em;min-width:16em}
+.bgprog{width:14em;height:.5em;border-radius:4px;overflow:hidden}
+.bgrec{display:flex;gap:.4em;min-height:2.6em}
+.bgrec span{width:2.6em;height:2.6em;border-radius:50%;display:grid;place-items:center;font:400 1.1em Lalezar}
+.bginfo{font-weight:500;font-size:.9em;margin:0}
+.bgclaim{font:400 2.2em Lalezar,sans-serif;padding:.15em 1.2em;border-radius:18px;cursor:pointer}
+.bgclaim:disabled{opacity:.45;cursor:not-allowed}
+.bgfrz{font-weight:800;color:#d8342b;min-height:1.2em}
+.bgwin{font:400 2em Lalezar}
+.bgnear{display:flex;flex-wrap:wrap;gap:.35em;justify-content:center;max-width:22em;font-size:.85em}
+.bgnear b{width:100%;text-align:center}
+.bgnear i{font-style:normal;padding:.15em .6em;border-radius:12px;font-weight:500}
+.bgtools{display:flex;gap:.4em;justify-content:center;align-items:center;flex-wrap:wrap;font-size:.85em}
+.bgtools button{font:400 1em Lalezar;border-radius:10px;padding:.15em .8em;cursor:pointer;border:2px solid currentColor;background:transparent;color:inherit}
+.bgfx{position:absolute;inset:0;pointer-events:none;overflow:hidden;border-radius:16px}
+.bgstamp{position:absolute;left:50%;top:40%;transform:translate(-50%,-50%) rotate(-8deg);font:400 7em Lalezar;color:#d8342b;-webkit-text-stroke:.05em #fff;text-shadow:0 .1em 0 #16130f;animation:dlStamp 3s both}
+.bgtoast{position:absolute;left:50%;top:12%;transform:translateX(-50%);background:#8a1c1c;color:#fff;border-radius:12px;padding:.35em 1em;font-weight:800;animation:dlToast 2.5s both}
+.bgw.sk-diw{background:linear-gradient(#5a3418,#2a170b);color:#f3e2c0}
+.sk-diw .bgcard{background:#f3e2c0;border:5px solid #3a2416;border-top:1.1em solid #8a1c1c;box-shadow:0 14px 30px #000}
+.sk-diw .bgh{background:#8a1c1c}
+.sk-diw .bgh:nth-child(even){background:#3a2416}
+.sk-diw .bgc{background:#fffaf0;color:#3a2416;border:2px dashed #c9a877}
+.sk-diw .bgnote{background:#f3e2c0;border:4px solid #3a2416;border-radius:20px;padding:.8em 1.8em;text-align:center;color:#3a2416;display:grid}
+.sk-diw .bgnote b{font:400 5em/1 Lalezar;color:#8a1c1c}
+.sk-diw .bgnote small{font:400 1.2em Lalezar}
+.sk-diw .bgprog{background:#3a2416}
+.sk-diw .bgprog i{background:#c98b3a}
+.sk-diw .bgrec span{background:#f3e2c0;color:#3a2416;border:2px solid #3a2416}
+.sk-diw .bgclaim{background:#8a1c1c;color:#f3e2c0;border:4px solid #f3e2c0}
+.sk-diw .bgnear i{background:rgba(243,226,192,.15)}
+.bgw.sk-hall{background:radial-gradient(circle at 70% 40%,#3a2a6a,#120c24);color:#fff}
+.sk-hall .bgcard{background:#fffaf0;border:4px solid #16130f;box-shadow:8px 8px 0 #16130f}
+.sk-hall .bgc{background:#f3ead8;color:#16130f;border:0}
+.sk-hall .bgcage{width:9em;height:9em;border-radius:50%;background:radial-gradient(circle at 35% 30%,rgba(255,255,255,.35),rgba(255,255,255,.05));border:5px solid #e7b54a;position:relative;animation:bgSpin 4s linear infinite}
+.sk-hall .bgcage i{position:absolute;width:1.6em;height:1.6em;border-radius:50%;border:2px solid #fff}
+.sk-hall .bgcage i:nth-child(1){left:20%;top:55%;background:#d8342b}
+.sk-hall .bgcage i:nth-child(2){left:45%;top:65%;background:#1c5fd0}
+.sk-hall .bgcage i:nth-child(3){left:65%;top:45%;background:#f2b705}
+.sk-hall .bgcage i:nth-child(4){left:30%;top:28%;background:#1f8f52}
+.sk-hall .bgcage i:nth-child(5){left:55%;top:22%;background:#7b3fc7}
+.sk-hall .bgball{width:7em;height:7em;margin-top:-3em;border-radius:50%;display:grid;place-items:center;background:radial-gradient(circle at 35% 30%,#fff,#f2b705 60%,#a87a05);border:4px solid #16130f;box-shadow:0 10px 30px #000}
+.sk-hall .bgball span{width:4.6em;height:4.6em;border-radius:50%;background:#fff;display:grid;place-content:center;justify-items:center;color:#16130f;font:400 1em/1 Lalezar}
+.sk-hall .bgball span b{font-size:2.3em;line-height:.9}
+.sk-hall .bgball small{font-size:1em}
+.sk-hall .bgprog{background:rgba(255,255,255,.15)}
+.sk-hall .bgprog i{background:#f2b705}
+.sk-hall .bgrec span{background:var(--c);color:#fff;border:2px solid #fff}
+.sk-hall .bgclaim{background:#d8342b;color:#fff;border:4px solid #16130f;box-shadow:0 6px 0 #16130f}
+.sk-hall .bgnear i{background:rgba(255,255,255,.12)}
+.bgw.sk-tv{background:radial-gradient(circle at 50% 0,#ff3bd6 0,#2a0f5a 40%,#05081a 80%);color:#fff}
+.sk-tv .bgcard{background:#0d0b20;border:3px solid #3bd6ff;box-shadow:0 0 30px #3bd6ff}
+.sk-tv .bgc{background:#1a1636;color:#fff;border:0}
+.sk-tv .bgscreen{min-width:2.2em;min-height:1.1em;padding:.1em .4em;border-radius:16px;background:#05081a;border:4px solid #ff3bd6;box-shadow:0 0 40px #ff3bd6;display:grid;place-items:center;font:400 4.6em/1 Lalezar;text-shadow:0 0 20px #3bd6ff;padding:.1em}
+.sk-tv .bgscreen small{font-size:.3em;color:#ffd23b}
+.sk-tv .bgprog{background:rgba(255,255,255,.12)}
+.sk-tv .bgprog i{background:#ff3bd6}
+.sk-tv .bgrec span{background:transparent;color:var(--c);border:2px solid var(--c);box-shadow:0 0 10px var(--c)}
+.sk-tv .bgclaim{background:linear-gradient(#ffd23b,#ff9a3b);color:#16130f;border:0;box-shadow:0 0 30px #ffd23b}
+.sk-tv .bgnear i{background:#2a2450}
+@media (max-width:760px){.bgw{padding:.8em;font-size:clamp(10px,2.8vw,14px)}}
+@media (max-width:760px){.bgcard{grid-template-columns:repeat(5,1fr);width:100%}}
+@media (max-width:760px){.bgc{height:auto;aspect-ratio:1}}
+@media (max-width:760px){.bgmain{gap:1em}}
+@media (max-width:760px){.bgside{min-width:0;width:100%}}
+@media (max-width:760px){.sk-hall .bgcage{display:none}}
+@media (max-width:760px){.sk-hall .bgball{margin-top:0}}

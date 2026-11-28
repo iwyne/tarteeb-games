@@ -14,12 +14,13 @@ const PWR = { spy: ['👀', 'تجسّس', 'شوف أوراق لاعب ٥ ثوا�
 const PTGT = ['spy', 'steal', 'swap', 'freeze', 'gift'];
 
 // ملفات كل لعبة تنحمّل بس لما تدخل غرفتها (أخف وأسرع على الجوال). السيرفر يضيف ?v= من GV عشان الكاش
-const GAME_JS = { _me: ['me.js'], art: ['art.js'], sus: ['sus-map.js', 'sus.js'], haunt: ['haunt-map.js', 'haunt.js', 'haunt-ext.js'], mafia: ['mafia.js'], fib: ['fib.js'], phone: ['phone.js'], auction: ['auction.js'], feud: ['feud.js'], jwb: ['jwb.js'], baloot: ['baloot.js'], cars: ['cars-map.js', 'cars.js', 'replay.js'], rich: ['rich-board.js', 'rich.js'], boxing: ['box.js', 'replay.js'], brawl: ['brawl-chars.js', 'brawl.js', 'replay.js'], tartayb: ['tartayb.js'], bingo: ['bingo.js'], ludo: ['ludo.js'], qfl: ['qfl.js'], deal: ['deal.js'], chairs: ['chairs.js'], emo: ['emo.js'], elim: ['elim.js'], bwb: ['bwb.js'], redlight: ['redlight.js', 'replay.js'], flags: ['flags.js'], mimic: ['mimic.js'], chess: ['chess.js'] };
+const GAME_JS = { _me: ['g-_me.css', 'me.js'], art: ['g-art.css', 'art.js'], sus: ['g-sus.css', 'sus-map.js', 'sus.js'], haunt: ['g-haunt.css', 'haunt-map.js', 'haunt.js', 'haunt-ext.js'], mafia: ['g-mafia.css', 'mafia.js'], fib: ['g-fib.css', 'fib.js'], phone: ['g-phone.css', 'phone.js'], auction: ['g-auction.css', 'auction.js'], feud: ['g-feud.css', 'feud.js'], jwb: ['g-jwb.css', 'jwb.js'], baloot: ['g-baloot.css', 'baloot.js'], cars: ['g-cars.css', 'cars-map.js', 'cars.js', 'replay.js'], rich: ['g-rich.css', 'rich-board.js', 'rich.js'], boxing: ['g-boxing.css', 'box.js', 'replay.js'], brawl: ['g-brawl.css', 'brawl-chars.js', 'brawl.js', 'replay.js'], tartayb: ['g-tartayb.css', 'tartayb.js'], bingo: ['g-bingo.css', 'bingo.js'], ludo: ['g-ludo.css', 'ludo.js'], qfl: ['g-qfl.css', 'qfl.js'], deal: ['g-deal.css', 'deal.js'], chairs: ['g-chairs.css', 'chairs.js'], emo: ['g-emo.css', 'emo.js'], elim: ['g-elim.css', 'elim.js'], bwb: ['g-bwb.css', 'bwb.js'], redlight: ['g-redlight.css', 'redlight.js', 'replay.js'], flags: ['g-flags.css', 'flags.js'], mimic: ['g-mimic.css', 'mimic.js'], chess: ['g-chess.css', 'chess.js'] };
 const GLOADED = {}; let msgQ = Promise.resolve();
 var isMob = () => matchMedia('(pointer:coarse)').matches; // تستخدمها أكثر من لعبة
 function loadGame(game) {
   const fs = GAME_JS[game]; if (!fs) return null;
   return GLOADED[game] || (GLOADED[game] = Promise.all(fs.map(f => new Promise((ok, no) => {
+    if (f.endsWith('.css')) { const l = document.createElement('link'); l.rel = 'stylesheet'; l.href = f + (window.GV && GV[f] ? '?v=' + GV[f] : ''); l.onload = ok; l.onerror = () => { delete GLOADED[game]; no(new Error('load ' + f)); }; return document.head.appendChild(l); } // ستايل اللعبة ينحمّل معها
     const sc = document.createElement('script'); sc.async = false; // بالترتيب (الماب قبل اللعبة)
     sc.src = f + (window.GV && GV[f] ? '?v=' + GV[f] : ''); sc.onload = ok;
     sc.onerror = () => { delete GLOADED[game]; no(new Error('load ' + f)); };

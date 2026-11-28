@@ -1,0 +1,34 @@
+/* elim: تنحمّل مع اللعبة (loadGame) */
+.elw{--W:min(1500px,calc(100vw - 24px));width:var(--W);margin-inline:calc((100% - var(--W)) / 2);display:grid;gap:10px;font-size:clamp(12px,min(1.15vw,1.9dvh),22px)}
+.elstage{position:relative;min-height:max(30em,calc(100dvh - 10em));display:grid;align-content:start;gap:1.2em;padding:1.2em 1.4em;border:4px solid var(--ink);border-radius:1.2em;box-shadow:var(--sh);color:#fff;
+  background:radial-gradient(ellipse at 50% 0,#5b2a86,#16081f 70%);overflow:hidden}
+.elstage::before{content:'';position:absolute;inset:0;background:conic-gradient(from 165deg at 50% -20%,transparent 0 8deg,#ffffff0e 8deg 16deg,transparent 16deg 30deg,#ffffff0b 30deg 36deg,transparent 36deg);pointer-events:none}
+.eltop{position:relative;display:flex;justify-content:space-between;align-items:center;gap:1em}
+.elpill{background:#fff;color:#16130f;border:2.5px solid #16130f;border-radius:99px;padding:.2em .9em;font-size:.95em}
+.elcount{font:400 1.5em Lalezar,Tajawal,sans-serif}
+.elscreen{position:relative;width:min(100%,46em);justify-self:center;text-align:center;border:.3em solid #ffc928;border-radius:1.1em;background:#120818;padding:1.1em 1.4em 1.4em;box-shadow:0 0 2.5em #9b59d088}
+.elcat{opacity:.75;font-size:.95em}
+.elscreen h2{font:400 2.3em/1.25 Lalezar,Tajawal,sans-serif;margin:.25em 0 .5em}
+.elbar{height:.6em;border-radius:9px;background:#ffffff22;margin:0 12%}
+.elbar i{display:block;height:100%;border-radius:9px;background:linear-gradient(90deg,#ff4fa3,#ffc928);transition:width .15s linear}
+.elclock{position:absolute;bottom:-.9em;left:50%;transform:translateX(-50%);background:#16130f;color:#ffc928;border:3px solid #ffc928;border-radius:99px;padding:0 .6em;font:400 1.4em Lalezar,sans-serif;min-width:2.2em}
+.elclock:empty{display:none}
+.elans{position:relative;display:grid;grid-template-columns:1fr 1fr;gap:.9em;width:min(100%,46em);justify-self:center;margin-top:.6em}
+.elbtn{display:flex;align-items:center;gap:.7em;padding:.75em 1.1em;border:.2em solid #16130f;border-radius:.8em;background:var(--c);color:#fff;font:400 1.6em Lalezar,Tajawal,sans-serif;box-shadow:0 .25em 0 #000;cursor:pointer;text-align:right;transition:transform .1s,opacity .2s,filter .2s}
+.elbtn:nth-child(3){color:#16130f}
+.elbtn b{font-weight:400;flex:1}
+.elbtn em{font:800 .5em Tajawal,sans-serif;font-style:normal;opacity:.9}
+.elbtn:not(:disabled):hover{transform:translateY(-3px)}
+.elbtn:disabled{cursor:default}
+.elbtn[hidden]{display:none}
+.elmsg{position:relative;justify-self:center;min-height:1.6em;font-size:1.1em;opacity:.9;text-align:center}
+.elmsg:empty{display:none}
+.elpl{position:relative;display:flex;flex-wrap:wrap;justify-content:center;gap:.5em .3em;margin-top:auto}
+.elp{display:grid;justify-items:center;width:4.4em;font-size:.82em;transition:opacity .3s,filter .3s}
+.elp small{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.elp i{font-style:normal;font-size:.7em;letter-spacing:-.1em}
+@media (max-width:760px){.elw{font-size:clamp(11px,3vw,15px)}}
+@media (max-width:760px){.elstage{min-height:0;padding:1em .7em}}
+@media (max-width:760px){.elans{grid-template-columns:1fr}}
+@media (max-width:760px){.elscreen h2{font-size:1.8em}}
+@media (max-width:760px){.elbtn{font-size:1.35em;padding:.6em .9em}}

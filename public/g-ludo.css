@@ -1,0 +1,32 @@
+/* ludo: تنحمّل مع اللعبة (loadGame) */
+.luw{--W:min(1500px,calc(100vw - 20px));width:var(--W);margin-inline:calc((100% - var(--W)) / 2);font-size:clamp(12px,min(1.05vw,1.7dvh),20px);color:#3a2416}
+.lustage{position:relative;height:max(30em,calc(100dvh - 7.5em));border:4px solid #120a05;border-radius:20px;box-shadow:var(--sh);overflow:hidden;background:#1a0f08;user-select:none;-webkit-user-select:none;touch-action:none}
+.lustage canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+.luload{position:absolute;inset:0;display:grid;place-content:center;justify-items:center;gap:.4em;color:#f3e2c0;font:400 1.4em Lalezar,Tajawal,sans-serif;background:#1a0f08;z-index:50}
+.luload b{font-size:2.6em;color:#c98b3a}
+.luload[hidden]{display:none}
+.luchips{position:absolute;inset:0;pointer-events:none;z-index:8}
+.luop{position:absolute;transform:translate(-50%,-50%);background:#f3e2c0;border:3px solid var(--c);border-radius:12px;padding:.2em .7em;text-align:center;display:grid;line-height:1.25;box-shadow:0 5px 12px rgba(0,0,0,.45);white-space:nowrap}
+.luop b{color:var(--c)}
+.luop small{font-size:.75em;font-weight:500}
+.lubar{position:absolute;left:50%;bottom:.8em;transform:translateX(-50%);z-index:15;display:flex;gap:.6em;align-items:center;background:rgba(22,19,15,.88);border:3px solid #c98b3a;border-radius:40px;padding:.4em .9em;white-space:nowrap;color:#f3e2c0}
+.lust{font:400 1.15em Lalezar;border-inline-start:6px solid var(--c,#c98b3a);padding-inline-start:.5em}
+.ludie{width:1.8em;height:1.8em;display:grid;place-items:center;background:#fffaf0;color:#8a1c1c;border:3px solid #3a2416;border-radius:.35em;font:400 1.3em Lalezar}
+.lub{font:400 1.3em Lalezar,sans-serif;color:#fff;background:#8a1c1c;border:3px solid #3a2416;border-radius:30px;padding:.2em 1em;box-shadow:0 4px 0 #3a2416;cursor:pointer}
+.lub:disabled{opacity:.4;cursor:not-allowed}
+.lub:not(:disabled){animation:qfCall 1.4s infinite}
+.luhint{font-size:.85em;font-weight:500;color:#e8d3a8}
+.lufx{position:absolute;inset:0;pointer-events:none;z-index:30}
+.lutoast{position:absolute;left:50%;top:16%;transform:translateX(-50%);background:#16130f;color:#f3e2c0;border:2px solid #c98b3a;border-radius:12px;padding:.35em 1em;font-weight:800;white-space:nowrap;animation:dlToast 2.4s both}
+@media (max-width:760px),(max-aspect-ratio:1/1){.luw{font-size:clamp(10px,2.9vw,14px)}}
+@media (max-width:760px),(max-aspect-ratio:1/1){.lustage{height:calc(100dvh - 5.5em);border-radius:14px}}
+@media (max-width:760px),(max-aspect-ratio:1/1){.lubar{left:4.6em;right:.4em;transform:none;justify-content:space-between;padding:.35em .5em}}
+@media (max-width:760px),(max-aspect-ratio:1/1){.luhint{display:none}}
+@media (max-width:760px),(max-aspect-ratio:1/1){.luop{padding:.1em .4em}}
+@media (max-width:760px),(max-aspect-ratio:1/1){.luop small{font-size:.68em}}
+.lupick{position:fixed;z-index:200;display:flex;gap:2px;opacity:.4;transition:opacity .2s;color:#fff;background:rgba(0,0,0,.25);border-radius:6px;padding:1px 3px}
+.lupick:hover{opacity:1}
+.lupick button{all:unset;cursor:pointer;width:18px;text-align:center;font-size:.75rem;border-radius:4px}
+.lupick button:hover{background:rgba(255,255,255,.2)}
+button.ludie{padding:0;cursor:default}
+.ludie+.ludie{margin-inline-start:-.2em}

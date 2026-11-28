@@ -1,0 +1,24 @@
+/* fib: تنحمّل مع اللعبة (loadGame) */
+.fbw{position:relative;display:grid;gap:12px;padding:22px 12px 14px;border-radius:16px;background:radial-gradient(circle at 50% 0,#d8342a,#7a120c 75%);color:#fffaf0;overflow:hidden}
+.fbbulbs{position:absolute;inset:6px 6px auto;height:10px;background:radial-gradient(circle,#ffd34d 0 4px,transparent 5px) 0 0/22px 10px;animation:fbB 1s steps(2) infinite}
+.fbtop{display:flex;gap:10px;justify-content:center;align-items:center;flex-wrap:wrap}
+.fbx2{font-style:normal;background:#ffd34d;color:#16130f;padding:0 10px;border-radius:8px;font-weight:900;border:2px solid #16130f;animation:pulse 1s infinite}
+.fbq{background:#fffaf0;color:#16130f;border:5px solid #16130f;border-radius:18px;box-shadow:6px 6px 0 #16130f;padding:16px 18px;text-align:center}
+.fbq p{margin:0;font:800 clamp(1.15rem,3.6vw,1.6rem)/1.7 Tajawal,sans-serif}
+.fbblank{display:inline-block;border-bottom:4px solid #b3261e;color:transparent;min-width:90px;margin:0 4px}
+.fbform{display:grid;gap:8px;text-align:center}
+.fbform label{font-weight:800}
+.fbform input{flex:1;min-width:0;font:800 1.15rem Tajawal,sans-serif;padding:10px 14px;border:4px solid #16130f;border-radius:12px;background:#fffaf0;color:#16130f}
+.fbsent{margin:0;color:#ffd34d}
+.fbhint{text-align:center;margin:0;font-weight:800}
+.fbopts{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.fbo{position:relative;display:grid;gap:4px;place-items:center;min-height:62px;padding:10px;border:4px solid #16130f;border-radius:14px;background:#ffd34d;color:#16130f;font:800 1.05rem Tajawal,sans-serif;box-shadow:4px 4px 0 #16130f;cursor:pointer;text-align:center}
+button.fbo:hover:not([disabled]){transform:translate(-2px,-2px);box-shadow:6px 6px 0 #16130f}
+.fbo small{font-size:.75rem;font-weight:700}
+.fbwho{display:flex;gap:2px;flex-wrap:wrap;justify-content:center}
+.fbwho i{font-style:normal;width:26px;height:26px;display:grid;place-items:center;border-radius:50%;background:#fffaf0;border:2px solid #16130f;font-size:.85rem}
+.fbstamp{position:absolute;left:50%;top:42%;transform:translate(-50%,-50%) rotate(-10deg);font:400 clamp(2.4rem,9vw,4rem) Lalezar,sans-serif;padding:0 20px;border:6px double;border-radius:12px;background:rgba(255,250,240,.9);pointer-events:none;animation:fbSt .45s cubic-bezier(.3,1.6,.5,1) both}
+.fbppl{display:flex;flex-wrap:wrap;gap:6px;justify-content:center}
+.fbp{display:flex;align-items:center;gap:6px;background:rgba(0,0,0,.25);border:2px solid #16130f;border-radius:999px;padding:3px 10px 3px 4px;font-size:.9rem}
+.fbp i{font-style:normal;font-weight:900;color:#ffd34d}
+.fbp em{font-style:normal;color:#9ff0b8;font-weight:900;animation:gtT .5s cubic-bezier(.3,1.6,.5,1)}

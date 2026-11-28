@@ -1,0 +1,25 @@
+/* phone: تنحمّل مع اللعبة (loadGame) */
+.phw{position:relative;display:grid;gap:10px;padding:10px;border-radius:16px;background:#d9f2ee;background-image:radial-gradient(rgba(22,19,15,.08) 1.5px,transparent 1.5px);background-size:16px 16px;color:#16130f}
+.phtop{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.phtask{font:400 1.45rem Lalezar,sans-serif}
+.phstep{font-size:.9rem;background:#fffaf0;border:2px solid #16130f;border-radius:999px;padding:1px 10px}
+.phprompt{background:#fffaf0;border:4px solid #16130f;border-radius:14px;padding:8px 14px;text-align:center;box-shadow:4px 4px 0 #ff7a3d}
+.phprompt small{display:block;opacity:.65}
+.phprompt b{font:800 1.3rem/1.5 Tajawal,sans-serif}
+.phcv{width:min(620px,100%);margin:0 auto;border:4px solid #16130f;border-radius:12px;overflow:hidden;background:#fffdf6;box-shadow:5px 5px 0 #16130f}
+.phcv canvas{display:block;width:100%;height:auto;aspect-ratio:4/3;touch-action:none}
+.phtools{justify-content:center}
+.phact{display:flex;gap:10px;justify-content:center;align-items:center}
+.phok{color:#127a40;font-weight:900;margin:0;text-align:center}
+.phphone{display:grid;justify-items:center;font-size:4rem;line-height:1;animation:phRing .12s 8 alternate}
+.phphone small{font:800 1rem Tajawal,sans-serif;margin-top:6px}
+.phform input{flex:1;min-width:0;font:800 1.1rem Tajawal,sans-serif;padding:10px 14px;border:4px solid #16130f;border-radius:12px;background:#fffaf0;color:#16130f}
+.phwait{text-align:center;font:400 1.4rem Lalezar,sans-serif;padding:30px 0}
+.phppl{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;align-items:center}
+.phalbum{display:grid;gap:10px;max-height:min(62vh,560px);overflow:auto;padding:4px 6px 10px}
+.phitem{width:min(560px,92%);animation:phIn .45s cubic-bezier(.3,1.4,.5,1) both}
+.phitem small{display:block;font-weight:800;opacity:.7;margin-bottom:2px}
+.phitem .phcv{box-shadow:4px 4px 0 #2bb3a3}
+.phlaugh{font-size:1.3rem}
+.phlaughfx{position:absolute;inset:0;pointer-events:none;overflow:hidden}
+.phlaughfx i{position:absolute;bottom:0;font-style:normal;font-size:2rem;animation:phUp 1.6s ease-out forwards}

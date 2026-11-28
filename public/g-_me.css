@@ -1,0 +1,80 @@
+/* _me: تنحمّل مع اللعبة (loadGame) */
+.meov{position:fixed;inset:0;z-index:80;background:rgba(22,19,15,.55);display:grid;place-items:center;padding:14px;overflow:auto}
+.meov[hidden]{display:none}
+.mebox{position:relative;width:min(640px,100%);max-height:calc(100vh - 28px);overflow:auto;background:var(--surf);color:var(--ink);border:3px solid var(--ink);border-radius:20px;box-shadow:6px 6px 0 var(--ink);padding:22px;font-family:Tajawal,sans-serif;font-weight:700}
+.meov.mewide .mebox{width:min(760px,100%)}
+.mex{position:absolute;top:10px;left:10px;width:34px;height:34px;border-radius:10px;border:2.5px solid var(--ink);background:var(--surf2);color:var(--ink);font-weight:800;cursor:pointer}
+.meload,.meempty{text-align:center;padding:40px 10px}
+.meempty b{font:400 1.5rem Lalezar,Tajawal,sans-serif;display:block;margin-bottom:8px}
+.meempty p{opacity:.7;margin:4px 0}
+.mebox h2{font:400 1.9rem Lalezar,Tajawal,sans-serif;margin:0 0 12px}
+.meav{width:40px;height:40px;border-radius:50%;border:2.5px solid var(--ink);display:inline-grid;place-items:center;font:400 1.2rem Lalezar,Tajawal,sans-serif;color:#16130f;flex:none;object-fit:cover}
+.mehd{display:flex;gap:14px;align-items:center}
+.mehd>div{flex:1;min-width:0}
+.menm{font:400 2rem Lalezar,Tajawal,sans-serif;line-height:1.2}
+.memut{opacity:.62;font-weight:500;font-size:.88rem}
+.melvbar,.mebar{height:10px;border:2px solid var(--ink);border-radius:6px;background:var(--surf2);overflow:hidden;margin:6px 0 2px}
+.melvbar i,.mebar i{display:block;height:100%;background:var(--green)}
+.melvbar i{background:var(--yellow)}
+.mestats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:16px 0}
+.mestats>div{border:2.5px solid var(--ink);border-radius:12px;padding:8px 4px;text-align:center;background:var(--surf2);font-size:.85rem}
+.mestats b{display:block;font:400 1.6rem Lalezar,Tajawal,sans-serif}
+.mesec{font:400 1.25rem Lalezar,Tajawal,sans-serif;margin:14px 0 6px}
+.mesec small{font:500 .8rem Tajawal,sans-serif;opacity:.6}
+.megl{display:grid;grid-template-columns:auto 1fr auto auto;gap:4px 10px;align-items:center;font-size:.92rem}
+.megl .mebar{margin:0}
+.megl small{opacity:.55;font-weight:500}
+.meribs{display:flex;flex-direction:column;gap:7px}
+.meribs>div{display:flex;align-items:center;gap:10px}
+.meribs small{opacity:.6;font-weight:500;font-size:.82rem}
+.mebtns{display:flex;gap:8px;flex-wrap:wrap;align-items:center;justify-content:center;margin-top:16px}
+.mebal{font-weight:700}
+.mebal b{font:400 1.3rem Lalezar,Tajawal,sans-serif}
+.mebal small{opacity:.6;font-weight:500}
+.metabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+.metabs button,.metabs select{border:2.5px solid var(--ink);border-radius:10px;padding:5px 12px;background:var(--surf);color:var(--ink);font:700 .92rem Tajawal,sans-serif;cursor:pointer}
+.metabs select{margin-inline-start:auto}
+.mepod{display:flex;align-items:flex-end;justify-content:center;gap:12px;margin:10px 0 16px}
+.mepd{display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;min-width:0}
+.mepd b{max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mepd small{opacity:.65}
+.meblk{width:min(120px,26vw);border:3px solid var(--ink);border-radius:12px 12px 0 0;display:grid;place-items:center;font:400 2.3rem Lalezar,Tajawal,sans-serif;box-shadow:4px 4px 0 var(--ink);color:#16130f}
+.mepd.p2 .meblk{height:86px;background:#e3e7ee}
+.mepd.p3 .meblk{height:66px;background:#e7b88a}
+.melist{display:flex;flex-direction:column;gap:6px;margin-bottom:10px}
+.melr{display:flex;align-items:center;gap:10px;border:2.5px solid var(--ink);border-radius:12px;padding:6px 12px;background:var(--surf);color:var(--ink);font:700 .95rem Tajawal,sans-serif;cursor:pointer;text-align:start}
+.melr:hover{background:var(--surf2)}
+.mern{font:400 1.3rem Lalezar,Tajawal,sans-serif;width:30px;text-align:center}
+.melr small{opacity:.55;font-weight:500}
+.mesc{margin-inline-start:auto;font:400 1.3rem Lalezar,Tajawal,sans-serif}
+.meup{color:var(--green);font-size:.8rem}
+.medn{color:var(--red);font-size:.8rem}
+.meshop{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px}
+.meit{display:flex;flex-direction:column;align-items:center;gap:6px;padding:12px 8px;border:2.5px solid var(--ink);border-radius:14px;background:var(--surf2);cursor:pointer;text-align:center}
+.mepr{font:400 1.05rem Lalezar,Tajawal,sans-serif}
+.menc{font-weight:800;font-size:1.05rem}
+.meludo{width:58px;height:58px;border-radius:12px;border:2.5px solid var(--ink);display:block;background:conic-gradient(#e8362d 0 25%,#1fa35c 0 50%,#ffc928 0 75%,#2a5bd7 0)}
+.ml-sadu{background:repeating-linear-gradient(45deg,#9c2a1d 0 6px,#e9d6b0 0 9px,#2b1b12 0 13px)}
+.metut h2{text-align:center}
+.metcards{position:relative;min-height:290px}
+.metc{position:absolute;inset:0;border:3px solid var(--ink);border-radius:16px;background:var(--surf2);padding:14px;opacity:0;transform:translateX(-40px) scale(.96);transition:all .35s ease;pointer-events:none;box-shadow:4px 4px 0 var(--ink)}
+.metc p{font-size:1.05rem;line-height:1.8;margin-top:12px}
+.metill{position:relative;height:120px;border-radius:12px;border:2.5px solid var(--ink);background:var(--c);overflow:hidden}
+.metill span{position:absolute;inset:0;display:grid;place-items:center;font:400 4rem Lalezar,Tajawal,sans-serif;color:#fff;text-shadow:3px 3px 0 #16130f}
+.metill i{position:absolute;border-radius:50%;background:rgba(255,255,255,.18)}
+.metill i:nth-of-type(1){width:120px;height:120px;top:-40px;right:-30px}
+.metill i:nth-of-type(2){width:70px;height:70px;bottom:-25px;left:20px}
+.metill i:nth-of-type(3){width:30px;height:30px;top:20px;left:30%}
+.medots{display:flex;gap:6px;justify-content:center;margin-top:12px}
+.medots i{width:10px;height:10px;border-radius:50%;background:var(--surf2);border:2px solid var(--ink)}
+@media (max-width:520px){.mestats{grid-template-columns:repeat(2,1fr)}}
+@media (max-width:520px){.megl{grid-template-columns:auto 1fr auto}}
+@media (max-width:520px){.megl small{display:none}}
+@media (max-width:520px){.mebox{padding:16px}}
+@media (max-width:520px){.metcards{min-height:340px}}
+.meov{grid-template-columns:minmax(0,1fr);justify-items:center}
+.mebox{min-width:0}
+.melr b{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mepod{max-width:100%}
+@media (max-width:520px){.meblk{width:27vw}}
+@media (max-width:520px){.metabs select{margin-inline-start:0;width:100%}}

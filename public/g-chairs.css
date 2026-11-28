@@ -1,0 +1,20 @@
+/* chairs: تنحمّل مع اللعبة (loadGame) */
+.chstage{position:relative;height:max(28em,calc(100dvh - 11em));border:4px solid var(--ink);border-radius:1.2em;box-shadow:var(--sh);overflow:hidden;background:#b5563a repeating-linear-gradient(45deg,#b5563a 0 2.2em,#a84d33 2.2em 4.4em);user-select:none;-webkit-user-select:none}
+.chrug,.chseats,.chring{position:absolute;left:50%;top:50%;width:min(94%,calc(100% * 1));aspect-ratio:1;max-height:96%;transform:translate(-50%,-50%);height:auto}
+.chrug,.chseats,.chring{width:auto;height:94%}
+.chrug{border-radius:50%;background:radial-gradient(#d9a066,#9c4a2c 70%);border:.7em solid #f0c45a;box-shadow:0 0 0 .3em #16130f,inset 0 0 3em rgba(0,0,0,.4)}
+.chrug::after{content:'';position:absolute;inset:14%;border-radius:50%;border:.3em dashed rgba(240,196,90,.6)}
+.chdallah{position:absolute;left:50%;top:50%;width:8%;transform:translate(-50%,-55%);filter:drop-shadow(4px 4px 0 rgba(0,0,0,.4))}
+.chseat{position:absolute;width:12%;max-width:6.4em;aspect-ratio:1.45;transform:translate(-50%,-50%) rotate(var(--a));border-radius:.8em;background:linear-gradient(#2a5bd7,#1c3f8f);border:.22em solid #16130f;box-shadow:0 .35em 0 #16130f;padding:0;cursor:pointer;transition:filter .2s,box-shadow .2s}
+.chseat i{position:absolute;inset:.35em;border-radius:.5em;border:.15em dashed #ffc928}
+.chseat:disabled{cursor:default}
+.chp{position:absolute;display:grid;justify-items:center;transform:translate(-50%,-50%);pointer-events:none;transition:left .25s ease-out,top .25s ease-out,opacity .4s;z-index:2}
+.chp small{color:#fff;text-shadow:1px 1px 0 #000;font-size:.8em;white-space:nowrap;max-width:7em;overflow:hidden;text-overflow:ellipsis}
+.chpill{background:rgba(22,19,15,.75);color:#fff;border:2px solid rgba(255,255,255,.4);border-radius:99px;padding:.2em .9em}
+.chban{position:absolute;left:50%;top:14%;transform:translate(-50%,-50%) scale(.6);opacity:0;pointer-events:none;z-index:4;font:400 3.4em/1 Lalezar,Tajawal,sans-serif;color:#fff;-webkit-text-stroke:2px #16130f;text-shadow:4px 4px 0 #16130f;white-space:nowrap;display:grid;justify-items:center;gap:.15em;transition:transform .25s cubic-bezier(.2,1.6,.4,1),opacity .2s}
+.chban small{font:800 .32em Tajawal,sans-serif;-webkit-text-stroke:0;background:rgba(22,19,15,.65);padding:.25em .9em;border-radius:99px}
+.chkeys{position:absolute;bottom:.6em;left:0;right:0;text-align:center;margin:0;font-size:.85em;color:#fff;text-shadow:1px 1px 0 #000;pointer-events:none}
+@media (pointer:coarse){.chkeys{display:none}}
+@media (max-width:760px){.chstage{height:min(calc(100dvh - 10em),130vw)}}
+@media (max-width:760px){.chrug,.chseats,.chring{height:auto;width:96%}}
+.chring,.chrug{pointer-events:none}

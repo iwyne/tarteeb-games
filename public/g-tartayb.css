@@ -1,0 +1,91 @@
+/* tartayb: تنحمّل مع اللعبة (loadGame) */
+.trw{display:grid;gap:12px}
+.trtop{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.trmain{display:grid;grid-template-columns:1fr 240px;gap:18px;align-items:start}
+.trboard{position:relative;display:grid;justify-items:center;gap:16px;padding:22px 16px 14px;border:3px solid var(--ink);border-radius:20px;box-shadow:var(--sh);color:#fff;
+  background:#2f7a4a radial-gradient(rgba(255,255,255,.08) 1px,transparent 1px) 0 0/12px 12px}
+.trhint{font-size:1rem;opacity:.92;min-height:1.4em;text-align:center}
+.trslots,.trrack{display:flex;justify-content:center;flex-wrap:wrap;gap:clamp(5px,1.2vw,10px);direction:rtl;min-height:4.8rem}
+.trrack{width:100%;padding:16px 10px 14px;background:#8a5a2b;border:3px solid #16130f;border-radius:14px;box-shadow:inset 0 -8px 0 #6b4320}
+.trslot{width:clamp(44px,8.5vw,66px);height:clamp(50px,9.5vw,74px);border:3px dashed rgba(255,255,255,.55);border-radius:12px}
+.trt{position:relative;width:clamp(44px,8.5vw,66px);height:clamp(50px,9.5vw,74px);border-radius:12px;background:#f6d9a0;border:3px solid #16130f;box-shadow:0 5px 0 #c9965e;display:grid;place-items:center;padding:0;cursor:pointer;color:#16130f;
+  transform:rotate(var(--r,0deg));transition:transform .12s,opacity .15s,box-shadow .12s;-webkit-tap-highlight-color:transparent;font:inherit}
+.trt span{font:400 clamp(1.7rem,4.6vw,2.5rem)/1 Lalezar,Tajawal,sans-serif;margin-top:4px}
+.trt small{position:absolute;bottom:3px;left:6px;font:700 .62rem Tajawal,sans-serif;opacity:.7}
+.trt:hover{transform:rotate(0) translateY(-3px)}
+.trt:active{transform:translateY(3px);box-shadow:0 2px 0 #c9965e}
+.trmsg{min-height:1.6em;font-size:1.05rem;text-align:center;opacity:.9}
+.trbtns{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+.trbtns .trsend{background:var(--yellow);color:#16130f;font-size:1.15rem;padding-inline:28px}
+.trkeys{font-size:.78rem;opacity:.7;margin:0}
+.trside{border:3px solid var(--ink);border-radius:18px;background:var(--surf);box-shadow:var(--sh);padding:12px 14px;display:grid;gap:8px}
+.trside h4{font:400 1.2rem Lalezar,Tajawal,sans-serif;margin:0}
+.trside ol{list-style:none;padding:0;margin:0;display:grid;max-height:360px;overflow:auto}
+.trside li{display:flex;align-items:center;gap:8px;padding:6px 2px;border-bottom:2px dashed color-mix(in srgb,var(--ink) 18%,transparent)}
+.trside li>b{width:1.2em;font:400 1rem Lalezar,sans-serif;opacity:.7}
+.trside li em{font:400 1.3rem Lalezar,sans-serif;font-style:normal;padding-inline-end:4px}
+.trlast{background:var(--hi);border:2px solid var(--ink);border-radius:12px;padding:8px 10px;font-size:.82rem;display:grid;gap:4px;color:#16130f}
+.trlast[hidden]{display:none}
+@media (pointer:coarse){.trkeys{display:none}}
+@media (max-width:760px){.trmain{grid-template-columns:1fr}}
+@media (max-width:760px){.trside ol{max-height:220px}}
+@media (max-width:760px){.trboard{padding:16px 8px 12px}}
+.trw{--W:min(1640px,calc(100vw - 28px));width:var(--W);margin-inline:calc((100% - var(--W)) / 2);font-size:clamp(13px,min(1.18vw,1.85dvh),25px)}
+.trmain{grid-template-columns:14em 1fr 15em;gap:1.2em;align-items:stretch}
+.trboard{min-height:max(32em,calc(100dvh - 12em));align-content:center;gap:1.4em;padding:1.4em 1.6em 1.2em;border-radius:1.3em;
+  box-shadow:inset 0 0 0 .55em #6b4320,inset 0 0 0 .8em #16130f,inset 0 0 4em rgba(0,0,0,.35),var(--sh)}
+.trtop{position:absolute;top:1.3em;inset-inline:1.5em;display:flex;align-items:center;gap:1em}
+.trrnd{background:rgba(0,0,0,.28);color:#fff;border-color:rgba(255,255,255,.5);font-size:.95em}
+.trpips{flex:1;display:flex;justify-content:center;gap:.45em;flex-wrap:wrap}
+.trpips i{width:.85em;height:.85em;border-radius:50%;background:rgba(255,255,255,.18);border:2px solid rgba(255,255,255,.45)}
+.trring{position:relative;width:4.2em;height:4.2em;flex:none}
+.trring svg{width:100%;height:100%;transform:rotate(-90deg)}
+.trring circle{fill:rgba(0,0,0,.3);stroke:rgba(255,255,255,.18);stroke-width:4}
+.trring #trArc{fill:none;stroke:#ffc928;stroke-linecap:round;stroke-dasharray:119.4;transition:stroke-dashoffset .2s linear}
+.trring b{position:absolute;inset:0;display:grid;place-items:center;font:400 1.7em Lalezar,Tajawal,sans-serif;color:#fff}
+.trhint{display:flex;align-items:center;gap:.6em;background:rgba(0,0,0,.25);border:2px solid rgba(255,255,255,.35);border-radius:99px;padding:.35em 1.1em .35em .5em;font-size:1.25em;margin-top:3.2em}
+.trhint[hidden]{display:none}
+.trcat{font-size:1.6em;line-height:1;filter:drop-shadow(2px 2px 0 rgba(0,0,0,.4))}
+.trlen{background:#ffc928;color:#16130f;border-radius:99px;padding:0 .7em;font-size:.8em}
+.trslots,.trrack{gap:.75em;min-height:7.6em}
+.trrack{max-width:52em;padding:1.4em 1em 1.2em;border-radius:1em;box-shadow:inset 0 -.6em 0 #6b4320,0 .5em 0 rgba(0,0,0,.25)}
+.trslot,.trt{width:5.6em;height:6.4em;border-radius:.8em}
+.trt{box-shadow:0 .4em 0 #c9965e}
+.trt span{font-size:3.5em;margin-top:.12em}
+.trt small{font-size:.8em;bottom:.3em;left:.5em}
+.trmsg{font-size:1.25em}
+.trbtns{gap:.8em}
+.trbtns .trsend{font-size:1.3em;padding:.45em 2em}
+.trkeys{font-size:.85em}
+.trside{padding:1em;gap:.6em;align-content:start;border-radius:1.2em}
+.trside h4{font-size:1.35em}
+.trside ol{max-height:none}
+.trside li{padding:.45em .2em;font-size:1em}
+.trlast{font-size:.9em}
+.trhis li{display:grid;grid-template-columns:auto 1fr;grid-template-rows:auto auto;column-gap:.5em;align-items:center}
+.trhis li .trc{grid-row:span 2;font-size:1.5em}
+.trhis li b{font:400 1.3em Lalezar,Tajawal,sans-serif;line-height:1.1}
+.trhis li small{font-size:.8em;opacity:.7}
+.trhis li.emp{display:block;opacity:.6;font-size:.9em;border:0}
+@media (max-width:1100px){.trmain{grid-template-columns:1fr 15em}}
+@media (max-width:1100px){.trhis{display:none}}
+@media (max-width:760px){
+  .trw{font-size:clamp(11px,2.9vw,15px)}
+}
+@media (max-width:760px){
+  .trmain{grid-template-columns:1fr}
+}
+@media (max-width:760px){
+  .trboard{min-height:0;padding:1.2em .8em 1em}
+}
+@media (max-width:760px){
+  .trtop{inset-inline:1em;top:1em}
+}
+@media (max-width:760px){
+  .trslot,.trt{width:4.4em;height:5em}
+}
+@media (max-width:760px){.trt span{font-size:2.7em}
+}
+@media (max-width:760px){
+  .trslots,.trrack{gap:.45em;min-height:5.6em}
+}

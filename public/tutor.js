@@ -355,15 +355,4 @@ function tutEnd() {
   $('#tutDone').onclick = () => tutClose();
 }
 const TUTV = 1;
-// زر الشرح باللوبي
-(() => {
-  const r0 = render;
-  render = function () {
-    r0.apply(this, arguments);
-    try {
-      let b = $('#tutBtn');
-      if (!b) { const h = $('#ghelp'); if (!h) return; b = document.createElement('button'); b.type = 'button'; b.id = 'tutBtn'; b.className = 'btn sm tutb'; b.innerHTML = '📺 شرح اللعبة بالفيديو'; h.after(b); b.onclick = () => S && tutOpen(S.game); }
-      b.hidden = !(S && S.phase === 'lobby' && TUT[S.game]);
-    } catch (e) { console.warn(e); }
-  };
-})();
+// زر الشرح باللوبي صار في tutor-lite.js (هالملف ينحمّل لما تضغطه)

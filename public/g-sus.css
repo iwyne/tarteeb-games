@@ -1,0 +1,158 @@
+/* sus: تنحمّل مع اللعبة (loadGame) */
+.susw{position:relative;height:calc(100dvh - 78px);min-height:420px;border:4px solid var(--ink);border-radius:18px;overflow:hidden;box-shadow:6px 6px 0 var(--ink);background:#15122b;user-select:none;-webkit-user-select:none}
+.susw [hidden]{display:none!important}
+#sCv{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:none;cursor:crosshair}
+.svig{position:absolute;inset:0;pointer-events:none;z-index:1;opacity:0;transition:opacity .4s}
+.shud{position:absolute;top:10px;right:10px;display:grid;gap:8px;width:min(260px,58%);z-index:2}
+.sprog{background:var(--surf);color:var(--ink);border:3px solid var(--ink);border-radius:12px;box-shadow:3px 3px 0 var(--ink);padding:4px 10px 6px;font-size:.8rem;font-weight:800}
+.sbarO{height:13px;border:2px solid var(--ink);border-radius:99px;background:#e9e2d2;overflow:hidden;margin-top:2px}
+.sbarO i{display:block;height:100%;width:0;background:repeating-linear-gradient(-45deg,#1fa35c 0 10px,#27c06c 10px 20px);background-size:28px 28px;animation:sBar 1s linear infinite;transition:width .8s cubic-bezier(.2,.8,.2,1)}
+.stasks{background:var(--surf);color:var(--ink);border:3px solid var(--ink);border-radius:12px;box-shadow:3px 3px 0 var(--ink);padding:4px 10px;font-size:.85rem;max-height:40vh;overflow:auto}
+.stasks summary{font:400 1rem Lalezar,Tajawal,sans-serif;cursor:pointer}
+.sfake{margin:2px 0 4px;line-height:1.4}
+.sfake b{color:var(--red)}
+.sbanner{position:absolute;left:12px;right:12px;top:12px;margin:auto;width:fit-content;max-width:calc(100% - 300px);text-align:center;background:var(--surf);color:var(--ink);border:3px solid var(--ink);border-radius:14px;box-shadow:4px 4px 0 var(--ink);padding:6px 14px;font-weight:800;font-size:.9rem;z-index:2;pointer-events:none;animation:sDrop .4s cubic-bezier(.2,.8,.25,1)}
+.sbanner.docb{background:#d6f3e2}
+.sbtns{position:absolute;right:14px;bottom:14px;display:flex;flex-direction:row-reverse;align-items:flex-end;gap:10px;z-index:3;direction:ltr}
+.ssabomenu{position:absolute;right:14px;bottom:250px;display:grid;gap:8px;z-index:4;background:var(--surf);border:3px solid var(--ink);border-radius:14px;box-shadow:4px 4px 0 var(--ink);padding:10px;animation:sIn .25s}
+.ssabomenu button{font:700 1rem Tajawal,sans-serif;border:3px solid var(--ink);border-radius:10px;background:#ffd9d4;padding:8px 14px;cursor:pointer}
+.scams{position:absolute;inset:0;z-index:5;background:#0d0b18;display:flex;flex-direction:column;padding:10px;gap:8px;animation:sTv .35s cubic-bezier(.2,.8,.25,1)}
+.scamhead{display:flex;justify-content:space-between;align-items:center;color:#7ee0a8;font:400 1.3rem Lalezar,sans-serif}
+.scamgrid{flex:1;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;gap:8px;min-height:0}
+.scam{position:relative;border:3px solid #7ee0a8;border-radius:10px;overflow:hidden;background:#000}
+.scam canvas{position:absolute;inset:0;width:100%;height:100%}
+.scam span{position:absolute;bottom:4px;right:6px;color:#7ee0a8;font-weight:800;font-size:.8rem;text-shadow:0 1px 2px #000}
+.scam em{position:absolute;top:4px;left:6px;color:#ff3b2f;font-style:normal;font-weight:800;font-size:.75rem;animation:sRec 1s steps(2) infinite}
+.stask{position:absolute;inset:0;background:rgba(10,8,20,.62);display:grid;place-items:center;z-index:6;padding:12px;animation:sFade .2s}
+.staskbox{position:relative;background:var(--surf);color:var(--ink);border:4px solid var(--ink);border-radius:18px;box-shadow:6px 6px 0 var(--ink);padding:14px 16px 16px;width:min(380px,100%);text-align:center;animation:sIn .3s cubic-bezier(.2,.8,.25,1)}
+.staskbox h3{margin:0 0 10px;font:400 1.4rem Lalezar,Tajawal,sans-serif}
+.stb{position:relative;display:grid;gap:10px;justify-items:center}
+.stb.wires{width:300px;max-width:100%;height:250px;margin:auto;display:block}
+.stb.wires svg{position:absolute;top:0;left:0;width:300px;height:220px}
+.wcol{position:absolute;top:0;display:grid;grid-template-rows:repeat(4,40px);row-gap:15px;padding-top:7px}
+.wcol button{width:44px;height:40px;border:3px solid var(--ink);border-radius:8px;cursor:pointer;box-shadow:2px 2px 0 var(--ink);transition:.15s}
+.stb.wires p{position:absolute;bottom:0;left:0;right:0;margin:0;font-size:.8rem}
+.ngrid{display:grid;grid-template-columns:repeat(4,58px);gap:8px;direction:ltr}
+.ngrid button{height:58px;border:3px solid var(--ink);border-radius:12px;background:#dbe6f7;font:400 1.6rem Lalezar,sans-serif;cursor:pointer;box-shadow:2px 2px 0 var(--ink);transition:.15s}
+.strack{position:relative;width:100%;height:74px;border:3px solid var(--ink);border-radius:14px;background:repeating-linear-gradient(90deg,#e9e2d2 0 14px,#f6f0e2 14px 28px);transition:background .3s}
+.scard{position:absolute;right:4px;top:4px;width:84px;height:60px;border:3px solid var(--ink);border-radius:10px;background:var(--yellow);display:grid;place-items:center;font-size:1.8rem;cursor:grab;touch-action:none}
+.sgauge{position:relative;width:70px;height:170px;border:4px solid var(--ink);border-radius:14px;background:#e9e2d2;display:flex;align-items:flex-end;overflow:hidden}
+.sgauge i{display:block;width:100%;height:0;background:linear-gradient(#ffc928,#ff8a1f);transition:height .1s}
+.sgauge s{position:absolute;inset:0;background:repeating-linear-gradient(0deg,transparent 0 16px,rgba(22,19,15,.15) 16px 19px)}
+.shold{touch-action:none;user-select:none}
+.swait{width:100%;height:26px;border:3px solid var(--ink);border-radius:99px;background:#e9e2d2;overflow:hidden}
+.swait i{display:block;height:100%;width:0;background:repeating-linear-gradient(-45deg,#2a5bd7 0 10px,#4a78ec 10px 20px);background-size:28px 28px;animation:sBar .8s linear infinite}
+.swaitt{font:400 1.4rem Lalezar,sans-serif}
+.sslide{position:relative;width:100%;height:60px;border:3px solid var(--ink);border-radius:14px;background:#e9e2d2;direction:ltr}
+.sslide .knob{position:absolute;top:4px;left:0;width:44px;height:46px;border:3px solid var(--ink);border-radius:10px;background:var(--yellow);box-shadow:2px 2px 0 var(--ink);cursor:grab;touch-action:none}
+.ssimon{display:grid;grid-template-columns:repeat(3,64px);gap:8px;direction:ltr}
+.ssimon button{height:64px;border:3px solid var(--ink);border-radius:12px;background:#3a3961;cursor:pointer;transition:background .1s,transform .1s}
+.stap{position:relative;width:100%;height:230px;border:3px solid var(--ink);border-radius:14px;background:radial-gradient(circle,#2b2a52,#15122b);overflow:hidden}
+.stap button{position:absolute;font-size:2rem;background:none;border:0;cursor:pointer;animation:sFloat 3s ease-in-out infinite alternate;transition:transform .2s,opacity .2s}
+.scodeN{background:#fff3c4;border:3px dashed var(--ink);padding:4px 14px;border-radius:8px;transform:rotate(-2deg);font-weight:800}
+.scodeN b{font:400 1.4rem Lalezar,sans-serif;letter-spacing:4px;direction:ltr;display:inline-block}
+.scodeS{font:400 2rem Lalezar,monospace;letter-spacing:10px;background:#15122b;color:#7ee0a8;border-radius:10px;padding:2px 14px;direction:ltr}
+.skeys{display:grid;grid-template-columns:repeat(3,62px);gap:6px;direction:ltr}
+.skeys button{height:48px;border:3px solid var(--ink);border-radius:10px;background:#dbe6f7;font:400 1.3rem Lalezar,sans-serif;cursor:pointer;box-shadow:2px 2px 0 var(--ink)}
+.skeys button:active{transform:translate(2px,2px);box-shadow:none}
+.stemp{display:flex;gap:16px}
+.stemp div{display:grid;justify-items:center;border:3px solid var(--ink);border-radius:12px;padding:6px 16px;background:#f6f0e2}
+.stemp b{font:400 2.2rem Lalezar,sans-serif;direction:ltr}
+.stbtns{display:flex;gap:12px}
+.sok{position:absolute;inset:-6px;display:grid;place-items:center;font:400 5rem Lalezar,sans-serif;color:var(--green);-webkit-text-stroke:3px var(--ink);background:rgba(255,255,255,.75);border-radius:12px;animation:sOk .5s cubic-bezier(.2,1.6,.4,1)}
+.sfull{position:absolute;inset:0;z-index:7;display:grid;place-items:center;align-content:center;gap:6px;text-align:center;color:#f3ead8;background:radial-gradient(circle,#2a2550,#0d0b18);padding:20px}
+.sfull h2{font:400 clamp(1.8rem,7vw,3.2rem) Lalezar,Tajawal,sans-serif;margin:0;-webkit-text-stroke:2px var(--ink);paint-order:stroke fill}
+.sfull p{margin:0;font-size:1.05rem}
+.shush{position:absolute;inset:0;display:grid;place-items:center;font-size:7rem;background:#0d0b18;animation:sShush 1.3s forwards;z-index:2;pointer-events:none}
+.sintro{display:grid;justify-items:center;gap:8px;animation:sIn .6s 1.1s cubic-bezier(.2,.8,.25,1) both}
+.sintro h2{font-size:clamp(2.6rem,10vw,4.6rem)!important;letter-spacing:2px}
+.sline{display:flex;align-items:flex-end;justify-content:center;flex-wrap:wrap;gap:4px 10px;margin-top:10px;max-width:760px}
+.sguy{display:block;width:46px;height:auto;overflow:visible}
+.skilled{background:radial-gradient(circle,#6b1010,#1a0606);animation:sRed .3s}
+.skill .sguy{width:96px}
+.kv .sguy{animation:sFall .6s .6s both}
+.skilled h2{color:#ff6b5e;animation:sIn .4s .7s both}
+.skilled p{animation:sFade .4s 1s both}
+.sslash{position:absolute;inset:0;z-index:8;pointer-events:none;background:linear-gradient(135deg,transparent 46%,rgba(255,255,255,.95) 49%,rgba(232,54,45,.9) 51%,transparent 54%);animation:sSlash .6s forwards}
+.spop{position:absolute;left:50%;top:22%;transform:translateX(-50%);z-index:9;background:var(--surf);color:var(--ink);border:4px solid var(--ink);border-radius:16px;box-shadow:5px 5px 0 var(--ink);padding:10px 18px;font:400 1.3rem Lalezar,Tajawal,sans-serif;text-align:center;max-width:90%;animation:sPop 3.2s cubic-bezier(.2,1.5,.4,1) forwards;pointer-events:none}
+.ssplash{position:absolute;inset:0;z-index:8;display:grid;place-items:center;background:repeating-conic-gradient(from 0deg,#e8362d 0 15deg,#b81d14 15deg 30deg);animation:sSpin 6s linear infinite}
+.spbox{display:grid;justify-items:center;gap:6px;color:#fff;animation:sSplash 2.2s cubic-bezier(.2,1.4,.4,1) both;text-align:center}
+.spbox h2{margin:0;font:400 clamp(2.6rem,11vw,5.4rem) Lalezar,Tajawal,sans-serif;-webkit-text-stroke:3px var(--ink);paint-order:stroke fill;animation:sShake .25s infinite}
+.spbox p{margin:0;font-weight:800;font-size:1.2rem;background:var(--ink);padding:2px 14px;border-radius:99px}
+.spicon{font-size:5rem;animation:sRing .3s infinite alternate}
+.spicon .sguy{width:110px;transform:rotate(80deg)}
+.seject{overflow:hidden;background:#0d0b18 radial-gradient(circle,#2a2550,#0d0b18);}
+.seject::before{content:'';position:absolute;inset:-50%;background-image:radial-gradient(#f3ead8 1.5px,transparent 1.5px),radial-gradient(#f3ead8 1px,transparent 1px);background-size:90px 90px,50px 50px;background-position:0 0,25px 25px;animation:sStars 6s linear infinite;opacity:.5}
+.sfloat{position:absolute;top:24%;left:0;animation:sDrift 6.2s linear both}
+.sfloat .sguy{width:90px;animation:sSpin2 3s linear infinite}
+.seject h2{position:relative;margin-top:80px;max-width:600px;min-height:1.3em}
+.sleft{position:relative;animation:sFade .6s 3s both;font-size:1.2rem!important}
+.smeet{position:absolute;inset:0;z-index:6;background:rgba(10,8,20,.78);display:grid;place-items:center;padding:10px}
+.smeetbox{background:var(--surf);color:var(--ink);border:4px solid var(--ink);border-radius:18px;box-shadow:6px 6px 0 var(--ink);padding:12px 14px;width:min(720px,100%);max-height:100%;overflow:auto;text-align:center}
+.smeetbox h2{margin:0;font:400 clamp(1.2rem,4.5vw,1.7rem) Lalezar,Tajawal,sans-serif}
+.stimer{margin:2px 0 8px}
+.stimer b{font:400 1.3rem Lalezar,sans-serif;color:var(--red)}
+.svotes{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px}
+.vinfo{display:grid;min-width:0;gap:2px}
+.vok{position:absolute;bottom:-9px;left:6px;font-style:normal;font-size:.7rem;background:var(--green);color:#fff;border:2px solid var(--ink);border-radius:99px;padding:0 6px;animation:sOk .4s cubic-bezier(.2,1.6,.4,1)}
+.vdots{display:flex;flex-wrap:wrap;gap:2px}
+.vdot{width:13px;height:13px;border-radius:50%;border:2px solid var(--ink);animation:sDot .35s cubic-bezier(.2,1.8,.4,1) both}
+.sskip{margin-top:10px;display:flex;justify-content:center;align-items:center;gap:6px}
+.smeetfoot{display:flex;gap:8px;justify-content:center;align-items:center;flex-wrap:wrap;margin-top:12px;min-height:40px}
+.sendline{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin:6px 0}
+.sendline div{display:grid;justify-items:center;animation:sUp .5s cubic-bezier(.2,1.4,.4,1) both}
+.sendline .sguy{width:52px}
+.sendline b{font-size:.8rem}
+@media(max-width:640px){
+  .susw{height:calc(100dvh - 72px);border-radius:14px}
+}
+@media(max-width:640px){
+  .sbtns{bottom:72px;right:10px;gap:7px}
+}
+@media(max-width:640px){
+  .sbanner{top:auto;bottom:250px;max-width:calc(100% - 24px);font-size:.8rem}
+}
+@media(max-width:640px){
+  .ssabomenu{bottom:270px}
+}
+@media(max-width:640px){
+  .scamgrid{grid-template-columns:1fr;grid-template-rows:repeat(4,1fr)}
+}
+.sscare{position:absolute;inset:0;z-index:12;background:#000;display:grid;place-items:center;overflow:hidden;pointer-events:none;animation:sScareBg 1.7s steps(1) both}
+.sscare .sface{width:min(92vw,560px);animation:sFace 1.7s cubic-bezier(.2,1.6,.4,1) both}
+.sscare .sface svg{width:100%;height:auto;filter:drop-shadow(0 0 40px rgba(255,0,0,.6))}
+.skilled .ka{margin-bottom:0}
+.ka{position:relative;width:420px;max-width:94vw;height:270px;margin:0 auto 6px;animation:kaShake .5s var(--sd) both}
+.ka .sguy{width:100%}
+.ka .kv{right:34px}
+.ka .kva{position:relative}
+.ka .kvd{position:absolute;inset:0;opacity:0;animation:kaShow .25s var(--dd) both}
+.ka .kva{animation:kaHide .01s var(--dd) both}
+.ka .kp{position:absolute;line-height:1;pointer-events:none;z-index:3}
+.ka .kword{position:absolute;top:-14px;left:0;right:0;text-align:center;font:400 clamp(2.4rem,11vw,4.2rem) Lalezar,sans-serif;color:#ffc928;-webkit-text-stroke:3px #16130f;paint-order:stroke fill;opacity:0;z-index:5;animation:kaWord 1.4s var(--wd) cubic-bezier(.2,1.6,.4,1) both;white-space:nowrap}
+.ka .kfx{position:absolute;inset:-80vh -80vw;background:#fff;opacity:0;z-index:4;pointer-events:none;animation:kaFlash .35s var(--sd) both}
+.kdrops{position:absolute;inset:0;z-index:4}
+.kdrops i{position:absolute;left:var(--x);top:var(--y);width:var(--s);height:var(--s);border-radius:50%;background:#c0121a;border:1.5px solid #5a0508;opacity:0;animation:kaDrop 1s var(--d) cubic-bezier(.2,.6,.4,1) both}
+.kpool{position:absolute;right:10px;bottom:16px;width:180px;height:34px;border-radius:50%;background:#8a0f14;transform:scale(0);animation:kaPool 1.4s var(--pd) ease-out both;z-index:0}
+.kdead{animation:sIn .5s 2.7s both!important}
+.kdead2{animation:sFade .5s 3.1s both!important}
+.ka-slap .kv{animation:kSlapV 1.25s .75s cubic-bezier(.2,.7,.4,1) both}
+.ka-slap .tooth{font-size:30px;right:80px;bottom:120px;opacity:0;animation:kTooth 1s .78s cubic-bezier(.2,.6,.4,1) both}
+.ka-choke .kv{animation:kChokeV 1.75s .5s both}
+.ka-stab .kv{animation:kStabV 1.95s .3s both}
+.ka-stab .kfx{background:#d0101a;animation:kaFlash3 1s .45s both}
+.ka-smash .hammer{font-size:160px;right:0;bottom:140px;transform-origin:80% 85%;opacity:0;animation:kHammer 1.15s .2s cubic-bezier(.6,-.3,.6,1.4) both}
+.ka-smash .kv{transform-origin:50% 100%;animation:kSmashV .55s .85s cubic-bezier(.2,1.6,.4,1) both}
+.ka-smash .crack{right:-10px;bottom:10px;width:230px;opacity:0;animation:kaShow .05s .86s both}
+.ka-zap .kv{animation:kZapV 1.45s .4s steps(14) both}
+.ka-zap .kvd{filter:brightness(.18) sepia(1)}
+.ka-zap .skel{right:34px;bottom:28px;width:118px;opacity:0;animation:kSkel 1.25s .45s steps(1) both;z-index:4}
+.ka-zap .kfx{background:#a9dcff;animation:kaFlicker 1.25s .4s steps(1) both}
+.ka-kick .kv{animation:kKickV 1.35s .6s cubic-bezier(.2,.6,.3,1) both}
+.ka-kick .twinkle{font-size:44px;right:-24px;top:4px;opacity:0;animation:kTw 1.1s 1.9s both}
+.skpip{position:absolute;left:12px;top:84px;z-index:9;width:250px;background:rgba(10,8,20,.88);border:3px solid #e8362d;border-radius:16px;box-shadow:4px 4px 0 #16130f;padding:6px 4px 4px;text-align:center;color:#ffc928;font:400 1.2rem Lalezar,sans-serif;pointer-events:none;overflow:hidden;animation:kPip 2.9s ease both}
+.skpipin{height:160px;overflow:visible;direction:ltr;text-align:left}
+.skpip .ka{transform-origin:0 0;scale:.58;margin:0}
+@media(max-width:640px){.skpip{top:auto;bottom:250px;left:8px;width:210px}}
+@media(max-width:640px){.skpipin{height:132px}}
+@media(max-width:640px){.skpip .ka{scale:.48}}

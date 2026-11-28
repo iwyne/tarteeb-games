@@ -1,0 +1,142 @@
+/* baloot: تنحمّل مع اللعبة (loadGame) */
+.blw{--felt:#1d6b47;display:grid;gap:10px;color:#fffaf0;max-width:860px;margin:0 auto}
+.bltop{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.blsc{display:flex;gap:8px;align-items:center}
+.blsc span{background:#fffaf0;color:#16130f;border:3px solid #16130f;border-radius:12px;padding:3px 12px;font-weight:800;box-shadow:3px 3px 0 #0a1d14}
+.blsc span b{font:400 1.5rem/1 Lalezar,sans-serif;margin-inline-start:4px}
+.blsc small{opacity:.75}
+.blcon{display:flex;align-items:center;gap:8px}
+.blcon span{font:400 1.3rem Lalezar,sans-serif;background:#16130f;border:3px solid #ffd166;border-radius:12px;padding:3px 14px}
+.blcon i{font-style:normal}
+.blcon small{opacity:.85}
+.bltbl{position:relative;height:clamp(300px,52vh,440px);border-radius:120px/90px;background:radial-gradient(ellipse at 50% 45%,#23845a,#1a5c3f 70%);border:12px solid #5a3a22;box-shadow:inset 0 0 50px rgba(0,0,0,.45),0 10px 0 #2e1d10;background-image:radial-gradient(rgba(255,255,255,.05) 1px,transparent 1px),radial-gradient(ellipse at 50% 45%,#23845a,#1a5c3f 70%);background-size:6px 6px,auto}
+.blseat{position:absolute;display:flex;flex-direction:column;align-items:center;gap:3px;font-size:.85rem;z-index:2;transition:transform .2s}
+.blseat b{background:rgba(0,0,0,.45);border-radius:8px;padding:0 8px;max-width:110px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bldl,.blby{font-style:normal;font-size:.7rem;background:#16130f;border:2px solid #fffaf0;border-radius:99px;padding:0 7px}
+.blby{background:#e8362d}
+.blsaid{background:#fffaf0;color:#16130f;border:2.5px solid #16130f;border-radius:12px;padding:1px 10px;font-weight:800;animation:jwIn .25s cubic-bezier(.3,1.6,.5,1)}
+.blproj{background:#ffd166;color:#16130f;border:2px solid #16130f;border-radius:8px;padding:0 6px;font-size:.72rem;font-weight:800}
+.blbacks{display:flex}
+.blbacks i{width:16px;height:24px;margin-inline-start:-8px;border-radius:3px;background:repeating-linear-gradient(45deg,#e8362d 0 3px,#b8281f 3px 6px);border:1.5px solid #fffaf0}
+.blmid{position:absolute;inset:0;pointer-events:none}
+.blt{position:absolute;left:50%;top:50%;animation:blIn .25s ease-out}
+.blt.p2{transform:translate(-50%,-95%)}
+.blt.p3{transform:translate(-105%,-55%) rotate(-8deg)}
+.blwin{position:absolute;left:50%;bottom:16px;transform:translateX(-50%);background:#16130f;border:2px solid #ffd166;border-radius:99px;padding:2px 12px;font-weight:800;white-space:nowrap}
+.blup{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);display:grid;justify-items:center;gap:6px}
+.blup small{background:rgba(0,0,0,.4);border-radius:8px;padding:0 8px}
+.blbar{position:absolute;left:18%;right:18%;bottom:-6px;height:6px;border-radius:99px;background:rgba(0,0,0,.35);overflow:hidden}
+.blbar i{display:block;height:100%;background:#ffd166;width:0}
+.blc{position:relative;display:inline-grid;width:64px;height:92px;background:#fffaf0;color:#16130f;border:2.5px solid #16130f;border-radius:9px;box-shadow:3px 3px 0 rgba(0,0,0,.35);direction:ltr;user-select:none}
+.blc b{position:absolute;top:4px;left:6px;font:800 1.05rem/1 Tajawal,sans-serif}
+.blc i{position:absolute;top:22px;left:6px;font-style:normal;font-size:.9rem;line-height:1}
+.blc em{position:absolute;right:6px;bottom:4px;font-style:normal;font-size:2.1rem;line-height:1}
+.blme{display:flex;justify-content:center}
+.blme{font-size:.85rem;gap:6px;align-items:center}
+.blme.blturn b{background:#ffd166;color:#16130f}
+.blme b{background:rgba(0,0,0,.35);border-radius:8px;padding:0 8px}
+.blme .blbacks{display:none}
+.blbid{text-align:center;min-height:10px}
+.blbid p{margin:0 0 6px;font-weight:800}
+.blbid .blwait{opacity:.8}
+.blbtns{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+.blbtns i{font-style:normal}
+.blhand{display:flex;justify-content:center;padding:10px 6px 4px;min-height:110px}
+.blhand .blc{margin-inline-start:-14px;transform:rotate(calc(var(--i) * 3deg)) translateY(calc(var(--i) * var(--i) * 1.6px));transition:transform .15s,opacity .15s;cursor:default}
+.blhand .blc:first-child{margin-inline-start:0}
+.blres{position:fixed;inset:0;z-index:30;display:grid;place-items:center;background:rgba(10,29,20,.6);backdrop-filter:blur(3px)}
+.blrc{background:#fffaf0;color:#16130f;border:4px solid #16130f;border-radius:20px;box-shadow:6px 6px 0 #16130f;padding:18px 22px;min-width:min(340px,92vw);text-align:center;animation:jwIn .3s cubic-bezier(.3,1.5,.5,1)}
+.blrc h3{margin:0;font:400 2rem Lalezar,sans-serif}
+.blrc p{margin:4px 0 10px}
+.blrc table{width:100%;border-collapse:collapse;font-weight:800}
+.blrc td,.blrc th{padding:5px 8px;border-bottom:2px dashed #ddd}
+.blrc h4{font:400 1.7rem Lalezar,sans-serif;margin:10px 0 0}
+@media(max-width:600px){
+  .bltbl{height:min(62vw,300px);border-width:8px;border-radius:70px/60px}
+}
+@media(max-width:600px){
+  .blc{width:46px;height:66px}
+}
+@media(max-width:600px){.blc b{font-size:.85rem}
+}
+@media(max-width:600px){.blc i{top:18px;font-size:.75rem}
+}
+@media(max-width:600px){.blc em{font-size:1.5rem}
+}
+@media(max-width:600px){
+  .blhand .blc{margin-inline-start:-10px}
+}
+@media(max-width:600px){.blseat{font-size:.72rem}
+}
+@media(max-width:600px){.blseat b{max-width:70px}
+}
+.blw{color:var(--ink)}
+.bltbl{color:#fffaf0}
+.blhand{direction:ltr}
+.blhand .blc{margin-inline-start:-18px}
+.blhand .blc:first-child{margin-inline-start:0}
+.blcon span{color:#fffaf0}
+.blsc small,.blcon small{font-weight:800}
+.blbid .blwait{color:var(--ink)}
+@media(max-width:600px){.blhand .blc{margin-inline-start:-12px}}
+.bldl,.blby{color:#fffaf0}
+.blw{--W:min(1180px,calc(100vw - 16px));width:var(--W);max-width:none;margin-inline:calc((100% - var(--W)) / 2);font-size:clamp(13px,min(1.7dvh,1.75vw),23px);gap:.6em}
+.bltop{gap:.6em}
+.blsc span{font-size:1.05em;border-radius:.7em;padding:.2em .8em;box-shadow:.2em .2em 0 #16130f}
+.blsc span b{font-size:1.6em}
+.blsc small{font-weight:800;font-size:.95em}
+.blcon span{font-size:1.25em;padding:.2em .9em;border-radius:.7em;box-shadow:.2em .2em 0 rgba(0,0,0,.3)}
+.bltbl{height:clamp(20em,calc(100dvh - 23.5em),44em);margin:1.3em 1.3em .4em;border:0;border-radius:42%/50%;
+  background:radial-gradient(ellipse at 50% 40%,rgba(255,255,255,.1),transparent 55%),repeating-linear-gradient(45deg,rgba(255,255,255,.025) 0 2px,transparent 2px 18px),repeating-linear-gradient(-45deg,rgba(255,255,255,.025) 0 2px,transparent 2px 18px),radial-gradient(ellipse at 50% 45%,#1f8a58,#145a3a 75%,#0f4129);
+  box-shadow:0 0 0 .3em #d8b24a,0 0 0 1em #6b4426,0 0 0 1.12em #3a2210,0 0 0 1.3em #16130f,.5em .7em 0 1.3em rgba(22,19,15,.3),inset 0 0 4em rgba(0,0,0,.55)}
+.bltbl::before{content:'بلوت';position:absolute;left:50%;top:50%;transform:translate(-50%,-50%) rotate(-8deg);font:400 7em/1 Lalezar,sans-serif;color:rgba(255,255,255,.045);pointer-events:none;white-space:nowrap}
+.blseat{gap:.25em;font-size:1em}
+.blseat b{font-size:.95em;padding:.1em .7em;border-radius:.6em;max-width:8em;background:rgba(10,20,14,.7);border:.1em solid rgba(255,255,255,.25)}
+.blseat.blturn b,.blme.blturn b{background:#ffd166;color:#16130f;border-color:#16130f}
+.bldl,.blby{font-size:.75em;padding:0 .6em}
+.blsaid{font-size:1em;padding:.05em .7em;border-radius:.7em;box-shadow:.15em .15em 0 #16130f}
+.blproj{font-size:.8em}
+.blbacks{margin-bottom:.2em}
+.blbacks i{width:1.5em;height:2.2em;margin-inline-start:-.95em;border-radius:.25em;border:.12em solid #fffaf0;background:radial-gradient(circle at 50% 50%,#fffaf0 0 .18em,transparent .2em),repeating-linear-gradient(45deg,#c8281f 0 .22em,#9e1d16 .22em .44em);box-shadow:.1em .1em .2em rgba(0,0,0,.4)}
+.blbacks i:first-child{margin-inline-start:0}
+.blme{position:absolute;bottom:.9em;left:50%;transform:translateX(-50%);z-index:2;display:flex;gap:.4em;align-items:center;font-size:1em}
+.blme b{font-size:1em;padding:.1em .8em;border-radius:.6em;background:rgba(10,20,14,.7);border:.1em solid rgba(255,255,255,.25);color:#fffaf0}
+.blc{width:4.5em;height:6.4em;border-radius:.55em;border:.13em solid #16130f;background:linear-gradient(160deg,#fffefa,#f3ead6);box-shadow:.15em .2em 0 rgba(0,0,0,.3),0 .4em .8em rgba(0,0,0,.25)}
+.blc b{top:.25em;left:.35em;font:800 1.25em/1 Tajawal,sans-serif}
+.blc i{top:1.45em;left:.4em;font-size:.95em}
+.blc em{left:50%;top:50%;right:auto;bottom:auto;transform:translate(-50%,-45%);font-size:2.8em}
+.blc u{position:absolute;right:.35em;bottom:.25em;transform:rotate(180deg);text-decoration:none;font:800 .85em/1 Tajawal,sans-serif;text-align:center}
+.blup{gap:.5em}
+.blup small{font-size:.95em;padding:.1em .7em}
+.blt.p2{transform:translate(-50%,-108%)}
+.blt.p3{transform:translate(-128%,-50%) rotate(-8deg)}
+.blt .blc{width:5em;height:7.1em}
+.blt .blc em{font-size:3.1em}
+.blwin{bottom:4.9em;font-size:1em;padding:.15em .9em}
+.blbar{left:22%;right:22%;bottom:.35em;height:.35em}
+.blbid p{font-size:1.15em}
+.blbtns{gap:.6em}
+.blhand{min-height:8.6em;padding:.3em .4em .2em}
+.blhand .blc{width:5.4em;height:7.7em;margin-inline-start:-1.5em;transform:rotate(calc(var(--i) * 3.5deg)) translateY(calc(var(--i) * var(--i) * .12em))}
+.blhand .blc em{font-size:3.4em}
+.blhand .blc b{font-size:1.4em}
+@media(max-width:600px){.blw{font-size:clamp(11px,3.3vw,15px)}}
+@media(max-width:600px){.bltbl{height:clamp(19em,calc(100dvh - 21em),34em);margin:1em .9em .3em;border-radius:34%/30%}}
+@media(max-width:600px){.blhand .blc{width:4.6em;height:6.6em;margin-inline-start:-1.6em}}
+@media(max-width:600px){.blhand .blc em{font-size:2.8em}}
+.bltbl .blbid{position:absolute;left:50%;bottom:2.9em;transform:translateX(-50%);z-index:3;min-height:0;color:#fffaf0}
+.bltbl .blbid:empty{display:none}
+.bltbl .blbid p{margin:0 0 .4em;text-shadow:0 2px 0 rgba(0,0,0,.5)}
+.bltbl .blbid .blbtns{background:rgba(10,20,14,.55);border:.1em solid rgba(255,216,77,.5);border-radius:1em;padding:.5em .7em;backdrop-filter:blur(2px)}
+.bltbl .blbid .blwait{margin:0;background:rgba(10,20,14,.55);border-radius:99px;padding:.15em .9em;opacity:1}
+.bltbl .blbid{width:max-content;max-width:94%}
+.bltbl .blbid .blbtns{flex-wrap:wrap;justify-content:center}
+@media(max-width:600px){
+  .bltbl{height:clamp(19em,calc(100dvh - 19.5em),40em)}
+}
+@media(max-width:600px){
+  .bltbl .blbid{bottom:2.6em}
+}
+@media(max-width:600px){
+  .bltbl .blbid .blbtns{gap:.35em;padding:.4em .45em}
+}
